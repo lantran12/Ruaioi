@@ -1,5 +1,5 @@
 import { db, ref } from "./firebase.js";
-import { get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Khởi chạy các Dropdown ẩn hiện
@@ -11,8 +11,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 3. Hiển thị danh sách truyện (Đã sắp xếp mới nhất) và truyện đề cử (Random) bằng data thật
     renderBookGrid(listBooks);
     renderRandomFeatured(listBooks);
-
-    // 4. Lắng nghe sự kiện bộ lọc Tag (Lọc động từ data thật)
+    
+    // 4. Kích hoạt bảng xếp hạng Top 5 lượt xem Realtime
+    listenTopViews(listBooks); 
+    
+    // 5. Lắng nghe sự kiện bộ lọc Thể loại và Tác giả
     setupTagFilter(listBooks);
 });
 
@@ -54,7 +57,7 @@ async function fetchStoriesFromFirebase() {
                 });
             }
 
-            // ✨ THẦN CHÚ: Sắp xếp truyện mới cập nhật (updatedAt lớn hơn) lên đầu danh sách
+            // ✨ Sắp xếp truyện mới cập nhật (updatedAt lớn hơn) lên đầu danh sách
             loadedBooks.sort((a, b) => b.updatedAt - a.updatedAt);
         }
     } catch (error) {
@@ -131,7 +134,6 @@ function setupDropdowns() {
             notiContent.style.display = isDisplayed ? "none" : "block";
             if (notiBadge) notiBadge.style.display = "none";
             
-            // Đóng các menu khác
             closeAllMenusExcept("notiContent");
         });
     }
@@ -139,7 +141,6 @@ function setupDropdowns() {
     handleDropdown("tagDropdownBtn", "tagMenu");
     handleDropdown("authorDropdownBtn", "authorMenu");
 
-    // Click ra ngoài thì đóng sạch menu
     document.addEventListener("click", () => {
         closeAllMenusExcept("");
     });
@@ -155,7 +156,6 @@ function handleDropdown(btnId, menuId) {
         const isDisplayed = window.getComputedStyle(menu).display === "block";
         menu.style.display = isDisplayed ? "none" : "block";
         
-        // Bấm nút này thì đóng nút kia
         closeAllMenusExcept(menuId);
     });
 }
@@ -170,6 +170,7 @@ function closeAllMenusExcept(exceptionId) {
     if (notiContent && exceptionId !== "notiContent") notiContent.style.display = "none";
 }
 
+// --- HÀM BỘ LỌC ĐỘNG THEO THỂ LOẠI & TÁC GIẢ ---
 function setupTagFilter(listBooks) {
     // 1. XỬ LÝ LỌC THEO THỂ LOẠI (TAG)
     const tagItems = document.querySelectorAll(".tag-item");
@@ -191,13 +192,12 @@ function setupTagFilter(listBooks) {
         });
     });
 
-    // 2. XỬ LÝ LỌC THEO TÁC GIẢ (AUTHOR) - ✨ Bổ sung đoạn này để sửa lỗi nút Tác giả
+    // 2. XỬ LÝ LỌC THEO TÁC GIẢ (AUTHOR)
     const authorItems = document.querySelectorAll(".author-item");
     authorItems.forEach(item => {
         item.addEventListener("click", (e) => {
             e.stopPropagation();
             const selectedAuthor = item.textContent.trim();
-            // Lọc ra những truyện có tên tác giả trùng với tên vừa bấm
             const filteredBooks = listBooks.filter(book => book.author && book.author.trim() === selectedAuthor);
             
             const authorBtn = document.getElementById("authorDropdownBtn");
@@ -210,5 +210,44 @@ function setupTagFilter(listBooks) {
             
             renderBookGrid(filteredBooks);
         });
+    });
+}
+
+// --- HÀM LẮNG NGHE VÀ HIỂN THỊ TOP 5 LƯỢT XEM REALTIME ---
+function listenTopViews(listBooks) {
+    const container = document.getElementById('nominationListContainer');
+    if (!container) return;
+
+    const viewsRef = ref(db, 'views');
+    
+    onValue(viewsRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        const arr = Object.keys(data).map(id => ({ id, views: data[id] }));
+        
+        arr.sort((a, b) => b.views - a.views);
+        const top5 = arr.slice(0, 5);
+
+        let itemsHtml = "";
+        top5.forEach((item, index) => {
+            const match = listBooks.find(t => t.id === item.id);
+            
+            let titleText = match ? match.title : item.id.toUpperCase().replace(/_/g, ' ');
+            let imageSrc = match ? match.img : "https://via.placeholder.com/180x240?text=No+Cover";
+            let linkHref = `book.html?id=${item.id}`;
+            let medalHtml = index < 3 ? ["🥇", "🥈", "🥉"][index] : "";
+
+            itemsHtml += `
+                <a href="${linkHref}" class="nomination-item">
+                    <div class="nomination-medal">${medalHtml}</div>
+                    <div class="nomination-thumb"><img src="${imageSrc}" alt="Bìa truyện"></div>
+                    <div class="nomination-detail">
+                        <p class="nomination-story-title">${titleText}</p>
+                        <p class="nomination-story-vote">👁️ ${item.views.toLocaleString()} lượt xem</p>
+                    </div>
+                </a>
+            `;
+        });
+        
+        container.innerHTML = itemsHtml || `<div class="bookshelf-empty">Chưa có thống kê lượt xem...</div>`;
     });
 }

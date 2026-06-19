@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 2. LẤY DATA THẬT TỪ FIREBASE VỀ
     const listBooks = await fetchStoriesFromFirebase();
 
-    // 3. Hiển thị danh sách truyện và truyện đề cử bằng data thật
+    // 3. Hiển thị danh sách truyện (Đã sắp xếp mới nhất) và truyện đề cử (Random) bằng data thật
     renderBookGrid(listBooks);
     renderRandomFeatured(listBooks);
 
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupTagFilter(listBooks);
 });
 
-// --- HÀM LẤY DATA TỰ ĐỘNG TỪ FIREBASE ---
+// --- HÀM LẤY DATA TỰ ĐỘNG TỪ FIREBASE VÀ SẮP XẾP MỚI NHẤT ---
 async function fetchStoriesFromFirebase() {
     const storiesRef = ref(db, "stories");
     const loadedBooks = [];
@@ -41,7 +41,7 @@ async function fetchStoriesFromFirebase() {
                     latestChapter = `Chương ${totalChapters}`;
                 }
 
-                // Đẩy dữ liệu đã được tự động tính toán vào mảng
+                // Đẩy dữ liệu vào mảng (Lấy thời gian updatedAt hoặc timestamp, nếu không có mặc định là 0)
                 loadedBooks.push({
                     id: id,
                     title: bookData.title,
@@ -49,9 +49,13 @@ async function fetchStoriesFromFirebase() {
                     status: bookData.status || "updating",
                     tags: bookData.tags || [],
                     img: bookData.img || "https://picsum.photos/200/300",
-                    chapter: latestChapter 
+                    chapter: latestChapter,
+                    updatedAt: bookData.updatedAt || bookData.timestamp || 0 
                 });
             }
+
+            // ✨ THẦN CHÚ: Sắp xếp truyện mới cập nhật (updatedAt lớn hơn) lên đầu danh sách
+            loadedBooks.sort((a, b) => b.updatedAt - a.updatedAt);
         }
     } catch (error) {
         console.error("Lỗi lấy dữ liệu từ Firebase:", error);
@@ -85,11 +89,12 @@ function renderBookGrid(booksToShow) {
     `).join('');
 }
 
-// --- HÀM RENDER TRUYỆN ĐỀ CỬ PREMIUM (KHỚP CHUẨN CSS MỚI) ---
+// --- HÀM RENDER TRUYỆN ĐỀ CỬ PREMIUM (GIỮ NGUYÊN RANDOM) ---
 function renderRandomFeatured(listBooks) {
     const featuredCard = document.getElementById("featuredBook");
     if (!featuredCard || !listBooks || listBooks.length === 0) return;
     
+    // Chọn ngẫu nhiên một bộ truyện bất kỳ để làm đề cử
     const randomIndex = Math.floor(Math.random() * listBooks.length);
     const book = listBooks[randomIndex];
     
@@ -113,7 +118,7 @@ function renderRandomFeatured(listBooks) {
     `;
 }
 
-// --- CÁC HÀM ĐIỀU HƯỚNG DROPDOWN (ĐÃ CẬP NHẬT KIỂU ĐỂ SỬA LỖI KHÔNG XỔ) ---
+// --- CÁC HÀM ĐIỀU HƯỚNG DROPDOWN ---
 function setupDropdowns() {
     const notiBtn = document.getElementById("notiBtn");
     const notiContent = document.getElementById("notiContent");

@@ -1,38 +1,139 @@
-// Dữ liệu mẫu (Khi có Firebase, chị sẽ lấy dữ liệu từ Realtime Database/Firestore về đây)
-const listBooks = [
-    { title: "Yêu Em Từ Cái Nhìn Đầu Tiên", author: "Cố Mạn", status: "updating", chapter: "Chương 120", img: "https://picsum.photos/200/300?random=1" },
-    { title: "Bên Nhau Trọn Đời", author: "Cố Mạn", status: "completed", chapter: "Chương 80", img: "https://picsum.photos/200/300?random=2" },
-    { title: "Ma Đạo Tổ Sư", author: "Mặc Hương Đồng Khứu", status: "completed", chapter: "Chương 113", img: "https://picsum.photos/200/300?random=3" }
-];
+import { db, ref } from "./firebase.js";
+import { get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Bật/Tắt Dropdown Thông báo
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Khởi chạy các Dropdown ẩn hiện như cũ
+    setupDropdowns();
+
+    // 2. LẤY DATA THẬT TỪ FIREBASE VỀ
+    const listBooks = await fetchStoriesFromFirebase();
+
+    // 3. Hiển thị danh sách truyện và truyện đề cử bằng data thật
+    renderBookGrid(listBooks);
+    renderRandomFeatured(listBooks);
+
+    // 4. Lắng nghe sự kiện bộ lọc Tag (Lọc động từ data thật)
+    setupTagFilter(listBooks);
+});
+
+// --- HÀM LẤY DATA TỰ ĐỘNG TỪ FIREBASE ---
+async function fetchStoriesFromFirebase() {
+    const storiesRef = ref(db, "stories");
+    const loadedBooks = [];
+
+    try {
+        const snapshot = await get(storiesRef);
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            
+            // Duyệt qua từng bộ truyện trên Firebase
+            for (let id in data) {
+                const bookData = data[id];
+                
+                // --- TỰ ĐỘNG CẬP NHẬT SỐ CHƯƠNG ---
+                // Hệ thống vào mục đếm số lượng chương thực tế của truyện này
+                let latestChapter = "Chương 0";
+                const chaptersRef = ref(db, `comments/${id}`); // Hoặc đổi thành đường dẫn chứa chương của chị
+                const chapterSnapshot = await get(chaptersRef);
+                
+                if (chapterSnapshot.exists()) {
+                    const chapters = chapterSnapshot.val();
+                    // Đếm tổng số lượng key chương đang có (ví dụ: chapter_1, chapter_2...)
+                    const totalChapters = Object.keys(chapters).length; 
+                    latestChapter = `Chương ${totalChapters}`;
+                }
+
+                // Đẩy dữ liệu đã được tự động tính toán vào mảng
+                loadedBooks.push({
+                    id: id,
+                    title: bookData.title,
+                    author: bookData.author,
+                    status: bookData.status || "updating",
+                    tags: bookData.tags || [],
+                    img: bookData.img || "https://picsum.photos/200/300",
+                    chapter: latestChapter // Số chương tự động cập nhật ở đây!
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi lấy dữ liệu từ Firebase:", error);
+    }
+    return loadedBooks;
+}
+
+// --- HÀM RENDER TRUYỆN RA GRID TRANG CHỦ ---
+function renderBookGrid(booksToShow) {
+    const bookGrid = document.getElementById("bookGrid");
+    if (booksToShow.length === 0) {
+        bookGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #888; padding: 40px 0;">Không có truyện nào rồi chị ơi... 🌸</p>`;
+        return;
+    }
+
+    bookGrid.innerHTML = booksToShow.map(book => `
+        <div class="book-card">
+            <div class="book-cover">
+                <img src="${book.img}" alt="${book.title}">
+                <span class="status-badge ${book.status}">
+                    ${book.status === 'completed' ? 'Hoàn thành' : 'Đang chạy'}
+                </span>
+            </div>
+            <div class="book-info">
+                <h3 class="book-title"><a href="book.html?id=${book.id}">${book.title}</a></h3>
+                <p class="latest-chapter">${book.chapter} (Mới nhất)</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// --- HÀM RENDER TRUYỆN ĐỀ CỬ PREMIUM (RANDOM TỪ DATA THẬT) ---
+function renderRandomFeatured(listBooks) {
+    const featuredCard = document.getElementById("featuredBook");
+    if (!listBooks || listBooks.length === 0) return;
+    
+    const randomIndex = Math.floor(Math.random() * listBooks.length);
+    const book = listBooks[randomIndex];
+    
+    featuredCard.innerHTML = `
+        <div class="featured-card-premium">
+            <div class="featured-cover-wrapper">
+                <img src="${book.img}" alt="${book.title}">
+                <div class="ribbon-pop">HOT</div>
+            </div>
+            <div class="featured-detail">
+                <span class="badge-trending"><i class="fa-solid fa-fire"></i> ĐỀ CỬ HÔM NAY</span>
+                <h3>${book.title}</h3>
+                <div class="featured-meta">
+                    <span><i class="fa-solid fa-pen-nib"></i> ${book.author}</span>
+                    <span><i class="fa-solid fa-book"></i> ${book.chapter}</span>
+                </div>
+                <p class="featured-summary">Chào mừng độc giả đến với bộ truyện đề cử siêu hay ngày hôm nay. Bấm vào nút bên dưới để đọc ngay nhé!</p>
+                <a href="book.html?id=${book.id}" class="btn-read-now">Đọc Ngay Tại Đây <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+    `;
+}
+
+// --- CÁC HÀM ĐIỀU HƯỚNG DROPDOWN VÀ BỘ LỌC TAG ---
+function setupDropdowns() {
     const notiBtn = document.getElementById("notiBtn");
     const notiContent = document.getElementById("notiContent");
     
     notiBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         notiContent.style.display = notiContent.style.display === "block" ? "none" : "block";
-        // Bấm vào xem thì xóa số badge đi cho tinh tế
         document.getElementById("notiBadge").style.display = "none";
     });
 
-    // 2. Bật/Tắt Dropdown Thể loại và Tác giả
     handleDropdown("tagDropdownBtn", "tagMenu");
     handleDropdown("authorDropdownBtn", "authorMenu");
 
-    // Click ra ngoài thì ẩn hết dropdown
     document.addEventListener("click", () => {
         notiContent.style.display = "none";
         document.getElementById("tagMenu").style.display = "none";
         document.getElementById("authorMenu").style.display = "none";
     });
+}
 
-    // 3. Render Truyện Đề Cử ngẫu nhiên (Random)
-    renderRandomFeatured();
-});
-
-// Hàm hỗ trợ ẩn hiện dropdown chung
 function handleDropdown(btnId, menuId) {
     const btn = document.getElementById(btnId);
     const menu = document.getElementById(menuId);
@@ -42,22 +143,16 @@ function handleDropdown(btnId, menuId) {
     });
 }
 
-// Hàm random truyện đề cử
-function renderRandomFeatured() {
-    const featuredCard = document.getElementById("featuredBook");
-    if(listBooks.length === 0) return;
-    
-    const randomIndex = Math.floor(Math.random() * listBooks.length);
-    const book = listBooks[randomIndex];
-    
-    featuredCard.innerHTML = `
-        <div style="display: flex; gap: 20px; align-items: center;">
-            <img src="${book.img}" alt="${book.title}" style="width: 80px; height: 110px; object-fit: cover; border-radius: 8px;">
-            <div>
-                <h3 style="margin-bottom: 5px; color: #ff9aa2;">${book.title}</h3>
-                <p style="font-size: 14px;">Tác giả: <strong>${book.author}</strong></p>
-                <p style="font-size: 13px; color: #888; margin-top: 5px;">Gợi ý: Một bộ truyện cực kỳ ngọt ngào không thể bỏ qua!</p>
-            </div>
-        </div>
-    `;
+function setupTagFilter(listBooks) {
+    const tagItems = document.querySelectorAll(".tag-item");
+    tagItems.forEach(item => {
+        item.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const selectedTag = item.textContent.trim();
+            const filteredBooks = listBooks.filter(book => book.tags.includes(selectedTag));
+            document.getElementById("tagDropdownBtn").innerHTML = `${selectedTag} <i class="fa-solid fa-caret-down"></i>`;
+            document.getElementById("tagMenu").style.display = "none";
+            renderBookGrid(filteredBooks);
+        });
+    });
 }

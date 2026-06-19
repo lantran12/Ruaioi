@@ -31,6 +31,7 @@ body {
     background-color: var(--card-bg);
     padding: 15px 5%;
     box-shadow: 0 4px 15px rgba(255, 183, 178, 0.2);
+    border-bottom: 1px solid #ffe3e1;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -78,14 +79,15 @@ body {
 .noti-content {
     display: none;
     position: absolute;
-    right: 0;
-    top: 35px;
+    left: 0;              /* Thay vì right: 0, đổi thành left: 0 để bảng xổ về bên phải */
+    top: 40px;            /* Tăng khoảng cách xuống một chút cho thoáng */
     background: white;
     width: 320px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--accent-color);
+    z-index: 1000;        /* Đảm bảo bảng thông báo luôn nổi lên trên các thẻ khác */
 }
 .noti-content h4 {
     padding: 10px;

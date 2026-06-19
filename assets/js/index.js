@@ -61,25 +61,12 @@ function listenAuthState() {
     });
 }
 
-// --- HÀM KIỂM TRA QUYỀN ADMIN ---
-function checkAndGrantAdmin(user) {
-    const adminBtn = document.getElementById('btnOpenAdminPanel');
-    const adminPanel = document.getElementById('adminPanel');
-
-    if (user && user.uid === "BrZQ9s07ujfIYG1iPtC4vIhGgx33") {
-        console.log("Admin đã được xác nhận!");
-        
-        // Dùng removeProperty để xóa cái 'display: none' mặc định
-        if (adminBtn) {
-            adminBtn.style.removeProperty('display'); 
-            adminBtn.style.display = 'inline-block'; 
+/div>`;
         }
-        // Admin Panel không nên để display: block ngay, 
-        // nó nên ẩn và chỉ hiện khi bấm nút.
-    } else {
-        if (adminBtn) adminBtn.style.display = 'none';
-    }
+    });
 }
+
+
 
 // =======================================================
 // ⚙️ CÁC HÀM ĐIỀU KHIỂN ĐÓNG MỞ VÀ XỬ LÝ FORM MODAL AUTH

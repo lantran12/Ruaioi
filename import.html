@@ -1,7 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Đăng Chương Hàng Loạt - Động Chăn Rùa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #f0ecfe;
+            --bg: #f8fafc;
+            --text: #334155;
+            --border: #cbd5e1;
+        }
+        /* ÉP HIỂN THỊ LUÔN - CHỐNG BỊ TRẮNG TRANG DO CSS ẨN */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex !important; /* Luôn luôn hiện */
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            color: #1e293b;
+            margin: 0;
+        }
+        .btn-back {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .layout-main {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .sidebar {
+            flex: 1;
+            min-width: 250px;
+            border-right: 1px solid var(--border);
+            padding-right: 15px;
+        }
+        .main-content {
+            flex: 2;
+            min-width: 300px;
+        }
+        .story-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+        .story-item:hover, .story-item.active {
+            background: var(--primary-light);
+        }
+        .story-item img {
+            width: 40px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .story-item-title {
+            margin: 0;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .story-item-id {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-sizing: border-box;
+            background: #fdfdfd;
+            font-size: 0.95rem;
+        }
+        .file-zone {
+            border: 2px dashed #b19ffb;
+            background: #f8f6ff;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-sizing: border-box;
+            resize: vertical;
+            font-size: 1rem;
+            line-height: 1.7;
+            background: #fafafa;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #a78bfa, var(--primary));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge-public { background: #dcfce7; color: #166534; }
+        .badge-draft { background: #fee2e2; color: #991b1b; }
+        .badge-lock { background: #fef9c3; color: #854d0e; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🚀 Giao Diện Đăng Chương Hàng Loạt (Sạch)</h1>
+        <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Về Trang Chủ</a>
+    </div>
+
+    <div class="layout-main">
+        <div class="sidebar">
+            <h3 style="margin-top:0;"><i class="fa-solid fa-book"></i> Danh sách truyện</h3>
+            <div id="sidebarStoryList">Đang tải truyện...</div>
+        </div>
+
+        <div class="main-content">
+            <div class="form-group">
+                <label>ID Truyện đã chọn</label>
+                <input type="text" id="storyId" readonly placeholder="Chọn truyện bên trái để tự điền ID...">
+            </div>
+
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 120px;">
+                    <label>Số chương</label>
+                    <input type="number" id="previewNumber" placeholder="Ví dụ: 1">
+                </div>
+                <div class="form-group" style="flex: 2; min-width: 200px;">
+                    <label>Tên chương</label>
+                    <input type="text" id="previewTitle" placeholder="Ví dụ: Chương 1: Gặp gỡ">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <label>Trạng thái</label>
+                    <select id="chapterStatus">
+                        <option value="Công khai">Công khai</option>
+                        <option value="Bản nháp">Bản nháp</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <label>Mật khẩu (nếu có)</label>
+                    <input type="text" id="previewPassword" placeholder="Bỏ trống nếu công khai">
+                </div>
+            </div>
+
+            <div class="file-zone">
+                <p style="margin:0 0 10px 0; color:var(--primary); font-weight:bold;"><i class="fa-solid fa-file-import"></i> Bóc tách file văn bản (.txt, .docx)</p>
+                <input type="file" id="fileInput" onchange="handleFileImport(this)" accept=".txt,.docx">
+            </div>
+
+            <div class="form-group">
+                <label>Nội dung chi tiết chương</label>
+                <textarea id="previewContent" placeholder="Nội dung sẽ tự động bóc tách vào đây..."></textarea>
+            </div>
+
+            <button class="btn-submit" onclick="uploadParsedChapter()">Đồng Bộ Chương Lên Hệ Thống 🚀</button>
+
+            <div id="chapterManagerSection" style="display:none; margin-top: 40px; border-top: 2px dashed #eee; padding-top: 20px;">
+                <h3 id="managerSectionTitle">Danh sách chương</h3>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chương</th>
+                                <th>Tiêu đề</th>
+                                <th>Trạng thái</th>
+                                <th>Khóa</th>
+                                <th style="text-align: center;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="chapterTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    // ==========================================================================
-    // CẤU HÌNH FIREBASE VÀ ĐƯỜNG ỐNG AUTH
-    // ==========================================================================
     const firebaseConfig = {
         apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
         authDomain: "dongchanrua.firebaseapp.com",
@@ -18,9 +283,6 @@
 
     const ADMIN_UID = "BrZQ9s07ujfIYG1iPtC4vIhGgx33"; 
 
-    // ==========================================================================
-    // VÒNG BẢO VỆ CHỈ CHO UID CỦA CHỊ VÀO (ĐÃ BỎ LỆNH ĐÁ VĂNG ĐỂ TRÁNH TRẮNG TRANG)
-    // ==========================================================================
     auth.onAuthStateChanged((user) => {
         if (user && user.uid === ADMIN_UID) {
             console.log("Chào Admin Trân! 🐢");
@@ -31,10 +293,8 @@
         }
     });
 
-    // CHỈ KHAI BÁO MỘT LẦN DUY NHẤT Ở ĐÂY (ĐÃ SỬA LỖI TRÙNG LẶP)
     let currentSelectedStoryId = "";
 
-    // 1. LẤY DANH SÁCH TRUYỆN ĐỔ VÀO SIDEBAR
     function loadSidebarStories() {
         const listContainer = document.getElementById('sidebarStoryList');
         if (!listContainer) return;
@@ -67,7 +327,6 @@
         });
     }
 
-    // 2. KHI CHỊ BẤM VÀO MỘT TRUYỆN BÊN TRÁI
     function selectStory(storyId, storyTitle) {
         currentSelectedStoryId = storyId;
         const inputStoryId = document.getElementById('storyId');
@@ -87,7 +346,6 @@
         loadStoryChapters(storyId);
     }
 
-    // 3. TẢI DANH SÁCH CHƯƠNG LÈ CỦA TRUYỆN ĐANG CHỌN
     function loadStoryChapters(storyId) {
         const tbody = document.getElementById('chapterTableBody');
         if (!tbody) return;
@@ -129,7 +387,6 @@
         });
     }
 
-    // 4. BẤM NÚT SỬA CHƯƠNG LẺ: ĐẨY DỮ LIỆU NGƯỢC LÊN FORM
     function editChapterClick(num, title, status, password, content) {
         document.getElementById('previewNumber').value = num;
         document.getElementById('previewTitle').value = title;
@@ -143,7 +400,6 @@
         if (targetView) targetView.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // 5. BẤM NÚT XÓA CHƯƠNG LẺ
     function deleteChapterClick(num) {
         if(confirm(`Chị Trân có chắc chắn muốn XÓA VĨNH VIỄN Chương ${num} không ạ? 🐢`)) {
             db.ref(`chapters/${currentSelectedStoryId}/${num}`).remove().then(() => {
@@ -153,7 +409,6 @@
         }
     }
 
-    // 6. XỬ LÝ BÓC TÁCH FILE ĐẦU VÀO
     function handleFileImport(input) {
         const file = input.files[0];
         if (!file) return;
@@ -201,7 +456,6 @@
         }
     }
 
-    // 7. NHẤN NÚT ĐỒNG BỘ GỬI LÊN DATABASE
     function uploadParsedChapter() {
         const storyId = document.getElementById('storyId').value.trim();
         const number = parseInt(document.getElementById('previewNumber').value);
@@ -241,3 +495,5 @@
         .catch(err => alert("Lỗi gửi dữ liệu: " + err.message));
     }
 </script>
+</body>
+</html>

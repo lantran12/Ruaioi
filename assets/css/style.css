@@ -18,7 +18,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* HEADER TINH GỌN */
+/* --- HEADER --- */
 .netflix-header {
     background: rgba(252, 249, 250, 0.95);
     backdrop-filter: blur(20px);
@@ -31,242 +31,72 @@ body {
     justify-content: space-between;
     align-items: center;
     z-index: 1000;
-    border-bottom: 1px solid rgba(255, 77, 109, 0.12); 
+    border-bottom: 1px solid rgba(255, 77, 109, 0.12);
     box-shadow: 0 4px 20px rgba(255, 77, 109, 0.02);
 }
 
 .header-left-zone { display: flex; align-items: center; }
-.header-right-zone { display: flex; align-items: center; gap: 16px; } /* Sắp xếp các icon bên phải sát nhau */
+.header-right-zone { display: flex; align-items: center; gap: 16px; }
 
-.netflix-header .logo a {
-    font-family: var(--font-sans);
-    font-weight: 800;
-    font-size: 1.6rem;
-    color: var(--netflix-red);
-    text-decoration: none;
-    letter-spacing: -1px;
-}
+.netflix-header .logo a { font-family: var(--font-sans); font-weight: 800; font-size: 1.6rem; color: var(--netflix-red); text-decoration: none; letter-spacing: -1px; }
 .netflix-header .logo span { color: var(--onyx); font-weight: 400; }
 
-/* ICON THÔNG BÁO */
-.noti-btn { 
-    font-size: 1.3rem; 
-    color: var(--onyx); 
-    position: relative; 
-    background: none; 
-    border: none; 
-    cursor: pointer;
-    order: 2; /* Đảm bảo luôn nằm sau cùng */
-}
+/* --- ICON & AUTH --- */
+.noti-btn { font-size: 1.3rem; color: var(--onyx); position: relative; background: none; border: none; cursor: pointer; order: 2; }
 .noti-btn .badge { position: absolute; top: -4px; right: -6px; background: var(--netflix-red); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
 
-.auth-buttons { order: 1; } /* Avatar đứng trước chuông thông báo */
-.btn-avatar-profile {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--p-pink); border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; color: #fff;
-}
+.auth-buttons { order: 1; }
+.btn-avatar-profile { width: 36px; height: 36px; border-radius: 50%; background: var(--p-pink); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; }
 
-/* HERO BANNER CỰC ĐẠI */
-.netflix-hero {
-    position: relative;
-    width: 100%;
-    height: 45vh;
-    min-height: 320px;
-    background: linear-gradient(135deg, #fff0f2 0%, #fff 100%);
-    display: flex;
-    align-items: center;
-    padding: 0 4%;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.01);
-}
-.hero-cover-blur {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(to right, rgba(252,249,250,0.9) 40%, rgba(252,249,250,0));
-    z-index: 1;
-}
+/* --- HERO BANNER --- */
+.netflix-hero { position: relative; width: 100%; height: 45vh; min-height: 320px; background: linear-gradient(135deg, #fff0f2 0%, #fff 100%); display: flex; align-items: center; padding: 0 4%; box-shadow: 0 10px 30px rgba(0,0,0,0.01); }
+.hero-cover-blur { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to right, rgba(252,249,250,0.9) 40%, rgba(252,249,250,0)); z-index: 1; }
 .hero-content { position: relative; z-index: 2; max-width: 600px; }
-.trending-badge {
-    display: inline-block; background: rgba(255, 77, 109, 0.1);
-    color: var(--netflix-red); padding: 6px 14px; border-radius: 20px;
-    font-size: 0.75rem; font-weight: 700; margin-bottom: 12px;
-}
+.trending-badge { display: inline-block; background: rgba(255, 77, 109, 0.1); color: var(--netflix-red); padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; margin-bottom: 12px; }
 .hero-title { font-family: var(--font-serif); font-size: 2.6rem; font-weight: 700; margin-bottom: 12px; }
 .hero-synopsis { font-size: 0.95rem; color: var(--smoke); line-height: 1.6; }
 
-/* THANH ĐIỀU HƯỚNG MỚI XUỐNG DƯỚI HERO */
-.netflix-sub-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 4%;
-    background: #fff;
-    border-bottom: 1px solid rgba(0,0,0,0.03);
-}
-
+/* --- SUB-BAR & DROPDOWN --- */
+.netflix-sub-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 4%; background: #fff; border-bottom: 1px solid rgba(0,0,0,0.03); }
 .netflix-nav { display: flex; gap: 20px; align-items: center; }
-.nav-link-btn {
-    background: none; border: none;
-    font-family: var(--font-sans);
-    font-size: 0.95rem; font-weight: 600;
-    color: var(--smoke); cursor: pointer;
-    transition: color 0.2s;
-}
+.nav-link-btn { background: none; border: none; font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600; color: var(--smoke); cursor: pointer; transition: color 0.2s; }
 .nav-link-btn:hover, .nav-link-btn.active { color: var(--netflix-red); }
 
-/* THẢ MENU THỂ LOẠI */
-.dropdown {
-    position: relative; /* Giữ nguyên, quan trọng để menu bám theo nút */
-}
-
+.dropdown { position: relative; }
 .dropdown-menu-vip {
-    display: none; 
-    position: absolute; 
-    top: 100%; 
-    left: 0;
-    margin-top: 5px; /* Tạo khoảng cách nhỏ giữa nút và menu */
-    background: #ffffff;
-    border: 1px solid #ffccd5; /* Chỉnh màu viền cho xinh */
-    border-radius: 12px;
-    padding: 10px 0; /* Padding trên dưới thôi, để 2 bên cho span tự quyết */
-    min-width: 180px; 
-    max-width: 250px; 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    z-index: 9999; /* Tăng lên để nó luôn nằm trên các nội dung khác */
-    overflow-y: auto; /* Nếu menu quá dài thì tự có thanh cuộn */
-    max-height: 300px; /* Không cho menu dài vô tận làm vỡ trang */
-}
-
-.dropdown-menu-vip span {
-    display: block;
-    padding: 10px 15px; /* Tăng padding để dễ bấm hơn trên mobile */
-    cursor: pointer;
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis;
-    color: #555;
-    transition: 0.2s;
-}
-
-.dropdown-menu-vip span:hover {
-    background: #fff0f3; /* Hiệu ứng hover cho chuyên nghiệp */
-    color: #ff4d6d;
-    font-weight: 600;
+    display: none; position: absolute; top: 100%; left: 0; margin-top: 5px;
+    background: #ffffff; border: 1px solid #ffccd5; border-radius: 12px; padding: 10px 0;
+    min-width: 180px; max-width: 250px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 9999; overflow-y: auto; max-height: 300px;
 }
 .dropdown-menu-vip span {
-    background: #fdfafb; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
+    display: block; padding: 10px 15px; cursor: pointer; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; color: #555; transition: 0.2s;
+    background: #fdfafb; border-radius: 20px; font-size: 0.85rem;
 }
-.dropdown-menu-vip span:hover { background: var(--netflix-red); color: white; }
+.dropdown-menu-vip span:hover { background: var(--netflix-red); color: white; font-weight: 600; }
 
-/* Ô TÌM KIẾM DƯỚI SUB-BAR */
-.netflix-search-box {
-    display: flex; align-items: center;
-    border: 1px solid rgba(0,0,0,0.08);
-    padding: 8px 16px; border-radius: 24px; background: #fff;
-}
-.netflix-search-box input {
-    border: none; outline: none; background: transparent;
-    font-family: var(--font-sans); font-size: 0.9rem; width: 220px;
-}
-.search-icon-btn { background: none; border: none; cursor: pointer; color: var(--smoke); }
+/* --- SEARCH & GRID --- */
+.netflix-search-box { display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.08); padding: 8px 16px; border-radius: 24px; background: #fff; }
+.netflix-search-box input { border: none; outline: none; background: transparent; font-family: var(--font-sans); font-size: 0.9rem; width: 220px; }
 
-/* CÁC DẢI TRUYỆN ROW GRID */
 .netflix-section { padding: 30px 4% 10px 4%; }
-.row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-.row-title { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+.netflix-row-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; }
+.story-card, .netflix-row-grid > div { cursor: pointer; transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); }
+.story-card img, .netflix-row-grid > div img { width: 100%; height: 250px; object-fit: cover; border-radius: var(--radius-card); box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+.story-card:hover, .netflix-row-grid > div:hover { transform: translateY(-5px) scale(1.02); }
 
-.netflix-row-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 25px;
-}
+/* --- UTILITIES & MODAL --- */
+.auth-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:9999; backdrop-filter: blur(5px); font-family: var(--font-sans) !important; }
+.auth-modal-content, .auth-modal-box { background:#fff; padding:30px; border-radius:16px; width:90%; max-width:380px; position:relative; }
+.auth-modal-box label { font-weight: 700 !important; text-transform: uppercase; font-size: 11px !important; color: var(--smoke) !important; margin-bottom: 5px; display: block; }
+.auth-modal-box input { font-size: 14px !important; color: var(--onyx) !important; width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; }
+.btn-auth-submit { font-weight: 700 !important; letter-spacing: 0.5px; }
 
-.netflix-row-grid > div, .story-card {
-    cursor: pointer;
-    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-.netflix-row-grid > div img, .story-card img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-radius: var(--radius-card);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-}
-.netflix-row-grid > div:hover { transform: translateY(-5px) scale(1.02); }
-.netflix-row-grid > div h4, .story-card h4 { font-size: 1rem; font-weight: 600; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.netflix-row-grid > div p, .story-card p { font-size: 0.85rem; color: var(--smoke); margin-top: 3px; }
-
-/* TOP 5 RANKING STYLE */
-.top-rank-style > div { display: flex; gap: 15px; align-items: center; background: #fff; padding: 12px; border-radius: var(--radius-card); border: 1px solid rgba(0,0,0,0.02); }
-.top-rank-style > div img { width: 70px; height: 95px; border-radius: 6px; }
-
-/* UTILITIES */
-.netflix-footer { text-align: center; padding: 40px 0; color: var(--smoke); font-size: 0.8rem; font-weight: 500; margin-top: 60px; }
-.admin-panel { position: absolute; top: 70px; right: 4%; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 290px; z-index: 1001; }
-.auth-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:9999; backdrop-filter: blur(5px); }
-.auth-modal-content { background:#fff; padding:30px; border-radius:16px; width:90%; max-width:380px; position:relative; }
-.profile-container { background: #fff; padding: 30px; border-radius: 12px; }
-
-/* ==========================================================================
-   TỐI ƯU GIAO DIỆN MƯỢT MÀ TRÊN ĐIỆN THOẠI (RESPONSIVE)
-   ========================================================================== */
+/* --- RESPONSIVE --- */
 @media (max-width: 768px) {
-    /* Cho thanh sub-bar xếp dọc trên điện thoại để không bị dính cục */
-    .netflix-sub-bar {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start; /* Căn lề trái cho gọn gàng */
-        padding: 15px 4%;
-    }
-
-    /* Cụm menu chữ tự động dàn đều nhẹ nhàng */
-    .netflix-nav {
-        width: 100%;
-        justify-content: flex-start;
-        gap: 15px;
-        flex-wrap: wrap; /* Nếu tên thể loại dài quá sẽ tự động xuống dòng mượt mà */
-    }
-
-    .nav-link-btn {
-        font-size: 0.9rem; /* Thu nhỏ chữ một chút trên điện thoại cho tinh tế */
-        padding: 5px 0;
-    }
-
-    /* Ô tìm kiếm chiếm trọn chiều ngang hàng dưới trên điện thoại */
-    .netflix-search-box {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .netflix-search-box input {
-        width: 100%; /* Giúp gõ chữ thoải mái không bị bó hẹp */
-    }
-
-    /* Thu nhỏ nhẹ tiêu đề Banner Hero cho đỡ chiếm diện tích màn hình nhỏ */
-    .hero-title {
-        font-size: 2rem;
-    }
-}
-/* --- SỬA LỖI FONT FORM ĐĂNG NHẬP --- */
-.auth-modal-overlay,
-.auth-modal-box,
-.auth-modal-box * {
-    font-family: var(--font-sans) !important;
-}
-
-/* Tinh chỉnh label và input trong form cho sang trọng */
-.auth-modal-box label {
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    font-size: 11px !important;
-    color: var(--smoke) !important;
-}
-
-.auth-modal-box input {
-    font-size: 14px !important;
-    color: var(--onyx) !important;
-}
-
-.btn-auth-submit {
-    font-weight: 700 !important;
-    letter-spacing: 0.5px;
+    .netflix-sub-bar { flex-direction: column; gap: 15px; align-items: flex-start; padding: 15px 4%; }
+    .netflix-nav { width: 100%; flex-wrap: wrap; }
+    .netflix-search-box { width: 100%; }
+    .hero-title { font-size: 2rem; }
 }

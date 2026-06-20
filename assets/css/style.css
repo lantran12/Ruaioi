@@ -334,3 +334,13 @@ body {
     border-radius: var(--radius-card);
     border: 1px solid rgba(0,0,0,0.03);
 }
+/* Thêm vào cuối file CSS của Chị */
+.btn-auth-submit, .btn-back, .btn-logout {
+    transition: all 0.3s ease;
+}
+
+.btn-auth-submit:hover {
+    background: #ff2d55; /* Màu đỏ đậm hơn một chút khi hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(255, 77, 109, 0.3);
+}

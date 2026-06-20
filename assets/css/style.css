@@ -249,14 +249,16 @@ body {
     font-weight: 700 !important;
     letter-spacing: 0.5px;
 }
-/* --- TỐI ƯU TRANG HỒ SƠ ĐỂ ĐỒNG BỘ VỚI STYLE CHÍNH --- */
+/* --- TỐI ƯU TRANG HỒ SƠ CHUẨN GIAO DIỆN --- */
+
 .profile-container {
     max-width: 900px;
-    margin: 100px auto 40px; /* Thêm top margin để không bị header đè */
-    padding: 20px;
+    margin: 100px auto 40px;
+    padding: 40px;
     background: #fff;
     border-radius: var(--radius-card);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.03);
 }
 
 .profile-header {
@@ -265,12 +267,12 @@ body {
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
 .profile-body {
     display: flex;
-    gap: 40px;
+    gap: 50px;
     padding: 20px 0;
 }
 
@@ -293,54 +295,66 @@ body {
 
 .profile-edit-zone { flex: 1; }
 
-.auth-group { margin-bottom: 20px; }
-.auth-group label { display: block; font-weight: 700; color: var(--smoke); font-size: 0.8rem; margin-bottom: 8px; text-transform: uppercase; }
-.auth-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+.auth-group { margin-bottom: 25px; }
+.auth-group label { 
+    display: block; font-weight: 700; color: var(--smoke); 
+    font-size: 0.75rem; margin-bottom: 10px; text-transform: uppercase; 
+    letter-spacing: 0.5px;
+}
+.auth-group input { 
+    width: 100%; padding: 14px; border: 1px solid #eee; 
+    border-radius: var(--radius-card); outline: none; 
+    font-size: 0.95rem; transition: border 0.3s;
+}
+.auth-group input:focus { border-color: var(--netflix-red); }
 
+/* Lưới Avatar */
 .avatar-selection-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-    gap: 10px;
-    margin: 15px 0 25px 0;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 12px;
+    margin: 15px 0 30px 0;
 }
 
 .avatar-option-img {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     cursor: pointer;
-    transition: transform 0.2s, border 0.2s;
-    border: 2px solid transparent;
+    border: 3px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.avatar-option-img:hover { transform: scale(1.1); }
+.avatar-option-img:hover { transform: scale(1.1); border-color: var(--netflix-red); }
 
-.btn-logout { background: transparent; color: var(--netflix-red); border: 1px solid var(--netflix-red); padding: 8px 16px; border-radius: 20px; cursor: pointer; margin-top: 10px; }
-.btn-back { background: var(--onyx); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
-
-/* Tủ sách trong Profile */
-.shelf-title { margin: 40px 0 20px 0; color: var(--onyx); }
-#userBookshelfContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+/* Nút bấm */
+.btn-auth-submit, .btn-logout, .btn-back {
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
 }
+
+.btn-auth-submit { background: var(--netflix-red); color: white; width: 100%; margin-top: 10px; }
+.btn-logout { background: transparent; color: var(--netflix-red); border: 1px solid var(--netflix-red) !important; margin-top: 10px; }
+.btn-back { background: var(--onyx); color: white; }
+
+.btn-auth-submit:hover, .btn-logout:hover, .btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Kệ sách */
+.shelf-title { margin: 40px 0 20px 0; color: var(--onyx); font-family: var(--font-serif); }
 .bookshelf-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 15px;
-    background: #fcf9fa;
+    padding: 18px;
+    background: #fdfafb;
     border-radius: var(--radius-card);
     border: 1px solid rgba(0,0,0,0.03);
-}
-/* Thêm vào cuối file CSS của Chị */
-.btn-auth-submit, .btn-back, .btn-logout {
-    transition: all 0.3s ease;
-}
-
-.btn-auth-submit:hover {
-    background: #ff2d55; /* Màu đỏ đậm hơn một chút khi hover */
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(255, 77, 109, 0.3);
+    margin-bottom: 10px;
 }

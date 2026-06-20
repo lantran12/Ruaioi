@@ -426,8 +426,9 @@ function saveAvatar() {
         return;
     }
 
-    db.ref('users/' + user.uid + '/profile').update({
-        avatar: selectedAvatarUrl
+    db.ref('users/' + user.uid + '/profile').set({
+        avatar: selectedAvatarUrl,
+        avatarType: "custom" // 👈 THÊM DÒNG NÀY
     });
 
     document.getElementById('userCurrentAvatar').src = selectedAvatarUrl;
@@ -439,8 +440,9 @@ function useGoogleAvatar() {
     const user = auth.currentUser;
     if (!user) return;
 
-    db.ref('users/' + user.uid + '/profile').update({
-        avatar: user.photoURL || null
+    db.ref('users/' + user.uid + '/profile').set({
+        avatar: user.photoURL || null,
+        avatarType: "google" // 👈 THÊM DÒNG NÀY
     });
 
     document.getElementById('userCurrentAvatar').src = user.photoURL;

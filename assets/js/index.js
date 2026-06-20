@@ -418,6 +418,36 @@ function renderUserProfileData(user) {
         buildBookshelfHTML(data, container);
     });
 }
+
+function saveAvatar() {
+    const user = auth.currentUser;
+    if (!user || !selectedAvatarUrl) {
+        alert("Chọn avatar trước nha chị 🐢");
+        return;
+    }
+
+    db.ref('users/' + user.uid + '/profile').update({
+        avatar: selectedAvatarUrl
+    });
+
+    document.getElementById('userCurrentAvatar').src = selectedAvatarUrl;
+
+    alert("Đã lưu avatar ✨");
+}
+
+function useGoogleAvatar() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    db.ref('users/' + user.uid + '/profile').update({
+        avatar: user.photoURL || null
+    });
+
+    document.getElementById('userCurrentAvatar').src = user.photoURL;
+
+    alert("Đã dùng ảnh Google 🌸");
+}
+
 function buildBookshelfHTML(data, container) {
     container.innerHTML = Object.keys(data).map(key => {
         const b = data[key];

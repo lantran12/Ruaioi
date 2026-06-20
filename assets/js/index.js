@@ -305,29 +305,36 @@ let isSignUpMode = true;
 
 // --- THEO DÕI TRẠNG THÁI TÀI KHOẢN REALTIME ---
 auth.onAuthStateChanged((user) => {
-    const btnHeaderAuth = document.getElementById('btnHeaderAuth'); // Nút tròn Account trên Header
+    const btnHeaderAuth = document.getElementById('btnHeaderAuth'); // Nút Account
     
-    // Tìm hoặc tự tạo nút vương miện nếu chưa có trong HTML để tránh lỗi code
+    // Tìm hoặc tự tạo nút vương miện đặt CẠNH NHAU mượt mà
     let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
     if (!btnAdminCrown && btnHeaderAuth) {
         btnAdminCrown = document.createElement('button');
         btnAdminCrown.id = 'btnOpenAdminPanel';
         btnAdminCrown.className = 'btn-admin-badge';
         btnAdminCrown.innerHTML = '👑';
-        btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; margin-left: 10px; display: none; align-items: center; justify-content: center;";
-        btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth.nextSibling);
+        
+        // Đã sửa CSS: Đổi nền xanh admin, bo viền chuẩn và cố định không cho rớt hàng
+        btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0;";
+        
+        // Ép thanh bao bọc bên ngoài hiển thị dạng ngang (Flex) để không bị đẩy xuống dưới
+        if (btnHeaderAuth.parentNode) {
+            btnHeaderAuth.parentNode.style.display = "flex";
+            btnHeaderAuth.parentNode.style.alignItems = "center";
+            btnHeaderAuth.parentNode.style.gap = "8px"; // Khoảng cách giữa 2 nút
+            btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth.nextSibling);
+        }
     }
 
     if (user) {
         // --- A. TRƯỜNG HỢP: ĐÃ ĐĂNG NHẬP THÀNH CÔNG ---
         console.log("Đăng nhập thành công với UID:", user.uid);
         
-        // Cập nhật thông tin vào khu vực Profile ẩn phía dưới
         const adminName = user.displayName || "Admin Động Rùa";
         if (document.getElementById('userProfileEmail')) document.getElementById('userProfileEmail').textContent = user.email;
         if (document.getElementById('userProfileName')) document.getElementById('userProfileName').textContent = adminName;
 
-        // Kích hoạt load dữ liệu Tủ sách cá nhân từ Firebase lên (Vì họ đã đăng nhập)
         if (typeof loadUserBookshelf === 'function') {
             loadUserBookshelf(user.uid); 
         }
@@ -335,19 +342,21 @@ auth.onAuthStateChanged((user) => {
         // KIỂM TRA QUYỀN ADMIN TUYỆT ĐỐI (UID của chị)
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
             
-            // 1. Nút tròn đổi thành nút "Chào, Admin" -> Bấm vào mở Profile/Tủ sách/Chibi
+            // 1. Nút Chào Admin (Giữ kích thước vừa vặn trên mobile)
             if (btnHeaderAuth) {
-                btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user" style="margin-right: 5px;"></i> Chào, Admin`;
+                btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i> Chào, Admin`;
                 btnHeaderAuth.style.width = "auto"; 
-                btnHeaderAuth.style.padding = "0 15px";
+                btnHeaderAuth.style.padding = "0 12px";
                 btnHeaderAuth.style.borderRadius = "20px";
+                btnHeaderAuth.style.fontSize = "13px"; // Thu nhỏ chữ một xíu cho vừa màn hình điện thoại
+                btnHeaderAuth.style.flexShrink = "0";
                 btnHeaderAuth.onclick = () => {
                     if(document.getElementById('homeMainContent')) document.getElementById('homeMainContent').style.display = 'none';
                     if(document.getElementById('profileSection')) document.getElementById('profileSection').style.display = 'block';
                 };
             }
 
-            // 2. HIỆN THÊM NÚT VƯƠNG MIỆN 👑 NẰM KẾ BÊN ĐỂ ĐĂNG TRUYỆN
+            // 2. HIỆN NÚT VƯƠNG MIỆN MÀU XANH ADMIN NẰM KẾ BÊN
             if (btnAdminCrown) {
                 btnAdminCrown.style.display = 'inline-flex'; 
                 btnAdminCrown.onclick = () => {
@@ -357,12 +366,13 @@ auth.onAuthStateChanged((user) => {
             }
 
         } else {
-            // Nếu là người đọc bình thường (Đã đăng nhập thành công nhưng không phải Admin)
+            // Nếu là người đọc bình thường
             if (btnHeaderAuth) {
                 btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i> Chào, ${user.displayName || 'Thành Viên'}`;
                 btnHeaderAuth.style.width = "auto";
-                btnHeaderAuth.style.padding = "0 15px";
+                btnHeaderAuth.style.padding = "0 12px";
                 btnHeaderAuth.style.borderRadius = "20px";
+                btnHeaderAuth.style.fontSize = "13px";
                 btnHeaderAuth.onclick = () => {
                     if(document.getElementById('homeMainContent')) document.getElementById('homeMainContent').style.display = 'none';
                     if(document.getElementById('profileSection')) document.getElementById('profileSection').style.display = 'block';
@@ -378,17 +388,16 @@ auth.onAuthStateChanged((user) => {
             btnHeaderAuth.style.width = "40px"; 
             btnHeaderAuth.style.padding = "0";
             btnHeaderAuth.style.borderRadius = "50%";
-            btnHeaderAuth.onclick = openAuthModal; // Bấm vào bắt buộc gọi Form Đăng nhập
+            btnHeaderAuth.onclick = openAuthModal;
         }
         
-        // Khóa chức năng Tủ sách: Nếu chưa đăng nhập mà cố tình vào tủ sách thì đá về trang chủ
         const bookshelfGrid = document.getElementById('userBookshelfContainer');
         if (bookshelfGrid) {
             bookshelfGrid.innerHTML = `<div class="bookshelf-empty" style="color: #ff4d6d; text-align: center; font-weight: bold; padding: 20px;">⚠️ Chị/Bạn vui lòng Đăng nhập tài khoản để sử dụng Tủ sách truyện yêu thích nhé!</div>`;
         }
 
         if (btnAdminCrown) btnAdminCrown.style.display = 'none'; 
-        showHome(); // Tự động quay về trang chủ
+        showHome();
     }
 });
 
@@ -414,7 +423,7 @@ function toggleAuthMode() {
     const authToggleLink = document.getElementById('authToggleLink');
 
     if (isSignUpMode) {
-        authTitle.textContent = "GIA NHẬP ĐỘNG RÙA";
+        authTitle.textContent = "GIA NHẬP RÙA STREAM";
         nickNameGroup.style.display = 'block';
         btnAuthSubmit.textContent = "BẮT ĐẦU TRẢI NGHIỆM";
         authToggleLink.textContent = "Đã có tài khoản rồi? Bấm vào đây để Đăng nhập";
@@ -455,13 +464,11 @@ function submitAuthForm() {
     }
 }
 
-// Hàm quay về Trang chủ
 function showHome() {
     if(document.getElementById('profileSection')) document.getElementById('profileSection').style.display = 'none';
     if(document.getElementById('homeMainContent')) document.getElementById('homeMainContent').style.display = 'block';
 }
 
-// Hàm xử lý nút Đăng xuất từ Profile của chị
 function logoutFromProfile() {
     if(confirm("Chị muốn đăng xuất tài khoản đúng không ạ? 🐢")) {
         auth.signOut();

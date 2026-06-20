@@ -556,3 +556,17 @@ function logoutFromProfile() {
         auth.signOut();
     }
 }
+// Dán vào file index.js của chị
+document.addEventListener('click', function(event) {
+    const dropdownMenu = document.getElementById('tagMenu');
+    const dropdownBtn = document.getElementById('tagDropdownBtn');
+
+    // Nếu bấm vào nút thì đóng/mở
+    if (event.target === dropdownBtn || dropdownBtn.contains(event.target)) {
+        dropdownMenu.style.display = (dropdownMenu.style.display === 'block') ? 'none' : 'block';
+    } 
+    // Nếu bấm ra ngoài menu thì đóng menu lại
+    else if (!dropdownMenu.contains(event.target)) {
+        dropdownMenu.style.display = 'none';
+    }
+});

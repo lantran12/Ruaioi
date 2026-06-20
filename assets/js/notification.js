@@ -8,7 +8,8 @@ function initNotification() {
   const menuNotiHtml = `
     <div class="menu-noti-wrap" style="margin-left: 10px; display: none; position: relative;">
       <a href="#" id="btnBellMini" class="btn-noti-trigger" style="text-decoration: none; color: inherit; font-size: 20px;">
-        <i class="fa-solid fa-graduation-cap"></i> <span class="mini-noti-badge" id="notiCountBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ff4d6d; color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; font-weight: bold;">0</span>
+        <i class="fa-solid fa-graduation-cap"></i> 
+        <span class="mini-noti-badge" id="notiCountBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ff4d6d; color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; font-weight: bold;">0</span>
       </a>
       <div id="notiPanelMini" style="display: none; position: absolute; top: 40px; right: 0; width: 300px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 9999; flex-direction: column; overflow: hidden; border: 1px solid #ddd;">
         <div style="padding: 10px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
@@ -23,10 +24,7 @@ function initNotification() {
   `;
 
   const headerRight = document.querySelector('.header-right-zone') || document.querySelector('.header-right');
-  if (!headerRight) {
-    setTimeout(initNotification, 500);
-    return;
-  }
+  if (!headerRight) { setTimeout(initNotification, 500); return; }
   headerRight.insertAdjacentHTML('beforeend', menuNotiHtml);
 
   const style = document.createElement('style');
@@ -44,39 +42,29 @@ function initNotification() {
   `;
   document.head.appendChild(style);
 
-  // Gắn sự kiện sau khi chèn HTML
   const btnBell = document.getElementById('btnBellMini');
   const panel = document.getElementById('notiPanelMini');
   const badge = document.getElementById('notiCountBadge');
   const listContainer = document.getElementById('notiListContainer');
   const readAllBtn = document.getElementById('readAllBtn');
 
-  if (btnBell) {
-    btnBell.onclick = (e) => { e.preventDefault(); panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex'; };
-  }
+  if (btnBell) btnBell.onclick = (e) => { e.preventDefault(); panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex'; };
 
   onAuthStateChanged(auth, user => {
     const menuWrap = document.querySelector('.menu-noti-wrap');
-    if (!menuWrap) return; 
+    if (!menuWrap) return;
 
-    if (user) {
-      // Có user -> Hiển thị chuông
-      menuWrap.style.display = 'inline-block';
-      
-      const notiRef = ref(db, `notifications/${user.uid}`);
-      onValue(notiRef, snap => {
-        // ... giữ nguyên logic hiển thị thông báo của chị ...
-      });
-    } else {
-      // Không có user -> Ẩn chuông
+    if (!user) {
       menuWrap.style.display = 'none';
+      return;
     }
-  });
-    
+
+    menuWrap.style.display = 'inline-block';
     const notiRef = ref(db, `notifications/${user.uid}`);
+
     onValue(notiRef, snap => {
       const data = snap.val();
-      if (!data) return;
+      if (!data) { listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Chưa có thông báo nào...</div>'; return; }
 
       let unread = 0;
       const arr = Object.keys(data).map(id => ({ id, ...data[id] }));
@@ -99,20 +87,18 @@ function initNotification() {
           if (panel) panel.style.display = 'none';
           const cleanLink = link.split('#')[0];
           
-          if (cleanLink.includes(window.location.pathname)) {
-            const target = node.startsWith('doan_') ? document.querySelectorAll('.p-line')[parseInt(node.split('_')[1])] : document.getElementById('commentBox');
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              target.classList.add('highlight-comment-box');
-              setTimeout(() => target.classList.remove('highlight-comment-box'), 2000);
-              if (target.click) target.click();
-            }
-            update(ref(db, `notifications/${user.uid}/${id}`), { status: 'read', isRead: true });
-          } else {
-            update(ref(db, `notifications/${user.uid}/${id}`), { status: 'read', isRead: true }).then(() => {
+          update(ref(db, `notifications/${user.uid}/${id}`), { status: 'read', isRead: true }).then(() => {
+            if (cleanLink.includes(window.location.pathname)) {
+              const target = node.startsWith('doan_') ? document.querySelectorAll('.p-line')[parseInt(node.split('_')[1])] : document.getElementById('commentBox');
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.classList.add('highlight-comment-box');
+                setTimeout(() => target.classList.remove('highlight-comment-box'), 2000);
+              }
+            } else {
               window.location.href = cleanLink.includes('?') ? `${cleanLink}&targetP=${node}` : `${cleanLink}?targetP=${node}`;
-            });
-          }
+            }
+          });
         };
       });
     });
@@ -131,5 +117,4 @@ function initNotification() {
   function escapeHTML(str) { return str ? str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t])) : ''; }
 }
 
-// Chạy khi trang load xong
 window.addEventListener('DOMContentLoaded', initNotification);

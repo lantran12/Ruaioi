@@ -308,47 +308,60 @@ let tuSachListenerRef = null;
 
 auth.onAuthStateChanged((user) => {
     const btnHeaderAuth = document.getElementById('btnHeaderAuth');
-
     let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
+
+    // Khởi tạo nút Admin nếu chưa có
     if (!btnAdminCrown && btnHeaderAuth) {
         btnAdminCrown = document.createElement('button');
         btnAdminCrown.id = 'btnOpenAdminPanel';
         btnAdminCrown.innerHTML = '👑';
-        
-        btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0;";
-        
+        btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 8px;";
         if (btnHeaderAuth.parentNode) {
             btnHeaderAuth.parentNode.style.display = "flex";
             btnHeaderAuth.parentNode.style.alignItems = "center";
-            btnHeaderAuth.parentNode.style.gap = "8px";
-            btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth.nextSibling);
+            btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth);
         }
     }
 
     if (user) {
+        // --- TRƯỜNG HỢP ĐÃ ĐĂNG NHẬP ---
+        // Thay thế đoạn này trong hàm onAuthStateChanged khi user đã đăng nhập:
+        btnHeaderAuth.innerHTML = `Chào, ${user.displayName || 'Bạn'}`;
+        btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
+        
+        // Gán sự kiện mở Profile thay vì mở Form Đăng nhập
+        btnHeaderAuth.onclick = openProfileZone;
+
         if (document.getElementById('userProfileEmail')) document.getElementById('userProfileEmail').textContent = user.email;
         if (document.getElementById('userProfileName')) document.getElementById('userProfileName').textContent = user.displayName || "Thành viên Động Rùa";
 
         renderUserProfileData(user);
 
+        // Quyền Admin
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
-            if (btnHeaderAuth) {
-                btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user" style="margin-right: 4px;"></i> Chào, ${user.displayName || 'Admin'}`;
-                btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; flex-shrink: 0; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
+            if (btnAdminCrown) {
+                btnAdminCrown.style.display = "flex";
+                btnAdminCrown.onclick = () => window.location.href = 'admin.html'; // Chị nhớ đổi đường dẫn nếu cần
             }
-            if (btnAdminCrown) btnAdminCrown.style.display = "flex";
         }
+    } else {
+        // --- TRƯỜNG HỢP CHƯA ĐĂNG NHẬP ---
+        btnHeaderAuth.innerHTML = '<i class="fa-regular fa-user"></i>';
+        btnHeaderAuth.style.cssText = ""; 
+        btnHeaderAuth.onclick = openAuthModal;
+        if (btnAdminCrown) btnAdminCrown.style.display = "none";
     }
 });
 
 function openProfileZone() {
-    if (document.getElementById('homeMainContent')) document.getElementById('homeMainContent').style.display = 'none';
-    if (document.getElementById('profileSection')) document.getElementById('profileSection').style.display = 'block';
+    const homeContent = document.getElementById('homeMainContent');
+    const profileSection = document.getElementById('profileSection');
+    if (homeContent) homeContent.style.display = 'none';
+    if (profileSection) profileSection.style.display = 'block';
 }
 
 function renderUserProfileData(user) {
     renderAvatarSelectionGrid(); 
-    
     const currentAvatarImg = document.getElementById('userCurrentAvatar');
     if (currentAvatarImg) {
         currentAvatarImg.style.cssText = "width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 15px auto; border: 3px solid #ff4d6d;";
@@ -357,13 +370,15 @@ function renderUserProfileData(user) {
     const container = document.getElementById('userBookshelfContainer');
     if (!container) return;
 
-    if (typeof db !== 'undefined' && typeof firebase !== 'undefined') {
-        firebase.database().ref('users/' + user.uid + '/tuSach').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) { container.innerHTML = `<div class="bookshelf-empty">Tủ sách trống trơn! 🐾</div>`; return; }
-            buildBookshelfHTML(data, container);
-        });
-    }
+    // Lắng nghe dữ liệu tủ sách
+    db.ref('users/' + user.uid + '/tuSach').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) { 
+            container.innerHTML = `<div class="bookshelf-empty" style="text-align:center; padding:20px; color:#777;">Tủ sách trống trơn! 🐾</div>`; 
+            return; 
+        }
+        buildBookshelfHTML(data, container);
+    });
 }
 
 function buildBookshelfHTML(data, container) {
@@ -371,10 +386,10 @@ function buildBookshelfHTML(data, container) {
         const b = data[key];
         return `<div class="bookshelf-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
             <div class="bookshelf-left" style="display: flex; align-items: center; gap: 10px;">
-                <img src="${b.image}" class="bookshelf-thumb" style="width: 45px; height: 60px; object-fit: cover; border-radius: 4px;" alt="Cover">
+                <img src="${b.image || 'https://via.placeholder.com/45x60'}" class="bookshelf-thumb" style="width: 45px; height: 60px; object-fit: cover; border-radius: 4px;" alt="Cover">
                 <div>
                     <p style="margin: 0; font-weight: bold; font-size: 14px;">${b.tenTruyen}</p>
-                    <p style="margin: 3px 0 0 0; font-size: 12px; color: #777;">Đọc đến: ${b.chuongGanNhat}</p>
+                    <p style="margin: 3px 0 0 0; font-size: 12px; color: #777;">Đọc đến: ${b.chuongGanNhat || 'Chưa đọc'}</p>
                 </div>
             </div>
             <button class="btn-remove-book" onclick="removeFromBookshelf('${key}')" style="background: none; border: none; cursor: pointer; font-size: 14px;">❌</button>
@@ -418,7 +433,6 @@ function removeFromBookshelf(key) {
 
 function openAuthModal() { const modal = document.getElementById('authModal'); if (modal) modal.style.display = 'flex'; }
 function closeAuthModal() { const modal = document.getElementById('authModal'); if (modal) modal.style.display = 'none'; }
-function closeAuthModalOverlay(event) { if (event.target.id === 'authModal') closeAuthModal(); }
 
 function toggleAuthMode() {
     isSignUpMode = !isSignUpMode;
@@ -461,5 +475,6 @@ function showHome() {
 function logoutFromProfile() {
     if(confirm("Chị muốn đăng xuất tài khoản đúng không ạ? 🐢")) {
         auth.signOut();
+        location.reload(); // Reload lại trang để reset trạng thái
     }
 }

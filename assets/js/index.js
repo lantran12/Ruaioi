@@ -336,6 +336,7 @@ auth.onAuthStateChanged((user) => {
         if (document.getElementById('userProfileName')) document.getElementById('userProfileName').textContent = user.displayName || "Thành viên Động Rùa";
 
         renderUserProfileData(user);
+        loadUserBookshelf(user);
 
         // Quyền Admin
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
@@ -496,29 +497,33 @@ function logoutFromProfile() {
         location.reload(); 
     }
 }
-function updateProfileData() {
-    const newName = document.getElementById('userProfileName').textContent;
+function updateUserProfileData() { // Chị check lại tên hàm này khớp với HTML nhé
     const user = auth.currentUser;
+    // SỬA CHỖ NÀY: Dùng .value vì đây là thẻ <input>
+    const newName = document.getElementById('editDisplayNameInput').value; 
+    
+    if (!user) { alert("Chị ơi, chị chưa đăng nhập kìa!"); return; }
 
-    if (user) {
-        // 1. Cập nhật tên lên Firebase Auth
-        user.updateProfile({
-            displayName: newName
+    // Kiểm tra xem chị có gõ tên mới không, nếu không gõ thì giữ tên cũ
+    const finalName = newName.trim() === "" ? document.getElementById('userProfileName').textContent : newName;
+
+    user.updateProfile({
+        displayName: finalName
+    }).then(() => {
+        db.ref('users/' + user.uid).update({
+            displayName: finalName,
+            avatar: selectedAvatarUrl
         }).then(() => {
-            // 2. Cập nhật thêm vào Database (nếu chị có lưu cấu trúc users/uid)
-            db.ref('users/' + user.uid).update({
-                displayName: newName,
-                avatar: selectedAvatarUrl
-            }).then(() => {
-                alert("Đã cập nhật hồ sơ thành công! 🐢");
-            });
-        }).catch((error) => {
-            alert("Có lỗi xảy ra: " + error.message);
+            alert("Đã cập nhật hồ sơ thành công! 🐢");
+            // Cập nhật ngay trên giao diện cho đẹp
+            document.getElementById('userProfileName').textContent = finalName;
         });
-    }
+    }).catch((error) => {
+        alert("Lỗi rồi: " + error.message);
+    });
 }
 function loadUserBookshelf(user) {
-    const bookshelfContainer = document.getElementById('bookshelfListContainer'); 
+    const bookshelfContainer = document.getElementById('userBookshelfContainer'); // Đã sửa ID
     if (!bookshelfContainer) return;
 
     // Nếu đã có listener cũ, ngắt nó đi trước khi tạo cái mới

@@ -451,6 +451,23 @@ function selectAvatarOption(imgEl, url) {
     document.querySelectorAll('.avatar-option-img').forEach(img => img.style.border = '2px solid transparent'); 
     imgEl.style.border = '2px solid #ff4d6d'; 
 }
+function useGoogleAvatar() {
+    const user = auth.currentUser;
+    if (user && user.photoURL) {
+        selectedAvatarUrl = user.photoURL; // Gán link ảnh Google
+        
+        // Bỏ viền đỏ của các ảnh con vật khác
+        document.querySelectorAll('.avatar-option-img').forEach(img => img.style.border = '2px solid transparent');
+        
+        // Hiển thị ảnh Google vào khung preview
+        const currentAvatarImg = document.getElementById('userCurrentAvatar');
+        if (currentAvatarImg) currentAvatarImg.src = selectedAvatarUrl;
+        
+        alert("Đã chọn ảnh Google của chị làm avatar! 🐢");
+    } else {
+        alert("Chị chưa có ảnh đại diện từ Google ạ!");
+    }
+}
 
 /* ==========================================================================
    HÀM CẬP NHẬT HỒ SƠ (Lưu biệt danh và Avatar vào Firebase)

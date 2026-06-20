@@ -19,24 +19,23 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
     <script src="assets/js/firebase.js"></script>
     
+    <script src="assets/js/index.js"></script>
+    
     <script>
-        // Lấy ID truyện từ đường dẫn URL (ví dụ: book.html?id=-NjAbc123)
         const urlParams = new URLSearchParams(window.location.search);
         const storyId = urlParams.get('id');
 
-        // Hàm lấy dữ liệu truyện để hiển thị
         firebase.database().ref('stories/' + storyId).once('value').then(snapshot => {
             const story = snapshot.val();
             if (story) {
                 document.getElementById('bookTitle').innerText = story.title;
                 document.getElementById('bookCover').src = story.img || story.cover;
                 
-                // Gán sự kiện cho nút lưu
                 document.getElementById('btnSaveToShelf').onclick = () => {
-                    // Gọi hàm addToBookshelf mà chị đã viết ở file index.js
-                    // Vì index.js đã được include, nên chị có thể gọi hàm này trực tiếp
+                    // Bây giờ hàm này sẽ chạy được vì đã load index.js ở trên
                     addToBookshelf(storyId, story);
                 };
             }

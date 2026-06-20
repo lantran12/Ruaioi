@@ -184,6 +184,7 @@
         
         <h2 style="color: #4a4a4a; margin-top: 0; margin-bottom: 25px; font-size: 1.4rem; font-weight: bold;">Đăng Chương Mới ✍️</h2>
 
+        <!-- 1. Hàng nhập ID Truyện và Tên Chương -->
         <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 200px;">
                 <label style="font-weight: bold; color: #7d7d7d; font-size: 0.9rem;">ID Truyện</label>
@@ -194,42 +195,51 @@
                 <input type="text" id="chapterTitle" placeholder="Ví dụ: Chương 1: Gặp gỡ" style="width:100%; padding:12px; background:#fcf5f3; border:none; border-radius:14px; margin-top:5px; box-sizing: border-box;">
             </div>
         </div>
-        
+
+        <!-- 2. Hàng nhập Số Chương và Mật Khẩu -->
         <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 120px;">
+            <div style="flex: 1; min-width: 200px;">
                 <label style="font-weight: bold; color: #7d7d7d; font-size: 0.9rem;">Số chương</label>
-                <input type="number" id="chapterNumber" placeholder="93" style="width:100%; padding:12px; background:#fcf5f3; border:none; border-radius:14px; margin-top:5px; box-sizing: border-box;">
+                <input type="number" id="chapterNumber" placeholder="Ví dụ: 1" style="width:100%; padding:12px; background:#fcf5f3; border:none; border-radius:14px; margin-top:5px; box-sizing: border-box;">
             </div>
-            <div style="flex: 1; min-width: 120px;">
+            <div style="flex: 1; min-width: 200px;">
                 <label style="font-weight: bold; color: #7d7d7d; font-size: 0.9rem;">Mật khẩu (nếu có)</label>
                 <input type="text" id="chapterPassword" placeholder="Bỏ trống nếu công khai" style="width:100%; padding:12px; background:#fcf5f3; border:none; border-radius:14px; margin-top:5px; box-sizing: border-box;">
             </div>
-            <div style="flex: 1; min-width: 150px;">
-                <label style="font-weight: bold; color: #7d7d7d; font-size: 0.9rem; display: block; margin-bottom: 8px;">Trạng thái</label>
-                <div style="margin-top: 12px;">
-                    <label style="cursor: pointer;"><input type="radio" name="chapterStatus" value="public" checked> Công khai</label>
-                    <label style="margin-left: 15px; cursor: pointer;"><input type="radio" name="chapterStatus" value="draft"> Bản nháp</label>
-                </div>
-            </div>
         </div>
 
-     <div style="margin-bottom: 20px; background: #f3f0ff; padding: 15px; border-radius: 16px; border: 2px dashed #a78bfa;">
-            <label style="font-weight: bold; color: #6d28d9; font-size: 0.9rem; display: block; margin-bottom: 5px;">📥 Tải nội dung từ file văn bản (.docx hoặc .txt)</label>
-            <input type="file" id="chapterFileImport" accept=".docx, .txt" onchange="importChapterFile(this)" style="font-size: 0.85rem; color: #555;">
+        <!-- 3. Hàng chọn Trạng thái -->
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight: bold; color: #7d7d7d; font-size: 0.9rem; display: block; margin-bottom: 5px;">Trạng thái</label>
+            <label style="margin-right: 15px; cursor: pointer;"><input type="radio" name="chapterStatus" value="Công khai" checked> Công khai</label>
+            <label style="cursor: pointer;"><input type="radio" name="chapterStatus" value="Bản nháp"> Bản nháp</label>
         </div>
 
-        <div style="margin-bottom: 20px; text-align: right;">
-            <a href="import.html" target="_blank" style="display: inline-block; padding: 10px 20px; background: #f3f0ff; color: #7c3aed; border: 2px solid #a78bfa; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 6px rgba(124, 58, 237, 0.05);">
-                <i class="fa-solid fa-file-import"></i> Mở trang Quản lý / Đăng hàng loạt (Giao diện sạch) ↗️
-            </a>
+        <!-- 4. Khu vực Tải file văn bản đính kèm -->
+        <div style="border: 2px dashed #b19ffb; background: #f8f6ff; border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 15px; box-sizing: border-box;">
+            <p style="margin: 0 0 10px 0; color: #6246ea; font-weight: bold; font-size: 0.95rem;">📥 Tải nội dung từ file văn bản (.docx hoặc .txt)</p>
+            <input type="file" accept=".txt,.docx" onchange="importChapterFile(this)" style="font-size: 0.85rem; max-width: 100%;">
         </div>
 
-        <div style="margin-bottom: 25px;">
-            <label style="font-weight: bold; color: #7d7d7d; font-size: 0.9rem;">Nội dung truyện</label>
-            <textarea id="chapterContent" rows="16" ...></textarea>
+        <!-- Nút chuyển hướng phụ trợ của chị -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button onclick="window.location.href='import.html'" style="background: #f0ecfe; color: #6246ea; border: 1px solid #b19ffb; padding: 10px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.85rem; width: 100%; box-sizing: border-box;">
+                ➡️ Mở trang Quản lý / Đăng hàng loạt (Giao diện sạch) ↗️
+            </button>
         </div>
 
-        <button type="button" onclick="submitChapter()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; border: none; border-radius: 14px; font-weight: bold; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);">Đăng chương truyện 🚀</button>
+        <!-- 5. KHU VỰC NỘI DUNG TRUYỆN (ĐÃ ĐƯỢC FIX LỖI) -->
+        <div style="margin-bottom: 25px; width: 100%; display: block; clear: both; box-sizing: border-box;">
+            <label style="font-weight: bold; color: #7d7d7d; font-size: 0.9rem; display: block; margin-bottom: 8px;">Nội dung truyện</label>
+            <textarea id="chapterContent" placeholder="Nhập hoặc dán nội dung chương truyện tại đây..." 
+                      style="width: 100%; min-height: 280px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 16px; box-sizing: border-box; resize: vertical; display: block; font-size: 0.95rem; line-height: 1.6; background: #fafafa; font-family: sans-serif;"></textarea>
+        </div>
+
+        <!-- 6. Nút bấm Đăng chương chính thức -->
+        <button onclick="submitChapter()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; border: none; border-radius: 16px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);">
+            Đăng chương truyện 🚀
+        </button>
+
     </div>
 </div>
 </body>

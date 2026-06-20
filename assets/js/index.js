@@ -1,392 +1,284 @@
-// ==========================================================================
-// 1. CẤU HÌNH FIREBASE (MODULAR SDK v10)
-// ==========================================================================
+// ================= FIREBASE INIT =================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, child, get, set, update, remove, onValue, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getDatabase, ref, get, set, remove,
+  onValue, query, orderByChild, equalTo, limitToLast
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
-    authDomain: "dongchanrua.firebaseapp.com",
-    databaseURL: "https://dongchanrua-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "dongchanrua",
-    storageBucket: "dongchanrua.firebasestorage.app",
-    messagingSenderId: "640115424540",
-    appId: "1:640115424540:web:c9713b7921c09283150ed9"
-};
+import {
+  getAuth, onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile as fbUpdateProfile
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp({
+  apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
+  authDomain: "dongchanrua.firebaseapp.com",
+  databaseURL: "https://dongchanrua-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
+
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// Chạy các hàm chức năng khi trang tải xong
-document.addEventListener('DOMContentLoaded', () => {
-    initSubBarFilters();
-    loadGenresDropdown();
-    loadMainStories();
-    loadTopViews();
-    listenToNotifications();
+// ================= GLOBAL STATE =================
+const state = {
+  isSignUp: true,
+  selectedAvatar: "",
+  notiUnsub: null,
+  bookshelfUnsub: null
+};
+
+// ================= INIT =================
+document.addEventListener("DOMContentLoaded", () => {
+  bindEvents();
+  initFilters();
+  loadGenres();
+  loadStories();
+  loadTop();
+  listenNotifications();
 });
 
-/* ==========================================================================
-   2. XỬ LÝ BỘ LỌC TẠI SUB-BAR
-   ========================================================================== */
-function initSubBarFilters() {
-    const filterButtons = document.querySelectorAll('.nav-link-btn');
-    
-    filterButtons.forEach(btn => {
-        if (btn.id === 'tagDropdownBtn') return;
+// ================= EVENTS =================
+function bindEvents() {
+  document.getElementById("btnAuthSubmit")?.addEventListener("click", submitAuth);
 
-        btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const filterType = btn.getAttribute('data-filter');
-            if (filterType === 'new') {
-                closeSearch();
-                loadMainStories();
-            } else if (filterType === 'completed') {
-                loadStoriesByCondition('status', 'Hoàn thành', '📜 Danh Sách Truyện Đã Hoàn Thành');
-            }
-        });
-    });
+  document.getElementById("searchInput")?.addEventListener("keypress", e => {
+    if (e.key === "Enter") triggerSearch();
+  });
 }
 
-/* ==========================================================================
-   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN
-   ========================================================================== */
-function handleFeaturedRandomBook(storiesData) {
-    const keys = Object.keys(storiesData);
-    if (keys.length === 0) return;
+// ================= FILTER =================
+function initFilters() {
+  document.querySelectorAll(".nav-link-btn").forEach(btn => {
+    if (btn.id === "tagDropdownBtn") return;
 
-    const randomKey = keys[Math.floor(Math.random() * keys.length)];
-    const story = storiesData[randomKey];
+    btn.onclick = () => {
+      document.querySelectorAll(".nav-link-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
 
-    const heroTitle = document.getElementById('heroTitle');
-    const heroSynopsis = document.getElementById('heroSynopsis');
-    const heroLink = document.getElementById('heroLink');
-    const featuredBookSection = document.getElementById('featuredBook');
+      const type = btn.dataset.filter;
 
-    if (heroTitle) heroTitle.innerText = story.title || "Tác phẩm độc quyền";
-    if (heroSynopsis) heroSynopsis.innerText = story.description || story.synopsis || "Bấm vào để khám phá thế giới nội tâm đầy cảm xúc của tác phẩm này...";
+      if (type === "new") {
+        closeSearch();
+        loadStories();
+      }
 
-    const storyReadUrl = `book.html?id=${randomKey}`;
-    if (heroLink) heroLink.setAttribute('href', storyReadUrl);
-
-    const storyImg = story.img || story.cover || story.image;
-
-    if (storyImg && featuredBookSection) {
-        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(252,249,250,0.95) 40%, rgba(252,249,250,0.4)), url('${storyImg}')`, 'important');
-        featuredBookSection.style.setProperty('background-size', 'cover', 'important');
-        featuredBookSection.style.setProperty('background-position', 'center 20%', 'important');
-    }
-
-    if (featuredBookSection) {
-        featuredBookSection.onclick = function(e) {
-            if (e.target.tagName !== 'A' && e.target.parentElement.tagName !== 'A') {
-                window.location.href = storyReadUrl;
-            }
-        };
-    }
+      if (type === "completed") {
+        loadByCondition("status", "Hoàn thành");
+      }
+    };
+  });
 }
 
-/* ==========================================================================
-   4. THẢ MENU THỂ LOẠI TẠI DROP-DOWN
-   ========================================================================== */
-function loadGenresDropdown() {
-    const tagMenu = document.getElementById('tagMenu');
-    if (!tagMenu) return;
+// ================= STORIES =================
+function loadStories() {
+  const grid = document.getElementById("bookGrid");
+  if (!grid) return;
 
-    get(ref(db, 'genres')).then((snapshot) => {
-        tagMenu.innerHTML = '';
-        if (!snapshot.exists()) return;
+  grid.innerHTML = "Đang tải...";
 
-        snapshot.forEach((childSnapshot) => {
-            const genreName = childSnapshot.val().name || childSnapshot.val();
-            const span = document.createElement('span');
-            span.textContent = genreName;
-            
-            span.addEventListener('click', () => {
-                loadStoriesByCondition('genre', genreName, `📜 Thể Loại: ${genreName}`);
-            });
-            tagMenu.appendChild(span);
-        });
-    });
+  const q = query(ref(db, "stories"), orderByChild("updatedAt"));
+
+  get(q).then(snap => {
+    grid.innerHTML = "";
+
+    const arr = [];
+    snap.forEach(c => arr.push({ id: c.key, ...c.val() }));
+
+    renderFeatured(arr);
+
+    arr.reverse().forEach(s => grid.appendChild(createCard(s)));
+  });
 }
 
-/* ==========================================================================
-   5. BỘ LỌC ĐIỀU KIỆN
-   ========================================================================== */
-function loadStoriesByCondition(field, value, titleText) {
-    const searchSection = document.getElementById('searchResultsSection');
-    const resultsGrid = document.getElementById('resultsGrid');
-    const rowTitle = searchSection.querySelector('.row-title');
+// FEATURED
+function renderFeatured(list) {
+  if (!list.length) return;
 
-    if (!searchSection || !resultsGrid) return;
+  const s = list[Math.floor(Math.random() * list.length)];
 
-    if (rowTitle) rowTitle.innerText = titleText;
-    searchSection.style.display = 'block';
-    resultsGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang lọc tác phẩm...</div>';
+  const title = document.getElementById("heroTitle");
+  const desc = document.getElementById("heroSynopsis");
+  const link = document.getElementById("heroLink");
+  const box = document.getElementById("featuredBook");
 
-    searchSection.scrollIntoView({ behavior: 'smooth' });
+  const url = `book.html?id=${s.id}`;
 
-    const storyQuery = query(ref(db, 'stories'), orderByChild(field), equalTo(value));
-    get(storyQuery)
-    .then((snapshot) => {
-        resultsGrid.innerHTML = '';
-        if (!snapshot.exists()) {
-            resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Động chưa tìm thấy truyện nào tương ứng 🐢</p>`;
-            return;
-        }
+  if (title) title.textContent = s.title;
+  if (desc) desc.textContent = s.description || s.synopsis || "";
+  if (link) link.href = url;
 
-        snapshot.forEach((childSnapshot) => {
-            resultsGrid.appendChild(createNetflixCard(childSnapshot.key, childSnapshot.val()));
-        });
-    })
-    .catch((err) => {
-        console.error("Lỗi lọc dữ liệu:", err);
-        resultsGrid.innerHTML = '<p style="grid-column: 1/-1;">Đã xảy ra lỗi khi tìm kiếm.</p>';
+  if (box && s.img) {
+    box.style.background = `linear-gradient(to right, rgba(255,255,255,0.9), transparent), url(${s.img})`;
+    box.onclick = () => location.href = url;
+  }
+}
+
+// ================= TOP =================
+function loadTop() {
+  const container = document.getElementById("nominationListContainer");
+  if (!container) return;
+
+  const q = query(ref(db, "stories"), orderByChild("views"), limitToLast(5));
+
+  get(q).then(snap => {
+    container.innerHTML = "";
+
+    const arr = [];
+    snap.forEach(c => arr.push({ id: c.key, ...c.val() }));
+
+    arr.reverse().forEach((s, i) => {
+      const div = document.createElement("div");
+      div.className = "story-card";
+
+      div.innerHTML = `
+        <img src="${s.img || ""}">
+        <h4>TOP ${i + 1}. ${s.title}</h4>
+      `;
+
+      div.onclick = () => location.href = `book.html?id=${s.id}`;
+      container.appendChild(div);
     });
+  });
+}
+
+// ================= SEARCH =================
+function triggerSearch() {
+  const input = document.getElementById("searchInput");
+  if (!input?.value) return;
+
+  const keyword = input.value.toLowerCase();
+  const grid = document.getElementById("resultsGrid");
+  const section = document.getElementById("searchResultsSection");
+
+  section.style.display = "block";
+  grid.innerHTML = "Đang tìm...";
+
+  get(ref(db, "stories")).then(snap => {
+    grid.innerHTML = "";
+    let found = false;
+
+    snap.forEach(c => {
+      const s = c.val();
+      if ((s.title || "").toLowerCase().includes(keyword)) {
+        grid.appendChild(createCard({ id: c.key, ...s }));
+        found = true;
+      }
+    });
+
+    if (!found) grid.innerHTML = "Không tìm thấy 🐢";
+  });
 }
 
 function closeSearch() {
-    const searchSection = document.getElementById('searchResultsSection');
-    if (searchSection) searchSection.style.display = 'none';
+  document.getElementById("searchResultsSection").style.display = "none";
 }
 
-/* ==========================================================================
-   6. THƯ VIỆN CHÍNH
-   ========================================================================== */
-function loadMainStories() {
-    const bookGrid = document.getElementById('bookGrid');
-    if (!bookGrid) return;
+// ================= FILTER CONDITION =================
+function loadByCondition(field, value) {
+  const grid = document.getElementById("resultsGrid");
+  const section = document.getElementById("searchResultsSection");
 
-    bookGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang liên kết Động Chăn Rùa...</div>';
+  section.style.display = "block";
+  grid.innerHTML = "Đang lọc...";
 
-    const storiesQuery = query(ref(db, 'stories'), orderByChild('updatedAt'));
-    get(storiesQuery)
-    .then((snapshot) => {
-        bookGrid.innerHTML = '';
-        if (!snapshot.exists()) return;
+  const q = query(ref(db, "stories"), orderByChild(field), equalTo(value));
 
-        const storiesData = snapshot.val();
-        handleFeaturedRandomBook(storiesData);
+  get(q).then(snap => {
+    grid.innerHTML = "";
+    snap.forEach(c => grid.appendChild(createCard({ id: c.key, ...c.val() })));
+  });
+}
 
-        const storiesArray = [];
-        snapshot.forEach((childSnapshot) => {
-            storiesArray.push({ id: childSnapshot.key, ...childSnapshot.val() });
-        });
+// ================= CARD =================
+function createCard(story) {
+  const div = document.createElement("div");
+  div.className = "story-card";
 
-        storiesArray.reverse().forEach((story) => {
-            bookGrid.appendChild(createNetflixCard(story.id, story));
-        });
-    })
-    .catch((err) => {
-        console.error("Lỗi tải truyện chính:", err);
-        bookGrid.innerHTML = '<p style="grid-column: 1/-1;">Lỗi kết nối thư viện chính.</p>';
+  div.innerHTML = `
+    <img src="${story.img || ""}">
+    <h4>${story.title}</h4>
+    <p>${story.author || ""}</p>
+  `;
+
+  div.onclick = () => location.href = `book.html?id=${story.id}`;
+  return div;
+}
+
+// ================= GENRES =================
+function loadGenres() {
+  const menu = document.getElementById("tagMenu");
+  if (!menu) return;
+
+  get(ref(db, "genres")).then(snap => {
+    menu.innerHTML = "";
+
+    snap.forEach(c => {
+      const name = c.val().name || c.val();
+
+      const span = document.createElement("span");
+      span.textContent = name;
+      span.onclick = () => loadByCondition("genre", name);
+
+      menu.appendChild(span);
     });
+  });
 }
 
-/* ==========================================================================
-   7. TOP 5 ĐỘT PHÁ LƯỢT XEM
-   ========================================================================== */
-function loadTopViews() {
-    const nominationContainer = document.getElementById('nominationListContainer');
-    if (!nominationContainer) return;
+// ================= AUTH =================
+onAuthStateChanged(auth, user => {
+  const btn = document.getElementById("btnHeaderAuth");
 
-    const topViewsQuery = query(ref(db, 'stories'), orderByChild('views'), limitToLast(5));
-    get(topViewsQuery)
-    .then((snapshot) => {
-        nominationContainer.innerHTML = '';
-        if (!snapshot.exists()) return;
+  if (user) {
+    btn.textContent = user.displayName || "User";
+    btn.onclick = openProfile;
 
-        const topStories = [];
-        snapshot.forEach((childSnapshot) => {
-            topStories.push({ id: childSnapshot.key, ...childSnapshot.val() });
-        });
+    renderProfile(user);
+  } else {
+    btn.innerHTML = "👤";
+    btn.onclick = openAuthModal;
 
-        topStories.reverse();
-
-        topStories.forEach((story, index) => {
-            const card = document.createElement('div');
-            card.className = 'story-card';
-            card.onclick = () => window.location.href = `book.html?id=${story.id}`;
-            
-            const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
-            
-            card.innerHTML = `
-                <img src="${currentImg}" alt="${story.title}">
-                <div style="flex: 1; min-width: 0;">
-                    <h4 style="margin-top:0; font-size:0.95rem; font-weight:700;">TOP ${index + 1} . ${story.title}</h4>
-                    <p style="margin-bottom:0; font-size:0.8rem; color: var(--netflix-red); font-weight:600;"><i class="fa-regular fa-eye"></i> ${story.views || 0} lượt xem</p>
-                </div>
-            `;
-            nominationContainer.appendChild(card);
-        });
-    });
-}
-
-/* ==========================================================================
-   8. LẮNG NGHE THÔNG BÁO REALTIME
-   ========================================================================== */
-function listenToNotifications() {
-    const notiCountBadge = document.getElementById('notiCount');
-    if (!notiCountBadge) return;
-    
-    onValue(ref(db, 'notifications'), (snapshot) => {
-        if (snapshot.exists()) {
-            notiCountBadge.textContent = snapshot.size;
-        } else {
-            notiCountBadge.textContent = "0";
-        }
-    });
-}
-
-/* ==========================================================================
-   9. HÀM BỔ TRỢ: TẠO CARD
-   ========================================================================== */
-function createNetflixCard(id, story) {
-    const div = document.createElement('div');
-    div.className = 'story-card';
-    div.onclick = () => window.location.href = `book.html?id=${id}`;
-    
-    const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
-    
-    div.innerHTML = `
-        <img src="${currentImg}" alt="${story.title}">
-        <h4>${story.title}</h4>
-        <p>${story.author || 'Động Chăn Rùa'}</p>
-    `;
-    return div;
-}
-
-function triggerSearch() {
-    const searchInput = document.getElementById('searchInput');
-    if (!searchInput || !searchInput.value.trim()) return;
-    
-    const keyword = searchInput.value.trim().toLowerCase();
-    const searchSection = document.getElementById('searchResultsSection');
-    const resultsGrid = document.getElementById('resultsGrid');
-    const rowTitle = searchSection.querySelector('.row-title');
-
-    if (rowTitle) rowTitle.innerText = `🔍 Kết quả tìm kiếm cho: "${searchInput.value}"`;
-    searchSection.style.display = 'block';
-    resultsGrid.innerHTML = '';
-
-    get(ref(db, 'stories')).then((snapshot) => {
-        if(!snapshot.exists()) return;
-        
-        let hasResult = false;
-        snapshot.forEach((childSnapshot) => {
-            const story = childSnapshot.val();
-            const title = (story.title || '').toLowerCase();
-            const author = (story.author || '').toLowerCase();
-            
-            if(title.includes(keyword) || author.includes(keyword)) {
-                resultsGrid.appendChild(createNetflixCard(childSnapshot.key, story));
-                hasResult = true;
-            }
-        });
-        
-        if(!hasResult) {
-            resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Không tìm thấy tác phẩm nào khớp từ khóa 🐢</p>`;
-        }
-    });
-}
-
-/* ==========================================================================
-   10. QUẢN LÝ ĐĂNG NHẬP VÀ HỒ SƠ
-   ========================================================================== */
-let isSignUpMode = true; 
-let selectedAvatarUrl = "";
-
-onAuthStateChanged(auth, (user) => {
-    const btnHeaderAuth = document.getElementById('btnHeaderAuth'); 
-    let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
-    
-    // ... (Giữ nguyên logic khởi tạo nút admin nếu chưa có) ...
-    if (!btnAdminCrown && btnHeaderAuth) {
-        btnAdminCrown = document.createElement('button');
-        btnAdminCrown.id = 'btnOpenAdminPanel';
-        btnAdminCrown.innerHTML = '👑';
-        btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0;";
-        if (btnHeaderAuth.parentNode) {
-            btnHeaderAuth.parentNode.style.display = "flex";
-            btnHeaderAuth.parentNode.style.alignItems = "center";
-            btnHeaderAuth.parentNode.style.gap = "8px"; 
-            btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth.nextSibling);
-        }
-    }
-
-    if (user) {
-        if (document.getElementById('userProfileEmail')) document.getElementById('userProfileEmail').textContent = user.email;
-        if (document.getElementById('userProfileName')) document.getElementById('userProfileName').textContent = user.displayName || "Thành viên Động Rùa";
-        renderUserProfileData(user);
-        
-        if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
-            if (btnHeaderAuth) {
-                btnHeaderAuth.innerHTML = `Chào, Chị Admin`;
-                btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; flex-shrink: 0; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
-                btnHeaderAuth.onclick = openProfileZone;
-            }
-            if (btnAdminCrown) {
-                btnAdminCrown.style.display = 'inline-flex';
-                btnAdminCrown.onclick = () => {
-                    const adminModal = document.getElementById('adminModal');
-                    if (adminModal) adminModal.style.display = 'flex';
-                };
-            }
-        } else {
-            if (btnHeaderAuth) {
-                btnHeaderAuth.innerHTML = `Chào, ${user.displayName || 'Thành Viên'}`;
-                btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; flex-shrink: 0; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
-                btnHeaderAuth.onclick = openProfileZone;
-            }
-            if (btnAdminCrown) btnAdminCrown.style.display = 'none';
-        }
-    } else {
-        if (btnHeaderAuth) {
-            btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
-            btnHeaderAuth.style.cssText = "width: 40px; height: 40px; padding: 0; border-radius: 50%; background: #ff4d6d; color: white; border: none; cursor: pointer;";
-            btnHeaderAuth.onclick = openAuthModal;
-        }
-        if (btnAdminCrown) btnAdminCrown.style.display = 'none';
-        showHome();
-    }
+    state.bookshelfUnsub?.();
+  }
 });
 
-function renderUserProfileData(user) {
-    renderAvatarSelectionGrid();
-    const container = document.getElementById('userBookshelfContainer');
-    if (!container) return;
+function submitAuth() {
+  const email = authEmail.value;
+  const pass = authPassword.value;
+  const name = authDisplayName.value;
 
-    onValue(ref(db, 'users/' + user.uid + '/tuSach'), (snapshot) => {
-        const data = snapshot.val();
-        if (!data) { container.innerHTML = `<div class="bookshelf-empty">Tủ sách trống trơn! 🐾</div>`; return; }
-        buildBookshelfHTML(data, container);
-    });
+  if (state.isSignUp) {
+    createUserWithEmailAndPassword(auth, email, pass)
+      .then(res => {
+        if (name) fbUpdateProfile(res.user, { displayName: name });
+      });
+  } else {
+    signInWithEmailAndPassword(auth, email, pass);
+  }
 }
 
-function buildBookshelfHTML(data, container) {
-    container.innerHTML = Object.keys(data).map(key => {
-        const b = data[key];
-        return `<div class="bookshelf-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
-            <div class="bookshelf-left" style="display: flex; align-items: center; gap: 10px;">
-                <img src="${b.image}" class="bookshelf-thumb" style="width: 45px; height: 60px; object-fit: cover; border-radius: 4px;" alt="Cover">
-                <div>
-                    <p style="margin: 0; font-weight: bold; font-size: 14px;">${b.tenTruyen}</p>
-                    <p style="margin: 3px 0 0 0; font-size: 12px; color: #777;">Đọc đến: ${b.chuongGanNhat}</p>
-                </div>
-            </div>
-            <button class="btn-remove-book" onclick="removeFromBookshelf('${key}')" style="background: none; border: none; cursor: pointer; font-size: 14px;">❌</button>
-        </div>`;
-    }).join('');
+// ================= PROFILE =================
+function renderProfile(user) {
+  renderAvatarGrid();
+
+  // avatar realtime
+  onValue(ref(db, `users/${user.uid}`), snap => {
+    const data = snap.val();
+    const img = document.getElementById("userAvatar");
+    if (img && data?.avatar) img.src = data.avatar;
+  });
+
+  renderBookshelf(user);
 }
 
-function renderAvatarSelectionGrid() {
-    const container = document.getElementById('avatarGridContainer');
-    if (!container) return;
-    const cuteAvatars = [
+// ================= AVATAR =================
+function renderAvatarGrid() {
+  const container = document.getElementById("avatarGridContainer");
+  if (!container) return;
+
+  const cuteAvatars = [
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Lily",
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka",
@@ -400,102 +292,104 @@ function renderAvatarSelectionGrid() {
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Milo",
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver"
     ];
-    container.innerHTML = cuteAvatars.map(url => `
-        <img src="${url}" class="avatar-option-img" style="width: 50px; height: 50px; cursor: pointer; margin: 5px; border-radius: 50%; border: 2px solid transparent;" onclick="selectAvatarOption(this, '${url}')" alt="Cute Avatar">
-    `).join('');
+
+  container.innerHTML = avatars.map(url => `
+    <img src="${url}" class="avatar-option"
+      style="width:50px;height:50px;border-radius:50%;cursor:pointer;border:2px solid transparent"
+      onclick="selectAvatar(this,'${url}')">
+  `).join("");
 }
 
-function selectAvatarOption(imgEl, url) { 
-    selectedAvatarUrl = url; 
-    document.querySelectorAll('.avatar-option-img').forEach(img => img.style.border = '2px solid transparent'); 
-    imgEl.style.border = '2px solid #ff4d6d'; 
+function selectAvatar(el, url) {
+  state.selectedAvatar = url;
+
+  document.querySelectorAll(".avatar-option")
+    .forEach(i => i.style.border = "2px solid transparent");
+
+  el.style.border = "2px solid #ff4d6d";
 }
 
-function updateProfile() {
-    const user = auth.currentUser;
-    if (!user) { alert("Chị vui lòng đăng nhập trước nhé! 🐢"); return; }
+function saveProfile() {
+  const user = auth.currentUser;
+  if (!user) return;
 
-    const newDisplayName = document.getElementById('inputNewDisplayName').value.trim();
-    
-    updateProfile(user, { displayName: newDisplayName || user.displayName }).then(() => {
-        if (selectedAvatarUrl) {
-            set(ref(db, 'users/' + user.uid + '/avatar'), selectedAvatarUrl);
-        }
-        if (newDisplayName) {
-            set(ref(db, 'users/' + user.uid + '/displayName'), newDisplayName);
-        }
-        alert("🎉 Đã cập nhật hồ sơ thành công!");
-        location.reload();
-    }).catch((error) => {
-        alert("Có lỗi xảy ra: " + error.message);
+  const name = document.getElementById("inputNewDisplayName").value;
+
+  fbUpdateProfile(user, { displayName: name || user.displayName }).then(() => {
+    if (state.selectedAvatar) {
+      set(ref(db, `users/${user.uid}/avatar`), state.selectedAvatar);
+    }
+    alert("Đã lưu 🎉");
+    location.reload();
+  });
+}
+
+// ================= BOOKSHELF =================
+function renderBookshelf(user) {
+  const container = document.getElementById("userBookshelfContainer");
+  if (!container) return;
+
+  state.bookshelfUnsub?.();
+
+  state.bookshelfUnsub = onValue(ref(db, `users/${user.uid}/tuSach`), snap => {
+    container.innerHTML = "";
+
+    if (!snap.exists()) {
+      container.innerHTML = "Trống 🐢";
+      return;
+    }
+
+    snap.forEach(c => {
+      const b = c.val();
+
+      const div = document.createElement("div");
+
+      div.innerHTML = `
+        <p>${b.tenTruyen}</p>
+        <button>X</button>
+      `;
+
+      div.querySelector("button").onclick = () =>
+        remove(ref(db, `users/${user.uid}/tuSach/${c.key}`));
+
+      container.appendChild(div);
     });
+  });
 }
 
-function removeFromBookshelf(key) {
-    if (confirm("Chị có muốn xóa truyện này không ạ? 🐢")) {
-        remove(ref(db, 'users/' + auth.currentUser.uid + '/tuSach/' + key));
-    }
+// ================= NOTIFICATION =================
+function listenNotifications() {
+  state.notiUnsub?.();
+
+  state.notiUnsub = onValue(ref(db, "notifications"), snap => {
+    document.getElementById("notiCount").textContent =
+      snap.exists() ? snap.size : 0;
+  });
 }
 
-function openAuthModal() { const modal = document.getElementById('authModal'); if (modal) modal.style.display = 'flex'; }
-function closeAuthModal() { const modal = document.getElementById('authModal'); if (modal) modal.style.display = 'none'; }
-
-function toggleAuthMode() {
-    isSignUpMode = !isSignUpMode;
-    const authTitle = document.getElementById('authTitle');
-    const nickNameGroup = document.getElementById('nickNameGroup');
-    const btnAuthSubmit = document.getElementById('btnAuthSubmit');
-    const authToggleLink = document.getElementById('authToggleLink');
-    if (isSignUpMode) {
-        authTitle.textContent = "GIA NHẬP ĐỘNG RÙA"; nickNameGroup.style.display = 'block';
-        btnAuthSubmit.textContent = "BẮT ĐẦU TRẢI NGHIỆM"; authToggleLink.textContent = "Đã có tài khoản rồi? Bấm vào đây để Đăng nhập";
-    } else {
-        authTitle.textContent = "ĐĂNG NHẬP THÀNH VIÊN"; nickNameGroup.style.display = 'none';
-        btnAuthSubmit.textContent = "ĐĂNG NHẬP VÀO ĐỘNG NGAY"; authToggleLink.textContent = "Chưa có tài khoản? Bấm vào đây để Đăng ký";
-    }
+// ================= UI =================
+function openAuthModal() {
+  document.getElementById("authModal").style.display = "flex";
 }
 
-function submitAuthForm() {
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value.trim();
-    const displayName = document.getElementById('authDisplayName').value.trim();
-    if (!email || !password) { alert("Chị vui lòng điền đủ thông tin nha!"); return; }
-
-    if (isSignUpMode) {
-        createUserWithEmailAndPassword(auth, email, password).then((userCredential) => {
-            if (displayName) updateProfile(userCredential.user, { displayName: displayName });
-            alert("🎉 Đăng ký thành công!"); closeAuthModal();
-        }).catch(err => alert(err.message));
-    } else {
-        signInWithEmailAndPassword(auth, email, password).then(() => {
-            alert("🎉 Chào mừng chị trở lại!"); closeAuthModal();
-        }).catch(err => alert(err.message));
-    }
-}
-
-function openProfileZone() {
-    if (document.getElementById('homeMainContent')) document.getElementById('homeMainContent').style.display = 'none';
-    if (document.getElementById('profileSection')) document.getElementById('profileSection').style.display = 'block';
+function openProfile() {
+  document.getElementById("homeMainContent").style.display = "none";
+  document.getElementById("profileSection").style.display = "block";
 }
 
 function showHome() {
-    if(document.getElementById('profileSection')) document.getElementById('profileSection').style.display = 'none';
-    if(document.getElementById('homeMainContent')) document.getElementById('homeMainContent').style.display = 'block';
+  document.getElementById("profileSection").style.display = "none";
+  document.getElementById("homeMainContent").style.display = "block";
 }
 
-function logoutFromProfile() {
-    if(confirm("Chị muốn đăng xuất tài khoản đúng không ạ? 🐢")) {
-        signOut(auth);
-    }
+function logout() {
+  signOut(auth);
 }
 
-document.addEventListener('click', function(event) {
-    const dropdownMenu = document.getElementById('tagMenu');
-    const dropdownBtn = document.getElementById('tagDropdownBtn');
-
-    if (dropdownBtn && (event.target === dropdownBtn || dropdownBtn.contains(event.target))) {
-        dropdownMenu.style.display = (dropdownMenu.style.display === 'block') ? 'none' : 'block';
-    } else if (dropdownMenu && !dropdownMenu.contains(event.target)) {
-        dropdownMenu.style.display = 'none';
-    }
-});
+// ================= GLOBAL =================
+window.openAuthModal = openAuthModal;
+window.triggerSearch = triggerSearch;
+window.showHome = showHome;
+window.logoutFromProfile = logout;
+window.selectAvatar = selectAvatar;
+window.saveProfile = saveProfile;

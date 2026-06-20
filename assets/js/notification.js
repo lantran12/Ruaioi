@@ -4,27 +4,26 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
 
 (function() {
   const menuNotiHtml = `
-    <div class="menu-noti-wrap" style="margin-left: 10px; display: none;">
-      <a href="#" id="btnBellMini" onclick="event.preventDefault();" class="btn-noti-trigger">
-        🔔 <span class="mini-noti-badge" id="notiCountBadge" style="display: none;">0</span>
+    <div class="menu-noti-wrap" style="margin-left: 10px; display: none; position: relative;">
+      <a href="#" id="btnBellMini" class="btn-noti-trigger" style="text-decoration: none; color: inherit; font-size: 20px;">
+        <i class="fa-regular fa-bell"></i>
+        <span class="mini-noti-badge" id="notiCountBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ff4d6d; color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; font-weight: bold;">0</span>
       </a>
-      <div id="notiPanelMini" class="mini-noti-panel">
-        <div class="mini-noti-header">
-          <span>🔔 THÔNG BÁO CỦA BẠN</span>
-          <span class="mini-read-all-btn" id="readAllBtn">Đọc hết</span>
+      <div id="notiPanelMini" style="display: none; position: absolute; top: 40px; right: 0; width: 300px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 9999; flex-direction: column; overflow: hidden; border: 1px solid #ddd;">
+        <div style="padding: 10px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
+          <span>THÔNG BÁO</span>
+          <span id="readAllBtn" style="color: #007bff; cursor: pointer; font-size: 12px;">Đọc hết</span>
         </div>
-        <div class="mini-noti-list" id="notiListContainer">
-          <div class="mini-noti-empty">Chưa có thông báo nào...</div>
+        <div id="notiListContainer" style="max-height: 300px; overflow-y: auto;">
+          <div style="padding: 20px; text-align: center; color: #999;">Chưa có thông báo nào...</div>
         </div>
       </div>
     </div>
   `;
 
-  // Tự động tìm .header-right để chèn chuông vào
-  const headerRight = document.querySelector('.header-right');
-  if (headerRight) { 
-      headerRight.insertAdjacentHTML('beforeend', menuNotiHtml); 
-  }
+  // Tự động tìm .header-right hoặc .header-right-zone để chèn chuông vào
+  const headerRight = document.querySelector('.header-right-zone') || document.querySelector('.header-right');
+  if (headerRight) { headerRight.insertAdjacentHTML('beforeend', menuNotiHtml); }
 
   // Thêm style animation cho chuông
   const style = document.createElement('style');
@@ -39,6 +38,10 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
       border-radius: 6px;
       padding: 4px;
     }
+    .mini-noti-item.read { opacity: 0.7; background: #fafafa; }
+    .mini-noti-item { padding: 12px; border-bottom: 1px solid #f1f1f1; cursor: pointer; font-size: 13px; }
+    .mini-noti-item:hover { background: #f1f1f1; }
+    .mini-noti-time { font-size: 10px; color: #888; display: block; margin-top: 5px; }
   `;
   document.head.appendChild(style);
 
@@ -61,7 +64,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
     }
   });
 
-  // Lắng nghe trạng thái đăng nhập (Bản mới chuẩn Modular)
+  // Lắng nghe trạng thái đăng nhập
   onAuthStateChanged(auth, user => {
     const menuWrap = document.querySelector('.menu-noti-wrap');
     if (!user) {
@@ -72,14 +75,13 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
 
     if (menuWrap) menuWrap.style.display = 'inline-block';
     
-    // Đường dẫn Firebase Realtime Database bản mới
     const notiRef = ref(db, `notifications/${user.uid}`);
 
     onValue(notiRef, snap => {
       const data = snap.val();
       if (!data) {
         if (badge) badge.style.display = 'none';
-        if (listContainer) listContainer.innerHTML = `<div class="mini-noti-empty">Chưa có thông báo nào...</div>`;
+        if (listContainer) listContainer.innerHTML = `<div class="mini-noti-item">Chưa có thông báo nào...</div>`;
         return;
       }
 
@@ -93,12 +95,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
       arr.sort((a,b) => b.timestamp - a.timestamp);
 
       if (badge) {
-        if (unread > 0) {
-          badge.innerText = unread;
-          badge.style.display = 'inline-block';
-        } else {
-          badge.style.display = 'none';
-        }
+        badge.innerText = unread;
+        badge.style.display = unread > 0 ? 'inline-block' : 'none';
       }
 
       let html = '';
@@ -119,7 +117,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
 
       if (listContainer) {
         listContainer.innerHTML = html;
-
         listContainer.querySelectorAll('.mini-noti-item').forEach(el => {
           el.onclick = () => {
             const notiId = el.dataset.id;
@@ -131,7 +128,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
 
             let cleanLink = link.split('#')[0];
             const currentPath = window.location.pathname;
-            
             const isSamePage = cleanLink.includes(currentPath) || currentPath.includes(cleanLink.replace('.html', ''));
 
             if (isSamePage) {
@@ -152,19 +148,12 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
                   setTimeout(() => { commentBox.classList.remove('highlight-comment-box'); }, 2000);
                 }
               }
-              
-              // Cập nhật trạng thái đã đọc bản mới
               const specificNotiRef = ref(db, `notifications/${user.uid}/${notiId}`);
               update(specificNotiRef, { status: 'read', isRead: true });
-              
             } else {
               const specificNotiRef = ref(db, `notifications/${user.uid}/${notiId}`);
               update(specificNotiRef, { status: 'read', isRead: true }).then(() => {
-                if (cleanLink.includes('?')) {
-                  window.location.href = `${cleanLink}&targetP=${typeNode}`;
-                } else {
-                  window.location.href = `${cleanLink}?targetP=${typeNode}`;
-                }
+                window.location.href = cleanLink.includes('?') ? `${cleanLink}&targetP=${typeNode}` : `${cleanLink}?targetP=${typeNode}`;
               });
             }
           };

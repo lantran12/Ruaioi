@@ -1,35 +1,11 @@
-<div class="admin-panel">
-    <h3>Đăng truyện mới</h3>
-    <input type="text" id="adminId" placeholder="ID truyện (viết liền không dấu: zombie)">
-    <input type="text" id="adminTitle" placeholder="Tên truyện">
-    <input type="text" id="adminAuthor" placeholder="Tên tác giả">
+<div class="admin-form">
+    <input type="text" id="adminTitle" placeholder="Tên tác phẩm">
+    <input type="text" id="adminAuthor" placeholder="Tác giả">
     <input type="text" id="adminImg" placeholder="Link ảnh bìa">
-    <textarea id="adminTags" placeholder="Thể loại (cách nhau bằng dấu phẩy: Ngôn Tình, Hài Hước)"></textarea>
-    <button onclick="submitNewStory()">Đăng truyện ngay!</button>
+    <input type="text" id="adminTags" placeholder="Thể loại (cách nhau bằng dấu phẩy)">
+    <select id="adminStatus">
+        <option value="new">Mới cập nhật</option>
+        <option value="completed">Đã trọn bộ</option>
+    </select>
+    <button onclick="publishStory()">Phát Hành Truyện ✨</button>
 </div>
-window.submitNewStory = function() {
-    const id = document.getElementById('adminId').value.trim();
-    const title = document.getElementById('adminTitle').value.trim();
-    const author = document.getElementById('adminAuthor').value.trim();
-    const img = document.getElementById('adminImg').value.trim();
-    const tagsRaw = document.getElementById('adminTags').value.trim();
-    
-    // Chuyển tags từ chuỗi "A, B" thành mảng ["A", "B"]
-    const tags = tagsRaw.split(',').map(t => t.trim());
-
-    if (!id || !title) { alert("Thiếu ID hoặc Tên truyện rồi chị ơi!"); return; }
-
-    const newStoryRef = ref(db, 'stories/' + id);
-    set(newStoryRef, {
-        title: title,
-        author: author,
-        img: img,
-        tags: tags,
-        status: "updating",
-        updatedAt: Date.now()
-    }).then(() => {
-        alert("Đăng truyện mới thành công! Web sẽ tự cập nhật luôn ạ! 🚀");
-        // Xóa sạch form sau khi đăng xong
-        location.reload(); 
-    }).catch(err => alert("Lỗi rồi: " + err.message));
-};

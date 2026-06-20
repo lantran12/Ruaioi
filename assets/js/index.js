@@ -298,47 +298,39 @@ function triggerSearch() {
         }
     });
 }
+
 /* ==========================================================================
    10. QUẢN LÝ ĐĂNG NHẬP, ĐIỀU KHIỂN VƯƠNG MIỆN ADMIN VÀ HỒ SƠ / AVATAR
    ========================================================================== */
 let isSignUpMode = true; 
 let selectedAvatarUrl = "";
-let tuSachListenerRef = null; // Quản lý lắng nghe tủ sách realtime
+let tuSachListenerRef = null; 
 
-// --- A. THEO DÕI TRẠNG THÁI TÀI KHOẢN REALTIME ---
 auth.onAuthStateChanged((user) => {
-    const btnHeaderAuth = document.getElementById('btnHeaderAuth'); // Nút Account gốc
+    const btnHeaderAuth = document.getElementById('btnHeaderAuth'); 
 
-    // Tự động tạo nút Vương Miện màu xanh Admin nằm CẠNH NHAU (ngang hàng)
     let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
     if (!btnAdminCrown && btnHeaderAuth) {
         btnAdminCrown = document.createElement('button');
         btnAdminCrown.id = 'btnOpenAdminPanel';
         btnAdminCrown.innerHTML = '👑';
         
-        // CSS ép nút vương miện có nền màu xanh admin, nằm ngang với nút chào
         btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0;";
         
         if (btnHeaderAuth.parentNode) {
             btnHeaderAuth.parentNode.style.display = "flex";
             btnHeaderAuth.parentNode.style.alignItems = "center";
-            btnHeaderAuth.parentNode.style.gap = "8px"; // Khoảng cách giữa nút chào và vương miện
+            btnHeaderAuth.parentNode.style.gap = "8px"; 
             btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth.nextSibling);
         }
     }
 
     if (user) {
-        // TRƯỜNG HỢP: ĐÃ ĐĂNG NHẬP
-        console.log("Đăng nhập thành công với UID:", user.uid);
-        
-        // Gắn dữ liệu Email và Tên vào form profile ẩn phía dưới
         if (document.getElementById('userProfileEmail')) document.getElementById('userProfileEmail').textContent = user.email;
         if (document.getElementById('userProfileName')) document.getElementById('userProfileName').textContent = user.displayName || "Thành viên Động Rùa";
 
-        // KÍCH HOẠT CHẠY HÀM TẢI TỦ SÁCH THẬT TỪ DATABASE CỦA CHỊ
         renderUserProfileData(user);
 
-        // PHÂN QUYỀN ADMIN CHO CHỊ ĐỘNG CHĂN RÙA (UID CHUẨN)
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
             if (btnHeaderAuth) {
                 btnHeaderAuth.innerHTML = `Chào, Chị Admin`;
@@ -346,14 +338,13 @@ auth.onAuthStateChanged((user) => {
                 btnHeaderAuth.onclick = openProfileZone;
             }
             if (btnAdminCrown) {
-                btnAdminCrown.style.display = 'inline-flex'; // Hiện vương miện xanh kế bên
+                btnAdminCrown.style.display = 'inline-flex';
                 btnAdminCrown.onclick = () => {
                     const adminModal = document.getElementById('adminModal');
-                    if (adminModal) adminModal.style.display = 'flex'; // Hiện popup đăng chương
+                    if (adminModal) adminModal.style.display = 'flex';
                 };
             }
         } else {
-            // Nếu là người đọc bình thường
             if (btnHeaderAuth) {
                 btnHeaderAuth.innerHTML = `Chào, ${user.displayName || 'Thành Viên'}`;
                 btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; flex-shrink: 0; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
@@ -362,7 +353,6 @@ auth.onAuthStateChanged((user) => {
             if (btnAdminCrown) btnAdminCrown.style.display = 'none';
         }
     } else {
-        // TRƯỜNG HỢP: CHƯA ĐĂNG NHẬP / ĐĂNG XUẤT
         if (btnHeaderAuth) {
             btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
             btnHeaderAuth.style.cssText = "width: 40px; height: 40px; padding: 0; border-radius: 50%; background: #ff4d6d; color: white; border: none; cursor: pointer;";
@@ -370,7 +360,6 @@ auth.onAuthStateChanged((user) => {
         }
         if (btnAdminCrown) btnAdminCrown.style.display = 'none';
 
-        // Khóa tủ sách nếu là khách vãng lai chưa đăng nhập
         const container = document.getElementById('userBookshelfContainer');
         if (container) {
             container.innerHTML = `<div class="bookshelf-empty" style="color: #ff4d6d; font-weight: bold; text-align: center; width: 100%; padding: 20px 0;">⚠️ Vui lòng đăng nhập để sử dụng tủ sách cá nhân!</div>`;
@@ -384,23 +373,19 @@ function openProfileZone() {
     if (document.getElementById('profileSection')) document.getElementById('profileSection').style.display = 'block';
 }
 
-// --- B. CÁC HÀM XỬ LÝ HỒ SƠ & AVATAR (THU NHỎ ẢNH & LOAD TỦ SÁCH) ---
 function renderUserProfileData(user) {
     renderAvatarSelectionGrid(); 
     
-    // Thu nhỏ Avatar hiển thị cho vừa vặn, không bị chiếm hết màn hình
     const currentAvatarImg = document.getElementById('userCurrentAvatar');
     if (currentAvatarImg) {
         currentAvatarImg.style.cssText = "width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 15px auto; border: 3px solid #ff4d6d;";
     }
 
-    // Kết nối database lấy tủ sách thật (Hỗ trợ cả Realtime Database v8/v9 tùy cấu hình của chị)
     const container = document.getElementById('userBookshelfContainer');
     if (!container) return;
 
-    // Chỗ này kiểm tra nếu chị đang xài Firebase database cũ
     if (typeof db !== 'undefined' && typeof firebase !== 'undefined') {
-        firebase.database().ref('users/' + user.uid + '/tuSach').on('value', (snapshot) => {
+        db.ref('users/' + user.uid + '/tuSach').on('value', (snapshot) => {
             const data = snapshot.val();
             if (!data) { container.innerHTML = `<div class="bookshelf-empty">Tủ sách trống trơn! 🐾</div>`; return; }
             buildBookshelfHTML(data, container);
@@ -451,27 +436,7 @@ function selectAvatarOption(imgEl, url) {
     document.querySelectorAll('.avatar-option-img').forEach(img => img.style.border = '2px solid transparent'); 
     imgEl.style.border = '2px solid #ff4d6d'; 
 }
-function useGoogleAvatar() {
-    const user = auth.currentUser;
-    if (user && user.photoURL) {
-        selectedAvatarUrl = user.photoURL; // Gán link ảnh Google
-        
-        // Bỏ viền đỏ của các ảnh con vật khác
-        document.querySelectorAll('.avatar-option-img').forEach(img => img.style.border = '2px solid transparent');
-        
-        // Hiển thị ảnh Google vào khung preview
-        const currentAvatarImg = document.getElementById('userCurrentAvatar');
-        if (currentAvatarImg) currentAvatarImg.src = selectedAvatarUrl;
-        
-        alert("Đã chọn ảnh Google của chị làm avatar! 🐢");
-    } else {
-        alert("Chị chưa có ảnh đại diện từ Google ạ!");
-    }
-}
 
-/* ==========================================================================
-   HÀM CẬP NHẬT HỒ SƠ (Lưu biệt danh và Avatar vào Firebase)
-   ========================================================================== */
 function updateProfile() {
     const user = auth.currentUser;
     if (!user) {
@@ -479,24 +444,19 @@ function updateProfile() {
         return;
     }
 
-    const newDisplayName = document.getElementById('inputNewDisplayName').value.trim(); // Đảm bảo ID này khớp với ô input trong HTML của chị
+    const newDisplayName = document.getElementById('inputNewDisplayName').value.trim();
     
-    // Cập nhật lên Firebase Authentication (tên hiển thị)
     user.updateProfile({
         displayName: newDisplayName || user.displayName
     }).then(() => {
-        // Cập nhật URL avatar vào Realtime Database để lưu lâu dài
         if (selectedAvatarUrl) {
             firebase.database().ref('users/' + user.uid + '/avatar').set(selectedAvatarUrl);
         }
-        
-        // Cập nhật tên vào Database (để đồng bộ)
         if (newDisplayName) {
             firebase.database().ref('users/' + user.uid + '/displayName').set(newDisplayName);
         }
-
         alert("🎉 Đã cập nhật hồ sơ thành công!");
-        location.reload(); // Tải lại trang để hiển thị thông tin mới
+        location.reload();
     }).catch((error) => {
         alert("Có lỗi xảy ra: " + error.message);
     });
@@ -508,11 +468,8 @@ function removeFromBookshelf(key) {
     }
 }
 
-// --- C. ĐIỀU KHIỂN POPUP ĐĂNG NHẬP VÀ FORM SUBMIT ---
 function openAuthModal() { const modal = document.getElementById('authModal'); if (modal) modal.style.display = 'flex'; }
 function closeAuthModal() { const modal = document.getElementById('authModal'); if (modal) modal.style.display = 'none'; }
-function closeAuthModalOverlay(event) { if (event.target.id === 'authModal') closeAuthModal(); }
-
 function toggleAuthMode() {
     isSignUpMode = !isSignUpMode;
     const authTitle = document.getElementById('authTitle');
@@ -556,17 +513,14 @@ function logoutFromProfile() {
         auth.signOut();
     }
 }
-// Dán vào file index.js của chị
+
 document.addEventListener('click', function(event) {
     const dropdownMenu = document.getElementById('tagMenu');
     const dropdownBtn = document.getElementById('tagDropdownBtn');
 
-    // Nếu bấm vào nút thì đóng/mở
-    if (event.target === dropdownBtn || dropdownBtn.contains(event.target)) {
+    if (dropdownBtn && (event.target === dropdownBtn || dropdownBtn.contains(event.target))) {
         dropdownMenu.style.display = (dropdownMenu.style.display === 'block') ? 'none' : 'block';
-    } 
-    // Nếu bấm ra ngoài menu thì đóng menu lại
-    else if (!dropdownMenu.contains(event.target)) {
+    } else if (dropdownMenu && !dropdownMenu.contains(event.target)) {
         dropdownMenu.style.display = 'none';
     }
 });

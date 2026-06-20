@@ -3,185 +3,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Động Chăn Rùa - Studio Của Chị Trân 🐢</title>
+    <title>Động Chăn Rùa - Netflix Studio Của Chị Trân 🐢</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <style>
         :root {
-            --primary: #7c3aed;
-            --primary-light: #f0ecfe;
-            --bg: #f8fafc;
-            --text: #334155;
-            --border: #cbd5e1;
-            --success: #16a34a;
-            --info: #0284c7;
+            --netflix-black: #141414;
+            --netflix-card: #181818;
+            --mint: #2dd4bf; /* Xanh mint chuẩn chỉnh, xịn sò */
+            --mint-hover: #14b8a6;
+            --mint-light: rgba(45, 212, 191, 0.1);
+            --text-light: #f5f5f5;
+            --text-muted: #808080;
+            --border: #333333;
         }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg); color: var(--text); margin: 0; padding: 20px;
-            display: flex !important; justify-content: center;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--netflix-black);
+            color: var(--text-light);
+            margin: 0;
+            padding: 30px;
+            display: flex !important;
+            justify-content: center;
         }
+
         .container {
-            width: 100%; max-width: 1200px; background: #ffffff; padding: 30px;
-            border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box;
+            width: 100%;
+            max-width: 1300px;
+            box-sizing: border-box;
         }
+
+        /* HEADER KIỂU NETFLIX */
         .header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 25px; border-bottom: 2px solid var(--primary-light); padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
         }
-        .header h1 { font-size: 1.5rem; color: #1e293b; margin: 0; }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--mint);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(45, 212, 191, 0.3);
+        }
         .btn-back {
-            background: var(--primary-light); color: var(--primary); border: none;
-            padding: 8px 16px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 0.9rem;
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
         }
-        .layout-studio { display: grid; grid-template-columns: 320px 1fr; gap: 30px; }
-        @media (max-width: 768px) { .layout-studio { grid-template-columns: 1fr; } }
+        .btn-back:hover {
+            border-color: var(--mint);
+            color: var(--mint);
+        }
+
+        /* LAYOUT CHÍNH */
+        .layout-studio {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 40px;
+        }
+        @media (max-width: 900px) {
+            .layout-studio { grid-template-columns: 1fr; }
+        }
+
+        /* NETFLIX SIDEBAR (KHO TRUYỆN) */
+        .profile-sidebar {
+            background: var(--netflix-card);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 8px;
+            height: fit-content;
+        }
+        .profile-card {
+            text-align: center;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+        .profile-card img {
+            width: 90px; height: 90px; border-radius: 50%;
+            border: 3px solid var(--mint); padding: 3px; background: var(--netflix-black);
+            box-shadow: 0 0 15px rgba(45, 212, 191, 0.2);
+        }
+        .profile-card h2 { font-size: 1.3rem; margin: 15px 0 5px 0; color: var(--text-light); }
         
-        /* SIDEBAR */
-        .profile-sidebar { background: #fafafa; border: 1px solid var(--border); padding: 20px; border-radius: 16px; height: fit-content; }
-        .profile-card { text-align: center; padding-bottom: 20px; border-bottom: 1px dashed var(--border); margin-bottom: 20px; }
-        .profile-card img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); padding: 3px; background: #fff; }
-        .profile-card h2 { font-size: 1.2rem; margin: 10px 0 5px 0; color: #1e293b; }
+        .story-list-title {
+            margin: 0 0 15px 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);
+        }
         .story-item {
-            display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px;
-            cursor: pointer; margin-bottom: 10px; transition: all 0.2s; background: #fff; border: 1px solid #e2e8f0;
+            display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 6px;
+            cursor: pointer; margin-bottom: 12px; transition: all 0.3s ease;
+            background: var(--netflix-black); border: 1px solid transparent;
         }
-        .story-item:hover, .story-item.active { background: var(--primary-light); border-color: #c084fc; }
-        .story-item img { width: 45px; height: 60px; object-fit: cover; border-radius: 6px; }
-        .story-item-title { margin: 0; font-weight: bold; font-size: 0.9rem; color: #1e293b; }
-        
-        /* WORKSPACE */
+        .story-item:hover {
+            transform: scale(1.02);
+            border-color: #555;
+        }
+        .story-item.active {
+            background: var(--mint-light);
+            border-color: var(--mint);
+            box-shadow: 0 0 10px rgba(45, 212, 191, 0.1);
+        }
+        .story-item img { width: 45px; height: 65px; object-fit: cover; border-radius: 4px; background: #222; }
+        .story-item-title { margin: 0; font-weight: bold; font-size: 0.95rem; color: var(--text-light); }
+
+        /* WORKSPACE NETFLIX PANEL */
         .workspace-panel { display: none; }
-        .edit-info-box { background: #f8fafc; border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-group label { font-weight: bold; font-size: 0.85rem; color: #64748b; }
-        .form-group input { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
+        .workspace-title { color: var(--text-light); font-size: 1.6rem; margin-top: 0; margin-bottom: 25px; font-weight: bold; }
+
+        /* NETFLIX FORM CONTROL BOX */
+        .netflix-box {
+            background: var(--netflix-card);
+            border: 1px solid var(--border);
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .box-title {
+            margin: 0 0 20px 0; font-size: 1.1rem; font-weight: bold; color: var(--mint);
+            display: flex; align-items: center; gap: 10px;
+        }
         
-        .tag-box { background: #f1f5f9; padding: 20px; border-radius: 16px; margin-bottom: 25px; }
-        .tag-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 650px) { .form-grid { grid-template-columns: 1fr; } }
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 0.85rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; }
+        .form-group input {
+            background: #333; color: var(--text-light); border: 1px solid transparent;
+            padding: 12px; border-radius: 4px; font-size: 0.95rem; transition: all 0.2s;
+        }
+        .form-group input:focus {
+            outline: none; border-color: var(--mint); background: #444;
+        }
+
+        /* NETFLIX TAGS STYLING */
+        .tag-group { display: flex; flex-wrap: wrap; gap: 10px; }
         .tag-checkbox { display: none; }
-        .tag-label { padding: 6px 14px; background: #fff; border: 1px solid var(--border); border-radius: 20px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-        .tag-checkbox:checked + .tag-label { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .btn-action { padding: 10px 16px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-        .btn-save { background: var(--success); color: white; }
-        .btn-info { background: var(--info); color: white; margin-top: 10px; }
+        .tag-label {
+            padding: 8px 16px; background: var(--netflix-black); border: 1px solid var(--border);
+            border-radius: 4px; font-size: 0.85rem; cursor: pointer; font-weight: bold;
+            color: var(--text-light); transition: all 0.2s;
+        }
+        .tag-label:hover { border-color: #666; }
+        .tag-checkbox:checked + .tag-label {
+            background: var(--mint); color: var(--netflix-black); border-color: var(--mint);
+            box-shadow: 0 0 10px rgba(45, 212, 191, 0.3);
+        }
 
-        .tab-menu { display: flex; gap: 15px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
-        .tab-btn { background: none; border: none; padding: 10px 15px; font-size: 1rem; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* BIG BUTTON MINT */
+        .btn-netflix-submit {
+            width: 100%; padding: 15px; background: var(--mint); color: var(--netflix-black);
+            border: none; border-radius: 4px; font-weight: bold; font-size: 1rem; cursor: pointer;
+            transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-netflix-submit:hover {
+            background: var(--mint-hover);
+            transform: translateY(-1px);
+        }
 
-        .chapter-row { background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-        .chapter-info h4 { margin: 0 0 5px 0; color: #1e293b; font-size: 0.95rem; }
-        .chapter-info p { margin: 0; font-size: 0.8rem; color: #64748b; }
-        .btn-edit-chapter { background: var(--primary-light); color: var(--primary); border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* CHAPTER LIST AREA */
+        .chapter-section-title {
+            font-size: 1.2rem; color: var(--text-light); border-left: 4px solid var(--mint);
+            padding-left: 10px; margin: 40px 0 20px 0; font-weight: bold;
+        }
+        .chapter-row {
+            background: var(--netflix-card); border: 1px solid var(--border); padding: 18px;
+            border-radius: 6px; margin-bottom: 12px; display: flex;
+            justify-content: space-between; align-items: center; gap: 20px; transition: all 0.2s;
+        }
+        .chapter-row:hover { border-color: #444; background: #1f1f1f; }
+        .chapter-info h4 { margin: 0 0 5px 0; color: var(--text-light); font-size: 1rem; }
+        .chapter-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .btn-edit-chapter {
+            background: transparent; color: var(--mint); border: 1px solid var(--mint);
+            padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-edit-chapter:hover {
+            background: var(--mint); color: var(--netflix-black);
+        }
 
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 999; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 800px; display: flex; flex-direction: column; gap: 15px; }
-        .modal-content textarea { width: 100%; min-height: 350px; padding: 15px; border: 1px solid var(--border); border-radius: 12px; font-size: 1rem; line-height: 1.6; box-sizing: border-box; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-close-modal { background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn-save-modal { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-
-        .file-zone { border: 2px dashed #b19ffb; background: #f8f6ff; border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 15px; }
-        .btn-bulk-upload { width: 100%; padding: 12px; background: linear-gradient(135deg, #a78bfa, var(--primary)); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; display: none; }
+        /* POPUP SỬA CHƯƠNG */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 999;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: var(--netflix-card); padding: 30px; border-radius: 8px; width: 90%; max-width: 850px;
+            border: 1px solid #444; display: flex; flex-direction: column; gap: 20px;
+        }
+        .modal-content input {
+            background: #333; color: white; border: 1px solid transparent; padding: 12px; border-radius: 4px; font-size: 1rem;
+        }
+        .modal-content input:focus { outline: none; border-color: var(--mint); }
+        .modal-content textarea {
+            width: 100%; min-height: 400px; padding: 15px; border: 1px solid transparent; background: #333;
+            color: #fff; border-radius: 4px; font-size: 1rem; line-height: 1.6; box-sizing: border-box; resize: vertical;
+        }
+        .modal-content textarea:focus { outline: none; border-color: var(--mint); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 15px; }
+        .btn-close-modal { background: #333; color: var(--text-light); border: none; padding: 10px 22px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .btn-save-modal { background: var(--mint); color: var(--netflix-black); border: none; padding: 10px 22px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>🔮 Động Chăn Rùa - Studio Của Chị Trân</h1>
-        <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Về Trang Chủ</a>
+        <h1>🍿 ĐỘNG CHĂN RÙA • STUDIO CỦA CHỊ TRÂN</h1>
+        <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> VỀ TRANG CHỦ</a>
     </div>
 
     <div class="layout-studio">
+        <!-- SIDEBAR DANH SÁCH TRUYỆN -->
         <div class="profile-sidebar">
             <div class="profile-card">
                 <img src="https://via.placeholder.com/150" alt="Avatar">
                 <h2>Chị Trân 🐢</h2>
-                <span style="font-size:0.8rem; background:#dcfce7; color:#166534; padding:3px 8px; border-radius:10px; font-weight:bold;">Chủ Động</span>
+                <span style="font-size:0.75rem; background: var(--mint-light); color: var(--mint); border: 1px solid var(--mint); padding:4px 12px; border-radius:2px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">ADMINISTRATOR</span>
             </div>
-            <h3 style="margin: 15px 0 10px 0; font-size: 1rem; color:#64748b;"><i class="fa-solid fa-folder-open"></i> Truyện chị đã đăng</h3>
+            <h3 class="story-list-title"><i class="fa-solid fa-film"></i> Danh sách truyện</h3>
             <div id="studioStoryList">Đang tải danh sách...</div>
         </div>
 
+        <!-- PANEL ĐIỀU KHIỂN CHÍNH (CHỈ HIỆN KHI BẤM CHỌN TRUYỆN) -->
         <div id="workspacePanel" class="workspace-panel">
-            <h2 id="workspaceTitle" style="color: var(--primary); margin-top: 0;"></h2>
+            <h2 id="workspaceTitle" class="workspace-title"></h2>
 
-            <div class="edit-info-box">
-                <h4 style="margin:0;"><i class="fa-solid fa-gear"></i> Cấu Hình Thông Tin Truyện (Đổi tên / Sửa ảnh bìa)</h4>
+            <!-- KHU VỰC CẬP NHẬT TỔNG HỢP: META, TAGS, PASS -->
+            <div class="netflix-box">
+                <div class="box-title"><i class="fa-solid fa-sliders"></i> THÔNG TIN & CẤU HÌNH TRUYỆN</div>
+                
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Tên hiển thị của truyện</label>
-                        <input type="text" id="inputStoryTitle" placeholder="Nhập tên truyện tiếng Việt đầy đủ...">
+                        <label>Tên hiển thị truyện</label>
+                        <input type="text" id="inputStoryTitle" placeholder="Tên truyện tiếng Việt đầy đủ...">
                     </div>
                     <div class="form-group">
-                        <label>Đường dẫn Ảnh bìa (Link Ảnh)</label>
+                        <label>Đường dẫn ảnh bìa (Link URL)</label>
                         <input type="text" id="inputStoryCover" placeholder="Dán link ảnh bìa mới vào đây...">
                     </div>
                 </div>
-                <button class="btn-action btn-info" onclick="updateStoryMeta()"><i class="fa-solid fa-pen-to-square"></i> Cập nhật Tên & Ảnh bìa</button>
-            </div>
 
-            <div class="tag-box">
-                <h4 style="margin:0;"><i class="fa-solid fa-tags"></i> Gắn Tag Phân Loại Cho Truyện</h4>
-                <div class="tag-group">
-                    <input type="checkbox" id="tag_tronbo" class="tag-checkbox" value="Trọn bộ"><label for="tag_tronbo" class="tag-label">📦 Trọn bộ</label>
-                    <input type="checkbox" id="tag_dangtienhanh" class="tag-checkbox" value="Đang tiến hành"><label for="tag_dangtienhanh" class="tag-label">⏳ Đang tiến hành</label>
-                    <input type="checkbox" id="tag_ngontinh" class="tag-checkbox" value="Ngôn tình"><label for="tag_ngontinh" class="tag-label">🌸 Ngôn tình</label>
-                    <input type="checkbox" id="tag_dammy" class="tag-checkbox" value="Đam mỹ"><label for="tag_dammy" class="tag-label">🌈 Đam mỹ</label>
-                    <input type="checkbox" id="tag_hiendai" class="tag-checkbox" value="Hiện đại"><label for="tag_hiendai" class="tag-label">🏙️ Hiện đại</label>
-                    <input type="checkbox" id="tag_coandai" class="tag-checkbox" value="Cổ đại"><label for="tag_coandai" class="tag-label">🏯 Cổ đại</label>
-                    <input type="checkbox" id="tag_dienvan" class="tag-checkbox" value="Điền văn"><label for="tag_dienvan" class="tag-label">🌾 Điền văn</label>
+                <div class="form-grid" style="margin-top: 20px; margin-bottom: 25px;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Mật mã bảo mật truyện (Password)</label>
+                        <input type="text" id="inputStoryPass" placeholder="Đặt pass chung cho truyện (Để trống nếu muốn công khai hoàn toàn)..." style="border: 1px dashed #555;">
+                    </div>
                 </div>
-                <button class="btn-action btn-save" style="margin-top:15px;" onclick="saveStoryTags()"><i class="fa-solid fa-floppy-disk"></i> Lưu bộ tag phân loại</button>
-            </div>
 
-            <div class="tab-menu">
-                <button class="tab-btn active" onclick="switchTab('tabChapters')"><i class="fa-solid fa-list"></i> Mục lục chương</button>
-                <button class="tab-btn" onclick="switchTab('tabImport')"><i class="fa-solid fa-file-import"></i> Đăng chương hàng loạt</button>
-            </div>
-
-            <div id="tabChapters" class="tab-content active">
-                <div id="wattpadChapterContainer">Đang tải danh sách...</div>
-            </div>
-
-            <div id="tabImport" class="tab-content">
-                <div class="file-zone">
-                    <p style="margin:0 0 10px 0; color:var(--primary); font-weight:bold;"><i class="fa-solid fa-file-word"></i> Chọn file Word (.docx) hoặc .txt để rải chương</p>
-                    <input type="file" id="fileInput" onchange="handleBulkParsing(this)" accept=".txt,.docx">
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label style="margin-bottom: 10px;">GẮN TAG THỂ LOẠI / PHÂN LOẠI</label>
+                    <div class="tag-group">
+                        <input type="checkbox" id="tag_tronbo" class="tag-checkbox" value="Trọn bộ"><label for="tag_tronbo" class="tag-label">📦 Trọn bộ</label>
+                        <input type="checkbox" id="tag_dangtienhanh" class="tag-checkbox" value="Đang tiến hành"><label for="tag_dangtienhanh" class="tag-label">⏳ Đang tiến hành</label>
+                        <input type="checkbox" id="tag_ngontinh" class="tag-checkbox" value="Ngôn tình"><label for="tag_ngontinh" class="tag-label">🌸 Ngôn tình</label>
+                        <input type="checkbox" id="tag_dammy" class="tag-checkbox" value="Đam mỹ"><label for="tag_dammy" class="tag-label">🌈 Đam mỹ</label>
+                        <input type="checkbox" id="tag_hiendai" class="tag-checkbox" value="Hiện đại"><label for="tag_hiendai" class="tag-label">🏙️ Hiện đại</label>
+                        <input type="checkbox" id="tag_coandai" class="tag-checkbox" value="Cổ đại"><label for="tag_coandai" class="tag-label">🏯 Cổ đại</label>
+                        <input type="checkbox" id="tag_dienvan" class="tag-checkbox" value="Điền văn"><label for="tag_dienvan" class="tag-label">🌾 Điền văn</label>
+                        <input type="checkbox" id="tag_nguoc" class="tag-checkbox" value="Ngược"><label for="tag_nguoc" class="tag-label">💧 Ngược</label>
+                        <input type="checkbox" id="tag_sung" class="tag-checkbox" value="Sủng"><label for="tag_sung" class="tag-label">🍬 Sủng</label>
+                    </div>
                 </div>
-                <div id="bulkStatusBar" style="padding:10px; display:none; background:#e0f2fe; color:#0369a1; border-radius:8px; font-weight:bold; margin-bottom:10px;"></div>
-                <button id="btnConfirmBulk" class="btn-bulk-upload" onclick="uploadBulkChaptersToFirebase()"><i class="fa-solid fa-cloud-arrow-up"></i> Xác Nhận Đăng Hàng Loạt Lên Hệ Thống</button>
-                <div id="bulkPreviewArea" style="margin-top:15px; border:1px dashed var(--border); border-radius:12px; padding:15px; background:#f8fafc; max-height:300px; overflow-y:auto; display:none;"></div>
+
+                <button class="btn-netflix-submit" onclick="saveAllStorySettings()"><i class="fa-solid fa-circle-check"></i> XÁC NHẬN CẬP NHẬT HỆ THỐNG</button>
             </div>
+
+            <!-- MỤC LỤC CHƯƠNG KIỂU WATTPAD -->
+            <div class="chapter-section-title"><i class="fa-solid fa-list-ol"></i> QUẢN LÝ DANH SÁCH CHƯƠNG</div>
+            <div id="wattpadChapterContainer">Đang tải danh sách chương...</div>
         </div>
     </div>
 </div>
 
+<!-- BOX MODAL SỬA CHƯƠNG ĐỘC LẬP -->
 <div id="editChapterModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalChapterHeader" style="margin:0; color:var(--primary);">Sửa nội dung chương</h3>
-        <input type="text" id="modalChapterTitle" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; box-sizing:border-box;">
-        <textarea id="modalChapterContent"></textarea>
+        <h3 id="modalChapterHeader" style="margin:0; color:var(--mint); font-size:1.3rem;">📝 CHỈNH SỬA NỘI DUNG</h3>
+        <input type="text" id="modalChapterTitle" placeholder="Tiêu đề chương">
+        <textarea id="modalChapterContent" placeholder="Nội dung truyện..."></textarea>
         <div class="modal-actions">
-            <button class="btn-close-modal" onclick="closeEditModal()">Hủy bỏ</button>
-            <button class="btn-save-modal" onclick="saveEditedChapterContent()">Lưu thay đổi 🐢</button>
+            <button class="btn-close-modal" onclick="closeEditModal()">HỦY BỎ</button>
+            <button class="btn-save-modal" onclick="saveEditedChapterContent()">LƯU THAY ĐỔI 🐢</button>
         </div>
     </div>
 </div>
 
 <script>
+    // CẤU HÌNH FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
         authDomain: "dongchanrua.firebaseapp.com",
@@ -197,45 +322,53 @@
 
     let currentStoryId = "";
     let currentEditChapterNum = "";
-    let temporaryBulkList = [];
 
+    // LẤY TRUYỆN ĐỔ VÀO SIDEBAR
     function loadProfileStories() {
         const listContainer = document.getElementById('studioStoryList');
         db.ref('stories').once('value').then((snapshot) => {
             listContainer.innerHTML = '';
-            if(!snapshot.exists()) return;
+            if(!snapshot.exists()) {
+                listContainer.innerHTML = '<p style="color:var(--text-muted); padding:10px;">Chưa có truyện nào.</p>';
+                return;
+            }
             snapshot.forEach((child) => {
                 const id = child.key; const story = child.val();
-                const cover = story.img || story.cover || 'https://via.placeholder.com/45x60';
+                const cover = story.img || story.cover || 'https://via.placeholder.com/45x65';
                 const div = document.createElement('div');
                 div.className = `story-item story-item-${id}`;
                 div.onclick = () => selectStoryForWorkspace(id, story.title, cover);
-                div.innerHTML = `<img src="${cover}"><div style="flex:1;"><p class="story-item-title">${story.title}</p><p style="margin:3px 0 0 0; font-size:0.75rem; color:#94a3b8;">ID: ${id}</p></div>`;
+                div.innerHTML = `<img src="${cover}"><div style="flex:1;"><p class="story-item-title">${story.title}</p><p style="margin:5px 0 0 0; font-size:0.75rem; color:var(--text-muted);">ID: ${id}</p></div>`;
                 listContainer.appendChild(div);
             });
         });
     }
     loadProfileStories();
 
+    // BẤM TRUYỆN -> ĐỔ DỮ LIỆU CŨ LÊN KHU VỰC SỬA
     function selectStoryForWorkspace(storyId, storyTitle, storyCover) {
         currentStoryId = storyId;
-        document.getElementById('workspaceTitle').innerHTML = `<i class="fa-solid fa-feather-pointed"></i> Đang biên tập: ${storyTitle}`;
+        document.getElementById('workspaceTitle').innerText = storyTitle;
         document.querySelectorAll('.story-item').forEach(el => el.classList.remove('active'));
         document.querySelector(`.story-item-${storyId}`).classList.add('active');
         document.getElementById('workspacePanel').style.display = 'block';
         
-        // Đổ thông tin meta hiện tại vào ô nhập liệu để chị sửa
         document.getElementById('inputStoryTitle').value = storyTitle;
         document.getElementById('inputStoryCover').value = (storyCover.includes('placeholder') ? '' : storyCover);
 
-        // Đọc tag cũ
+        // Reset & Đọc lại Tag + Pass cũ từ Firebase
+        document.getElementById('inputStoryPass').value = '';
         document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
-        db.ref(`stories/${storyId}/tags`).once('value').then((snapshot) => {
+
+        db.ref(`stories/${storyId}`).once('value').then((snapshot) => {
             if(snapshot.exists()) {
-                const savedTags = snapshot.val();
-                if(Array.isArray(savedTags)) {
+                const data = snapshot.val();
+                // Điền pass cũ nếu có
+                if(data.password) document.getElementById('inputStoryPass').value = data.password;
+                // Sáng đèn các tag cũ
+                if(Array.isArray(data.tags)) {
                     document.querySelectorAll('.tag-checkbox').forEach(cb => {
-                        if(savedTags.includes(cb.value)) cb.checked = true;
+                        if(data.tags.includes(cb.value)) cb.checked = true;
                     });
                 }
             }
@@ -243,56 +376,55 @@
         loadChaptersWattpadStyle();
     }
 
-    // HÀM ĐỔI TÊN VÀ ĐỔI ẢNH BÌA TRUYỆN MỚI THÊM
-    function updateStoryMeta() {
+    // GOM TẤT CẢ VÀO 1 NÚT XÁC NHẬN CẬP NHẬT DUY NHẤT
+    function saveAllStorySettings() {
         if(!currentStoryId) return;
         const newTitle = document.getElementById('inputStoryTitle').value.trim();
         const newCover = document.getElementById('inputStoryCover').value.trim();
+        const newPass = document.getElementById('inputStoryPass').value.trim();
 
-        if(!newTitle) return alert("Chị ơi không được bỏ trống tên truyện đâu ạ!");
+        if(!newTitle) return alert("Chị ơi không được để trống Tên truyện đâu nha!");
 
-        // Cập nhật đè lên nút dữ liệu stories/ID_TRUYEN trên Firebase
+        const selectedTags = [];
+        document.querySelectorAll('.tag-checkbox').forEach(cb => {
+            if(cb.checked) selectedTags.push(cb.value);
+        });
+
+        // Đẩy gói dữ liệu tổng hợp lên Firebase
         db.ref(`stories/${currentStoryId}`).update({
             title: newTitle,
-            img: newCover || 'https://via.placeholder.com/45x60'
+            img: newCover || 'https://via.placeholder.com/45x65',
+            password: newPass, // Tự động thêm pass hoặc xóa pass nếu ô này trống
+            tags: selectedTags
         }).then(() => {
-            alert("🎉 Đã cập nhật Tên truyện / Ảnh bìa thành công mĩ mĩ mãn rồi chị Trân!");
-            loadProfileStories(); // Tải lại danh sách bên trái để cập nhật tên mới
-            document.getElementById('workspaceTitle').innerHTML = `<i class="fa-solid fa-feather-pointed"></i> Đang biên tập: ${newTitle}`;
+            alert("✨ Netflix Studio Thông Báo: Đã đồng bộ thông tin truyện, bộ tag và pass thành công mĩ mãn!");
+            loadProfileStories(); // Cập nhật lại list sidebar
         });
     }
 
-    function saveStoryTags() {
-        if(!currentStoryId) return;
-        const selectedTags = [];
-        document.querySelectorAll('.tag-checkbox').forEach(cb => { if(cb.checked) selectedTags.push(cb.value); });
-        db.ref(`stories/${currentStoryId}/tags`).set(selectedTags).then(() => { alert("🎉 Đã lưu bộ tag phân loại thành công!"); });
-    }
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-    }
-
+    // TẢI CHƯƠNG ĐỂ SỬA NHANH
     function loadChaptersWattpadStyle() {
         const container = document.getElementById('wattpadChapterContainer');
-        container.innerHTML = '<p style="color:#999; padding:15px;">Đang tải danh mục chương...</p>';
+        container.innerHTML = '<p style="color:var(--text-muted); padding:15px;">Đang tải mục lục...</p>';
         db.ref(`chapters/${currentStoryId}`).once('value').then((snapshot) => {
             container.innerHTML = '';
-            if(!snapshot.exists()) { container.innerHTML = '<p style="color:#999; padding:15px;">Truyện chưa có chương.</p>'; return; }
+            if(!snapshot.exists()) {
+                container.innerHTML = '<p style="color:var(--text-muted); padding:15px;">Truyện này hiện tại chưa có chương nào.</p>';
+                return;
+            }
             const list = [];
             snapshot.forEach(child => { const val = child.val(); list.push({ keyNum: child.key, ...val }); });
             list.sort((a,b) => (a.number || parseInt(a.keyNum)) - (b.number || parseInt(b.keyNum)));
             list.forEach(ch => {
-                const row = document.createElement('div'); row.className = 'chapter-row';
-                row.innerHTML = `<div class="chapter-info"><h4>${ch.title}</h4><p><i class="fa-solid fa-eye"></i> Lượt đọc: ${ch.views || 0}</p></div><button class="btn-edit-chapter" onclick="openEditModal('${ch.keyNum}')"><i class="fa-regular fa-pen-to-square"></i> Sửa nhanh</button>`;
+                const row = document.createElement('div');
+                row.className = 'chapter-row';
+                row.innerHTML = `<div class="chapter-info"><h4>${ch.title}</h4><p><i class="fa-solid fa-eye"></i> Lượt đọc: ${ch.views || 0}</p></div><button class="btn-edit-chapter" onclick="openEditModal('${ch.keyNum}')">SỬA NHANH</button>`;
                 container.appendChild(row);
             });
         });
     }
 
+    // MODAL SỬA CHƯƠNG
     function openEditModal(chapterNum) {
         currentEditChapterNum = chapterNum;
         document.getElementById('editChapterModal').style.display = 'flex';
@@ -301,7 +433,7 @@
                 const ch = snapshot.val();
                 document.getElementById('modalChapterTitle').value = ch.title || '';
                 document.getElementById('modalChapterContent').value = ch.content || '';
-                document.getElementById('modalChapterHeader').innerText = `📝 Đang Sửa: Chương ${chapterNum}`;
+                document.getElementById('modalChapterHeader').innerText = `📝 ĐANG BIÊN TẬP: CHƯƠNG ${chapterNum}`;
             }
         });
     }
@@ -310,49 +442,16 @@
     function saveEditedChapterContent() {
         const newTitle = document.getElementById('modalChapterTitle').value.trim();
         const newContent = document.getElementById('modalChapterContent').value.trim();
-        db.ref(`chapters/${currentStoryId}/${currentEditChapterNum}`).update({ title: newTitle, content: newContent }).then(() => {
-            alert(`🎉 Đã cập nhật xong nội dung Chương ${currentEditChapterNum}!`); closeEditModal(); loadChaptersWattpadStyle();
+        if(!newTitle || !newContent) return alert("Không được bỏ trống tiêu đề hay nội dung truyện nha chị!");
+
+        db.ref(`chapters/${currentStoryId}/${currentEditChapterNum}`).update({
+            title: newTitle,
+            content: newContent
+        }).then(() => {
+            alert(`🎉 Đã sửa xong nội dung Chương ${currentEditChapterNum}!`);
+            closeEditModal();
+            loadChaptersWattpadStyle();
         });
-    }
-
-    function handleBulkParsing(input) {
-        const file = input.files[0]; if (!file) return;
-        const name = file.name.toLowerCase();
-        if (name.endsWith('.txt')) {
-            const r = new FileReader(); r.onload = function(e) { processRawText(e.target.result); }; r.readAsText(file, 'UTF-8');
-        } else if (name.endsWith('.docx')) {
-            const r = new FileReader(); r.onload = function(e) { mammoth.extractRawText({ arrayBuffer: e.target.result }).then(function(res) { processRawText(res.value); }); }; r.readAsArrayBuffer(file);
-        }
-    }
-
-    function processRawText(text) {
-        temporaryBulkList = []; const lines = text.split(/\r?\n/); const regex = /^\s*Chương\s+(\d+)\s*[:\-\s]\s*(.*)$/i; let currentCh = null;
-        for(let i=0; i<lines.length; i++) {
-            const match = lines[i].match(regex);
-            if(match) {
-                if(currentCh) temporaryBulkList.push(currentCh);
-                currentCh = { number: parseInt(match[1]), title: lines[i].trim(), bodyLines: [] };
-            } else { if(currentCh) currentCh.bodyLines.push(lines[i]); }
-        }
-        if(currentCh) temporaryBulkList.push(currentCh);
-        const preview = document.getElementById('bulkPreviewArea'); preview.innerHTML = '';
-        if(temporaryBulkList.length === 0) { preview.innerHTML = '❌ Không bóc được chương.'; preview.style.display = 'block'; return; }
-        temporaryBulkList.forEach(c => {
-            c.content = c.bodyLines.join('\n').trim(); delete c.bodyLines;
-            const p = document.createElement('p'); p.style.margin = '5px 0'; p.style.fontSize = '0.85rem';
-            p.innerHTML = `✅ <b>${c.title}</b> (${c.content.substring(0, 40)}...)`; preview.appendChild(p);
-        });
-        preview.style.display = 'block'; document.getElementById('btnConfirmBulk').innerText = `Xác Nhận Đăng Hàng Loạt (${temporaryBulkList.length} Chương) 🚀`; document.getElementById('btnConfirmBulk').style.display = 'block';
-    }
-
-    async function uploadBulkChaptersToFirebase() {
-        const statusBar = document.getElementById('bulkStatusBar'); statusBar.style.display = 'block'; let count = 0;
-        for(const ch of temporaryBulkList) {
-            await db.ref(`chapters/${currentStoryId}/${ch.number}`).set({ title: ch.title, number: ch.number, content: ch.content, status: "Công khai", createdAt: Date.now(), views: 0 });
-            count++; statusBar.innerText = `🚚 Đang đẩy luồng dữ liệu: Chương ${count}/${temporaryBulkList.length}...`;
-        }
-        statusBar.style.background = '#dcfce7'; statusBar.style.color = '#16a34a'; statusBar.innerHTML = `🎉 Đã import toàn bộ thành công mĩ mãn <b>${count} chương</b> vào kho truyện!`;
-        document.getElementById('btnConfirmBulk').style.display = 'none'; loadChaptersWattpadStyle();
     }
 </script>
 </body>

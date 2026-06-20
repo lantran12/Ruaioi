@@ -1,3 +1,4 @@
+```javascript
 // ================= FIREBASE INIT =================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
@@ -37,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loadGenres();
   loadStories();
   loadTop();
-  listenNotifications();
 });
 
 // ================= EVENTS =================
@@ -107,11 +107,11 @@ function renderFeatured(list) {
   const url = `book.html?id=${s.id}`;
 
   if (title) title.textContent = s.title;
-  if (desc) desc.textContent = s.description || s.synopsis || "";
+  if (desc) desc.textContent = s.description || "";
   if (link) link.href = url;
 
   if (box && s.img) {
-    box.style.background = `linear-gradient(to right, rgba(255,255,255,0.9), transparent), url(${s.img})`;
+    box.style.background = `url(${s.img}) center/cover`;
     box.onclick = () => location.href = url;
   }
 }
@@ -130,15 +130,8 @@ function loadTop() {
     snap.forEach(c => arr.push({ id: c.key, ...c.val() }));
 
     arr.reverse().forEach((s, i) => {
-      const div = document.createElement("div");
-      div.className = "story-card";
-
-      div.innerHTML = `
-        <img src="${s.img || ""}">
-        <h4>TOP ${i + 1}. ${s.title}</h4>
-      `;
-
-      div.onclick = () => location.href = `book.html?id=${s.id}`;
+      const div = createCard(s);
+      div.querySelector("h4").innerText = `TOP ${i + 1}. ${s.title}`;
       container.appendChild(div);
     });
   });
@@ -230,16 +223,23 @@ function loadGenres() {
 // ================= AUTH =================
 onAuthStateChanged(auth, user => {
   const btn = document.getElementById("btnHeaderAuth");
+  const notiBtn = document.getElementById("notiBtn");
 
   if (user) {
     btn.textContent = user.displayName || "User";
     btn.onclick = openProfile;
+
+    notiBtn.style.display = "inline-block";
+    listenNotifications(user.uid);
 
     renderProfile(user);
   } else {
     btn.innerHTML = "👤";
     btn.onclick = openAuthModal;
 
+    notiBtn.style.display = "none";
+
+    state.notiUnsub?.();
     state.bookshelfUnsub?.();
   }
 });
@@ -263,10 +263,9 @@ function submitAuth() {
 function renderProfile(user) {
   renderAvatarGrid();
 
-  // avatar realtime
   onValue(ref(db, `users/${user.uid}`), snap => {
     const data = snap.val();
-    const img = document.getElementById("userAvatar");
+    const img = document.getElementById("userCurrentAvatar");
     if (img && data?.avatar) img.src = data.avatar;
   });
 
@@ -278,50 +277,37 @@ function renderAvatarGrid() {
   const container = document.getElementById("avatarGridContainer");
   if (!container) return;
 
-  const cuteAvatars = [
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Lily",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Jack",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Mia",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Bear",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Cookie",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Buster",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Coco",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Milo",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver"
-    ];
+  const avatars = [
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Lily",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=Jack"
+  ];
 
   container.innerHTML = avatars.map(url => `
     <img src="${url}" class="avatar-option"
-      style="width:50px;height:50px;border-radius:50%;cursor:pointer;border:2px solid transparent"
+      style="width:50px;height:50px;border-radius:50%;cursor:pointer"
       onclick="selectAvatar(this,'${url}')">
   `).join("");
 }
 
 function selectAvatar(el, url) {
   state.selectedAvatar = url;
-
-  document.querySelectorAll(".avatar-option")
-    .forEach(i => i.style.border = "2px solid transparent");
-
-  el.style.border = "2px solid #ff4d6d";
 }
 
-function saveProfile() {
+// ================= SAVE PROFILE =================
+function updateUserProfileData() {
   const user = auth.currentUser;
   if (!user) return;
 
-  const name = document.getElementById("inputNewDisplayName").value;
+  const name = document.getElementById("editDisplayNameInput").value;
 
-  fbUpdateProfile(user, { displayName: name || user.displayName }).then(() => {
-    if (state.selectedAvatar) {
-      set(ref(db, `users/${user.uid}/avatar`), state.selectedAvatar);
-    }
-    alert("Đã lưu 🎉");
-    location.reload();
-  });
+  fbUpdateProfile(user, { displayName: name || user.displayName });
+
+  if (state.selectedAvatar) {
+    set(ref(db, `users/${user.uid}/avatar`), state.selectedAvatar);
+  }
+
+  alert("Đã lưu 🎉");
 }
 
 // ================= BOOKSHELF =================
@@ -343,11 +329,7 @@ function renderBookshelf(user) {
       const b = c.val();
 
       const div = document.createElement("div");
-
-      div.innerHTML = `
-        <p>${b.tenTruyen}</p>
-        <button>X</button>
-      `;
+      div.innerHTML = `<p>${b.tenTruyen}</p><button>X</button>`;
 
       div.querySelector("button").onclick = () =>
         remove(ref(db, `users/${user.uid}/tuSach/${c.key}`));
@@ -358,12 +340,13 @@ function renderBookshelf(user) {
 }
 
 // ================= NOTIFICATION =================
-function listenNotifications() {
+function listenNotifications(uid) {
   state.notiUnsub?.();
 
-  state.notiUnsub = onValue(ref(db, "notifications"), snap => {
-    document.getElementById("notiCount").textContent =
-      snap.exists() ? snap.size : 0;
+  state.notiUnsub = onValue(ref(db, `notifications/${uid}`), snap => {
+    let count = 0;
+    if (snap.exists()) snap.forEach(() => count++);
+    document.getElementById("notiCount").textContent = count;
   });
 }
 
@@ -382,18 +365,16 @@ function showHome() {
   document.getElementById("homeMainContent").style.display = "block";
 }
 
-function logout() {
+function logoutFromProfile() {
   signOut(auth);
 }
 
 // ================= GLOBAL =================
-// EXPOSE GLOBAL
 window.openAuthModal = openAuthModal;
-window.closeAuthModal = closeAuthModal;
-window.toggleAuthMode = toggleAuthMode;
-window.submitAuthForm = submitAuthForm;
 window.triggerSearch = triggerSearch;
 window.closeSearch = closeSearch;
 window.showHome = showHome;
 window.logoutFromProfile = logoutFromProfile;
 window.updateUserProfileData = updateUserProfileData;
+window.selectAvatar = selectAvatar;
+```

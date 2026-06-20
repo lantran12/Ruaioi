@@ -29,7 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
         loadMainStories();
         loadTopViews();
     }
-    
+    const searchInput = document.getElementById("searchInput");
+if (searchInput) {
+    searchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") triggerSearch();
+    });
+}
     // Đảm bảo không lỗi nếu trang book.html không có các section này
     if (document.getElementById('avatarGridContainer')) {
         renderAvatarSelectionGrid();
@@ -466,6 +471,7 @@ function handleForgotPassword() {
         .then(() => alert("Đã gửi mail reset mật khẩu rồi đó 💌"))
         .catch(err => alert(err.message));
 }
-document.getElementById("searchInput")?.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") triggerSearch();
-});
+function renderUserProfileData(user) {
+    // Có thể để trống cũng được
+    // Sau này muốn thêm avatar + info thì viết tiếp ở đây
+}

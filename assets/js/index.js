@@ -570,134 +570,76 @@ function logoutFromProfile() {
     }
 }
 
-// --- D. QUẢN LÝ ẨN/HIỆN POPUP VÀ SUBMIT CHƯƠNG TRUYỆN CHO ADMIN ---
-function toggleChapterPopup() {
-    const popup = document.getElementById('adminModal');
-    if (popup) {
-        if (popup.style.display === "none" || popup.style.display === "") {
-            popup.style.display = "flex";
-        } else {
-            popup.style.display = "none";
+
+// 1. Mở Popup và tự động tải danh sách truyện vào ô chọn
+function openAddChapterModal() {
+    document.getElementById('addChapterModal').style.display = 'flex';
+    
+    const dropdown = document.getElementById('selectStoryId');
+    // Làm sạch danh sách cũ
+    dropdown.innerHTML = '<option value="">-- Bấm vào đây để chọn truyện --</option>';
+
+    // Lấy dữ liệu truyện từ Firebase
+    db.ref('stories').once('value').then((snapshot) => {
+        if(snapshot.exists()) {
+            snapshot.forEach((child) => {
+                const storyId = child.key;
+                const storyData = child.val();
+                
+                const option = document.createElement('option');
+                option.value = storyId;
+                option.innerText = storyData.title; // Hiển thị tên truyện
+                dropdown.appendChild(option);
+            });
         }
-    }
+    });
 }
 
-function submitChapter() {
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Chưa đăng nhập 🐢");
-        return;
-    }
+// 2. Đóng Popup
+function closeAddChapterModal() {
+    document.getElementById('addChapterModal').style.display = 'none';
+}
 
-    const storyId = document.getElementById('chapterStoryId').value.trim();
-    const title = document.getElementById('chapterTitle').value.trim();
-    const number = parseInt(document.getElementById('chapterNumber').value);
-    const password = document.getElementById('chapterPassword').value.trim();
-    const content = document.getElementById('chapterContent').value.trim();
+// 3. Gửi dữ liệu chương mới lên Firebase
+function submitNewChapter() {
+    const selectedStoryId = document.getElementById('selectStoryId').value;
+    const title = document.getElementById('chapterTitleInput').value.trim();
+    const number = document.getElementById('chapterNumberInput').value.trim();
+    const password = document.getElementById('chapterPasswordInput').value.trim();
+    const content = document.getElementById('chapterContentInput').value.trim();
     const status = document.querySelector('input[name="chapterStatus"]:checked').value;
 
-    if (!storyId || !title || !number || !content) {
-        alert("Điền đầy đủ giúp em nha chị 😭");
-        return;
-    }
+    if(!selectedStoryId) return alert("Chị ơi chưa chọn truyện kìa!");
+    if(!title || !number || !content) return alert("Vui lòng điền đầy đủ Tên, Số chương và Nội dung nha chị!");
 
-    const chapterData = {
-        title: title,
-        number: number,
-        content: content,
-        status: status,
-        createdAt: Date.now(),
-        views: 0
-    };
+    // Kiểm tra xem chương đã tồn tại chưa để tránh ghi đè nhầm
+    db.ref(`chapters/${selectedStoryId}/${number}`).once('value').then((snapshot) => {
+        if (snapshot.exists() && !confirm("⚠️ Chương này đã tồn tại rồi, chị có chắc chắn muốn GHI ĐÈ nội dung mới lên không?")) {
+            return;
+        }
 
-    if (password) {
-        chapterData.password = password;
-    }
-
-    db.ref(`chapters/${storyId}/${number}`).set(chapterData)
-    .then(() => {
-        alert("Đăng chương thành công 🎉");
-        document.getElementById('chapterTitle').value = "";
-        document.getElementById('chapterNumber').value = "";
-        document.getElementById('chapterPassword').value = "";
-        document.getElementById('chapterContent').value = "";
-        toggleChapterPopup();
-    })
-    .catch(err => alert("Lỗi rồi chị ơi: " + err.message));
+        // Lưu vào Firebase
+        db.ref(`chapters/${selectedStoryId}/${number}`).set({
+            title: title,
+            number: parseInt(number),
+            content: content,
+            status: status,
+            password: password,
+            views: 0,
+            createdAt: Date.now()
+        }).then(() => {
+            alert("🎉 Đăng chương mới thành công rồi chị Trân ơi!");
+            closeAddChapterModal();
+            // Xóa trắng form sau khi đăng thành công
+            document.getElementById('chapterTitleInput').value = '';
+            document.getElementById('chapterNumberInput').value = '';
+            document.getElementById('chapterPasswordInput').value = '';
+            document.getElementById('chapterContentInput').value = '';
+        }).catch(err => alert("Lỗi rồi: " + err.message));
+    });
 }
 
-function importChapterFile(input) {
-    const file = input.files[0];
-    if (!file) return;
-
-    const textarea = document.getElementById('chapterContent');
-    const inputNumber = document.getElementById('chapterNumber');
-    const inputTitle = document.getElementById('chapterTitle');
-    const fileName = file.name.toLowerCase();
-
-    function processRawText(rawText) {
-        const chapterRegex = /^\s*Chương\s+(\d+)\s*[:\-\s]\s*(.*)$/i;
-        const lines = rawText.split(/\r?\n/);
-        
-        let foundIndex = -1;
-        let chapterNum = "";
-        let chapterName = "";
-
-        for (let i = 0; i < lines.length; i++) {
-            const currentLine = lines[i].trim();
-            const match = currentLine.match(chapterRegex);
-            
-            if (match) {
-                foundIndex = i;
-                chapterNum = match[1];
-                chapterName = match[2].trim();
-                break;
-            }
-        }
-
-        if (foundIndex !== -1) {
-            if (inputNumber) inputNumber.value = chapterNum;
-            if (inputTitle) inputTitle.value = `Chương ${chapterNum}: ${chapterName}`;
-            lines.splice(foundIndex, 1); 
-            textarea.value = lines.join('\n').trim();
-        } else {
-            textarea.value = rawText.trim();
-            alert("Em đã đọc được file nhưng không tìm thấy dòng nào có dạng 'Chương xx: Tên chương' nên giữ nguyên hết nội dung nha chị! 🐢");
-        }
-    }
-
-    // 1. Xử lý đọc file .txt
-    if (fileName.endsWith('.txt')) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            processRawText(e.target.result);
-        };
-        reader.readAsText(file, 'UTF-8');
-    } 
-    // 2. Xử lý đọc file .docx (Word)
-    else if (fileName.endsWith('.docx')) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const arrayBuffer = e.target.result;
-            mammoth.extractRawText({ arrayBuffer: arrayBuffer })
-                .then(function(result) {
-                    processRawText(result.value);
-                })
-                .catch(function(err) {
-                    alert("Không đọc được file Word này rồi chị ơi: " + err.message);
-                });
-        };
-        reader.readAsArrayBuffer(file);
-    } 
-    // 3. Xử lý định dạng file lạ (Không hỗ trợ)
-    else {
-        const muonImport = confirm(
-            "🐢 File này không đúng định dạng (.txt hoặc .docx) nên em không thể bóc tách tự động được!\n\n" +
-            "Chị Trân có muốn chuyển sang trang [Hệ Thống Đăng Chương Hàng Loạt] để xử lý thủ công không ạ?"
-        );
-        
-        if (muonImport) {
-            window.location.href = "import.html";
-        }
-    }
+// 4. Nút Mở trang quản lý (đã có sẵn link trong HTML, hàm này để phòng hờ)
+function openStudioPage() {
+    window.location.href = "studio.html";
 }

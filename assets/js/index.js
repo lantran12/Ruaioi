@@ -633,3 +633,82 @@ function submitChapter() {
     })
     .catch(err => alert("Lỗi rồi chị ơi: " + err.message));
 }
+
+// Hàm xử lý đọc file văn bản (.docx hoặc .txt) và tự bóc tách tiêu đề chuẩn xác
+function importChapterFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const textarea = document.getElementById('chapterContent');
+    const inputNumber = document.getElementById('chapterNumber');
+    const inputTitle = document.getElementById('chapterTitle');
+    const fileName = file.name.toLowerCase();
+
+    // Hàm nội bộ để bóc tách chữ sau khi đã đọc xong file
+    function processRawText(rawText) {
+        // Regex chuẩn: Tìm chữ "Chương" ở đầu dòng, theo sau là số, rồi đến dấu tách (:, -, hoặc khoảng trắng) và tên chương
+        // Ví dụ khớp: "Chương 93: Nhận thưởng hoàn thành" hoặc "chương 05 - Gặp Gỡ"
+        const chapterRegex = /^\s*Chương\s+(\d+)\s*[:\-\s]\s*(.*)$/i;
+        
+        // Cắt văn bản thành các dòng để kiểm tra dòng đầu tiên
+        const lines = rawText.split(/\r?\n/);
+        let firstLine = lines[0] ? lines[0].trim() : "";
+        
+        // Nếu dòng đầu tiên trống, thử tìm dòng tiếp theo có chữ
+        if (!firstLine && lines.length > 1) {
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    firstLine = lines[i].trim();
+                    // Xóa các dòng trống trước đó khỏi mảng
+                    lines.splice(0, i);
+                    break;
+                }
+            }
+        }
+
+        const match = firstLine.match(chapterRegex);
+
+        if (match) {
+            const chapterNum = match[1]; // Lấy ra số chương (VD: 93)
+            const chapterName = match[2].trim(); // Lấy ra tên chương
+
+            // Tự động điền vào các ô Input phía trên form cho chị
+            if (inputNumber) inputNumber.value = chapterNum;
+            if (inputTitle) inputTitle.value = `Chương ${chapterNum}: ${chapterName}`;
+
+            // Xóa bỏ dòng tiêu đề đầu tiên này ra khỏi nội dung truyện
+            lines.shift(); 
+            textarea.value = lines.join('\n').trim();
+        } else {
+            // Nếu không tìm thấy định dạng "Chương xx: xxx" ở đầu file, đổ hết vào ô nội dung như cũ
+            textarea.value = rawText.trim();
+            alert("Em không tìm thấy định dạng 'Chương xx: Tên chương' ở đầu file nên đã giữ nguyên toàn bộ nội dung file nha chị! 🐢");
+        }
+    }
+
+    // 1. Xử lý đọc file .txt
+    if (fileName.endsWith('.txt')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            processRawText(e.target.result);
+        };
+        reader.readAsText(file, 'UTF-8');
+    } 
+    // 2. Xử lý đọc file .docx (Word)
+    else if (fileName.endsWith('.docx')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const arrayBuffer = e.target.result;
+            mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                .then(function(result) {
+                    processRawText(result.value);
+                })
+                .catch(function(err) {
+                    alert("Không đọc được file Word này rồi chị ơi: " + err.message);
+                });
+        };
+        reader.readAsArrayBuffer(file);
+    } else {
+        alert("Hệ thống chỉ nhận file .docx hoặc .txt thôi nha chị ơi! 🐢");
+    }
+}

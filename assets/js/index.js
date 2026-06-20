@@ -710,7 +710,18 @@ function importChapterFile(input) {
                 });
         };
         reader.readAsArrayBuffer(file);
-    } else {
-        alert("Hệ thống chỉ nhận file .docx hoặc .txt thôi nha chị ơi! 🐢");
-    }
-}
+  } else {
+            // Thay vì dùng alert thông thường, mình dùng một hộp thoại xác nhận (confirm) thông minh hơn
+            const muonImport = confirm(
+                "🐢 Em không tìm thấy định dạng 'Chương xx: Tên chương' ở đầu file này nên không tự tách tự động được!\n\n" +
+                "Chị Trân có muốn chuyển sang trang [Hệ Thống Đăng Chương Hàng Loạt] để vừa xem vừa sửa thủ công cho sạch sẽ, dễ nhìn hơn không ạ?"
+            );
+            
+            // Nếu chị bấm OK (Đồng ý) thì hệ thống tự chuyển trang luôn
+            if (muonImport) {
+                window.location.href = "import.html";
+            } else {
+                // Nếu chị bấm Cancel (Hủy) thì đổ hết vào ô nội dung truyện như cũ ở trang này
+                textarea.value = rawText.trim();
+            }
+        }

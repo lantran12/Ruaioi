@@ -1,4 +1,4 @@
-
+<script>
     // ==========================================================================
     // CẤU HÌNH FIREBASE VÀ ĐƯỜNG ỐNG AUTH
     // ==========================================================================
@@ -14,20 +14,20 @@
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const auth = firebase.auth(); // Kích hoạt cổng xác thực user
+    const auth = firebase.auth(); 
 
-    // 🔒 ĐỊA CHỈ EMAIL ADMIN DUY NHẤT ĐƯỢC PHÉP TRUY CẬP
-    // Chị nhớ đổi đúng email tài khoản của chị ở đây nhé!
-   // 🔒 MÃ UID ADMIN DUY NHẤT ĐƯỢC PHÉP TRUY CẬP
+    // 🔒 MÃ UID ADMIN DUY NHẤT ĐƯỢC PHÉP TRUY CẬP
     const ADMIN_UID = "BrZQ9s07ujfIYG1iPtC4vIhGgx33"; 
 
     // ==========================================================================
-    // VÒNG BẢO VỆ CHỈ CHO UID CỦA CHỊ VÀO
+    // VÒNG BẢO VỆ CHỈ CHO UID CỦA CHỊ VÀO (ĐÃ FIX LỖI TRẮNG MÀN HÌNH)
     // ==========================================================================
     auth.onAuthStateChanged((user) => {
         if (user && user.uid === ADMIN_UID) {
-            // Chuẩn UID của chị Trân rồi -> Mở cửa cho vào hệ thống
-            document.body.style.display = 'flex';
+            // Chuẩn UID của chị Trân rồi -> Mở cửa hiển thị hệ thống
+            if (document.body) {
+                document.body.style.setProperty('display', 'flex', 'important');
+            }
             loadSidebarStories();
         } else {
             // Nếu chưa đăng nhập hoặc UID không khớp -> Báo lỗi và sút ra trang chủ
@@ -38,41 +38,11 @@
 
     let currentSelectedStoryId = "";
 
-    // 1. LẤY DANH SÁCH TRUYỆN ĐỔ VÀO SIDEBAR
+    // 1. LẤY DANH SÁCH TRUYỆN ĐỔ VÀO SIDEBAR (Đã dọn dẹp đoạn trùng lặp)
     function loadSidebarStories() {
         const listContainer = document.getElementById('sidebarStoryList');
-        db.ref('stories').once('value').then((snapshot) => {
-            listContainer.innerHTML = '';
-            if(!snapshot.exists()) {
-                listContainer.innerHTML = '<div style="padding:20px; color:#999;">Trống trơn chị ơi!</div>';
-                return;
-            }
-            snapshot.forEach((child) => {
-                const id = child.key;
-                const story = child.val();
-                const cover = story.img || story.cover || story.image || 'https://via.placeholder.com/40x55';
-                
-                const div = document.createElement('div');
-                div.className = `story-item story-item-${id}`;
-                div.onclick = () => selectStory(id, story.title);
-                div.innerHTML = `
-                    <img src="${cover}" alt="Cover">
-                    <div class="story-item-info">
-                        <p class="story-item-title">${story.title}</p>
-                        <p class="story-item-id">ID: ${id}</p>
-                    </div>
-                `;
-                listContainer.appendChild(div);
-            });
-        }).catch(err => {
-            alert("Lỗi tải danh sách: " + err.message);
-        });
-    }
-    let currentSelectedStoryId = "";
-
-    // 1. LẤY DANH SÁCH TRUYỆN ĐỔ VÀO SIDEBAR
-    function loadSidebarStories() {
-        const listContainer = document.getElementById('sidebarStoryList');
+        if (!listContainer) return; // Phòng hờ lỗi nếu thiếu thẻ HTML
+        
         db.ref('stories').once('value').then((snapshot) => {
             listContainer.innerHTML = '';
             if(!snapshot.exists()) {
@@ -104,20 +74,27 @@
     // 2. KHI CHỊ BẤM VÀO MỘT TRUYỆN BÊN TRÁI
     function selectStory(storyId, storyTitle) {
         currentSelectedStoryId = storyId;
-        document.getElementById('storyId').value = storyId;
+        const inputStoryId = document.getElementById('storyId');
+        if (inputStoryId) inputStoryId.value = storyId;
         
         document.querySelectorAll('.story-item').forEach(el => el.classList.remove('active'));
         const activeEl = document.querySelector(`.story-item-${storyId}`);
         if(activeEl) activeEl.classList.add('active');
 
-        document.getElementById('chapterManagerSection').style.display = 'block';
-        document.getElementById('managerSectionTitle').innerHTML = `<i class="fa-solid fa-list-ol" style="color: var(--primary);"></i> Quản Lý Chương: ${storyTitle}`;
+        const managerSection = document.getElementById('chapterManagerSection');
+        if (managerSection) managerSection.style.display = 'block';
+        
+        const managerTitle = document.getElementById('managerSectionTitle');
+        if (managerTitle) {
+            managerTitle.innerHTML = `<i class="fa-solid fa-list-ol" style="color: var(--primary);"></i> Quản Lý Chương: ${storyTitle}`;
+        }
         loadStoryChapters(storyId);
     }
 
     // 3. TẢI DANH SÁCH CHƯƠNG LẺ CỦA TRUYỆN ĐANG CHỌN
     function loadStoryChapters(storyId) {
         const tbody = document.getElementById('chapterTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">Đang tải danh sách chương...</td></tr>';
 
         db.ref(`chapters/${storyId}`).once('value').then((snapshot) => {
@@ -129,7 +106,8 @@
 
             const chapters = [];
             snapshot.forEach((child) => {
-                chapters.push({ num: child.key, ...child.val() });
+                const val = child.val();
+                chapters.push({ num: child.key, number: val.number || parseInt(child.key), ...val });
             });
 
             chapters.sort((a, b) => b.number - a.number);
@@ -137,7 +115,7 @@
             chapters.forEach((ch) => {
                 const tr = document.createElement('tr');
                 let statusBadge = `<span class="badge badge-public">Công khai</span>`;
-                if(ch.status === 'draft') statusBadge = `<span class="badge badge-draft">Bản nháp</span>`;
+                if(ch.status === 'draft' || ch.status === 'Bản nháp') statusBadge = `<span class="badge badge-draft">Bản nháp</span>`;
                 if(ch.password) statusBadge += ` <span class="badge badge-lock">Có Pass</span>`;
 
                 tr.innerHTML = `
@@ -146,7 +124,7 @@
                     <td>${statusBadge}</td>
                     <td><span style="font-family: monospace; color: #e11d48; font-weight: bold;">${ch.password || '—'}</span></td>
                     <td style="text-align: center;">
-                        <button class="action-btn" onclick="editChapterClick('${ch.number}', '${ch.title.replace(/'/g, "\\'")}', '${ch.status}', '${ch.password || ""}', \`${ch.content.replace(/`/g, "\\`").replace(/\$/g, "\\$")}\`)" title="Sửa chương"><i class="fa-regular fa-pen-to-square"></i> Sửa</button>
+                        <button class="action-btn" onclick="editChapterClick('${ch.number}', '${ch.title.replace(/'/g, "\\'")}', '${ch.status || "Công khai"}', '${ch.password || ""}', \`${ch.content.replace(/`/g, "\\`").replace(/\$/g, "\\$")}\`)" title="Sửa chương"><i class="fa-regular fa-pen-to-square"></i> Sửa</button>
                         <button class="action-btn" onclick="deleteChapterClick('${ch.number}')" style="color: #dc2626;" title="Xóa chương"><i class="fa-regular fa-trash-can"></i> Xóa</button>
                     </td>
                 `;
@@ -161,8 +139,12 @@
         document.getElementById('previewTitle').value = title;
         document.getElementById('previewPassword').value = password;
         document.getElementById('previewContent').value = content;
-        document.getElementById('chapterStatus').value = status;
-        document.getElementById('storyId').scrollIntoView({ behavior: 'smooth' });
+        
+        const statusSelect = document.getElementById('chapterStatus');
+        if (statusSelect) statusSelect.value = status;
+        
+        const targetView = document.getElementById('storyId');
+        if (targetView) targetView.scrollIntoView({ behavior: 'smooth' });
     }
 
     // 5. BẤM NÚT XÓA CHƯƠNG LẺ
@@ -229,7 +211,8 @@
         const number = parseInt(document.getElementById('previewNumber').value);
         const title = document.getElementById('previewTitle').value.trim();
         const content = document.getElementById('previewContent').value.trim();
-        const status = document.getElementById('chapterStatus').value;
+        const statusSelect = document.getElementById('chapterStatus');
+        const status = statusSelect ? statusSelect.value : "Công khai";
         const password = document.getElementById('previewPassword').value.trim();
 
         if (!storyId) { return alert("Chị ơi hãy chọn truyện bên trái hoặc điền ID truyện nha!"); }
@@ -255,7 +238,8 @@
             document.getElementById('previewTitle').value = "";
             document.getElementById('previewPassword').value = "";
             document.getElementById('previewContent').value = "";
-            document.getElementById('fileInput').value = "";
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) fileInput.value = "";
             loadStoryChapters(storyId);
         })
         .catch(err => alert("Lỗi gửi dữ liệu: " + err.message));

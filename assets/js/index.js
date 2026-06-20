@@ -452,6 +452,39 @@ function selectAvatarOption(imgEl, url) {
     imgEl.style.border = '2px solid #ff4d6d'; 
 }
 
+/* ==========================================================================
+   HÀM CẬP NHẬT HỒ SƠ (Lưu biệt danh và Avatar vào Firebase)
+   ========================================================================== */
+function updateProfile() {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Chị vui lòng đăng nhập trước nhé! 🐢");
+        return;
+    }
+
+    const newDisplayName = document.getElementById('inputNewDisplayName').value.trim(); // Đảm bảo ID này khớp với ô input trong HTML của chị
+    
+    // Cập nhật lên Firebase Authentication (tên hiển thị)
+    user.updateProfile({
+        displayName: newDisplayName || user.displayName
+    }).then(() => {
+        // Cập nhật URL avatar vào Realtime Database để lưu lâu dài
+        if (selectedAvatarUrl) {
+            firebase.database().ref('users/' + user.uid + '/avatar').set(selectedAvatarUrl);
+        }
+        
+        // Cập nhật tên vào Database (để đồng bộ)
+        if (newDisplayName) {
+            firebase.database().ref('users/' + user.uid + '/displayName').set(newDisplayName);
+        }
+
+        alert("🎉 Đã cập nhật hồ sơ thành công!");
+        location.reload(); // Tải lại trang để hiển thị thông tin mới
+    }).catch((error) => {
+        alert("Có lỗi xảy ra: " + error.message);
+    });
+}
+
 function removeFromBookshelf(key) {
     if (confirm("Chị có muốn xóa truyện này không ạ? 🐢")) {
         firebase.database().ref('users/' + auth.currentUser.uid + '/tuSach/' + key).remove();

@@ -249,3 +249,13 @@ body {
     font-weight: 700 !important;
     letter-spacing: 0.5px;
 }
+
+.modal-custom { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+.modal-content-custom { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+.close-modal-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #888; }
+.form-group-custom { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+.form-group-custom label { font-weight: bold; color: #666; font-size: 0.9rem; }
+.input-custom, .textarea-custom { width: 100%; padding: 12px; border: 1px solid #f1f5f9; background: #fff5f5; border-radius: 12px; box-sizing: border-box; font-size: 0.95rem; }
+.textarea-custom { min-height: 120px; }
+.btn-link-management { display: block; text-align: center; padding: 12px; background: #eedfff; color: #6b21a8; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 0.85rem; margin: 15px 0; border: 1px solid #d8b4fe; }
+.btn-submit-custom { width: 100%; padding: 14px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }

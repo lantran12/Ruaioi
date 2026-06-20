@@ -397,7 +397,15 @@ function renderUserProfileData(user) {
     db.ref('users/' + user.uid + '/profile').once('value').then(snapshot => {
         const data = snapshot.val();
 
-        const avatar = data?.avatar || user.photoURL || 'https://via.placeholder.com/100';
+        let avatar = 'https://via.placeholder.com/100';
+
+if (data?.avatarType === "custom") {
+    avatar = data.avatar;
+} else if (data?.avatarType === "google") {
+    avatar = user.photoURL;
+} else {
+    avatar = user.photoURL || data?.avatar;
+}
 
         if (currentAvatarImg) {
             currentAvatarImg.src = avatar;
@@ -412,7 +420,7 @@ function renderUserProfileData(user) {
     db.ref('users/' + user.uid + '/tuSach').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) { 
-            container.innerHTML = `<div class="bookshelf-empty">Tủ sách trống trơn! 🐾</div>`; 
+            container.innerHTML = `<div class="bookshelf-empty">Tủ sách trống trơn! Chị hãy thêm vào ngay đi ạ! 🐾</div>`; 
             return; 
         }
         buildBookshelfHTML(data, container);

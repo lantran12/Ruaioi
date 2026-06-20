@@ -491,8 +491,9 @@ function showHome() {
 
 function logoutFromProfile() {
     if(confirm("Chị muốn đăng xuất tài khoản đúng không ạ? 🐢")) {
+        if (tuSachListenerRef) tuSachListenerRef.off(); // NGẮT LẮNG NGHE KHI ĐĂNG XUẤT
         auth.signOut();
-        location.reload(); // Reload lại trang để reset trạng thái
+        location.reload(); 
     }
 }
 function updateProfileData() {
@@ -515,4 +516,24 @@ function updateProfileData() {
             alert("Có lỗi xảy ra: " + error.message);
         });
     }
+}
+function loadUserBookshelf(user) {
+    const bookshelfContainer = document.getElementById('bookshelfListContainer'); 
+    if (!bookshelfContainer) return;
+
+    // Nếu đã có listener cũ, ngắt nó đi trước khi tạo cái mới
+    if (tuSachListenerRef) {
+        tuSachListenerRef.off();
+    }
+
+    // Gán kết nối mới vào biến toàn cục
+    tuSachListenerRef = db.ref('users/' + user.uid + '/tuSach');
+    
+    tuSachListenerRef.on('value', (snapshot) => {
+        if (snapshot.exists()) {
+            buildBookshelfHTML(snapshot.val(), bookshelfContainer);
+        } else {
+            bookshelfContainer.innerHTML = "<p style='color: #777; text-align: center;'>Chị chưa lưu bộ truyện nào cả 🐢</p>";
+        }
+    });
 }

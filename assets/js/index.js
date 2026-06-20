@@ -341,43 +341,10 @@ auth.onAuthStateChanged((user) => {
         // PHÂN QUYỀN ADMIN CHO CHỊ ĐỘNG CHĂN RÙA (UID CHUẨN)
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
             if (btnHeaderAuth) {
-                btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i> Chào, Admin`;
+                // Đã đổi thành hiển thị tên biệt danh của chị
+                btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user" style="margin-right: 4px;"></i> Chào, ${user.displayName || 'Admin'}`;
                 btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; flex-shrink: 0; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
-                btnHeaderAuth.onclick = openProfileZone;
-            }
-            if (btnAdminCrown) {
-                btnAdminCrown.style.display = 'inline-flex'; // Hiện vương miện xanh kế bên
-                btnAdminCrown.onclick = () => {
-                    const adminModal = document.getElementById('adminModal');
-                    if (adminModal) adminModal.style.display = 'flex'; // Hiện popup đăng chương
-                };
-            }
-        } else {
-            // Nếu là người đọc bình thường
-            if (btnHeaderAuth) {
-                btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i> Chào, ${user.displayName || 'Thành Viên'}`;
-                btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; flex-shrink: 0; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
-                btnHeaderAuth.onclick = openProfileZone;
-            }
-            if (btnAdminCrown) btnAdminCrown.style.display = 'none';
-        }
-    } else {
-        // TRƯỜNG HỢP: CHƯA ĐĂNG NHẬP / ĐĂNG XUẤT
-        if (btnHeaderAuth) {
-            btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
-            btnHeaderAuth.style.cssText = "width: 40px; height: 40px; padding: 0; border-radius: 50%; background: #ff4d6d; color: white; border: none; cursor: pointer;";
-            btnHeaderAuth.onclick = openAuthModal;
-        }
-        if (btnAdminCrown) btnAdminCrown.style.display = 'none';
-
-        // Khóa tủ sách nếu là khách vãng lai chưa đăng nhập
-        const container = document.getElementById('userBookshelfContainer');
-        if (container) {
-            container.innerHTML = `<div class="bookshelf-empty" style="color: #ff4d6d; font-weight: bold; text-align: center; width: 100%; padding: 20px 0;">⚠️ Vui lòng đăng nhập để sử dụng tủ sách cá nhân!</div>`;
-        }
-        showHome();
-    }
-});
+                btnHeader
 
 function openProfileZone() {
     if (document.getElementById('homeMainContent')) document.getElementById('homeMainContent').style.display = 'none';

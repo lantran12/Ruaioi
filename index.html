@@ -44,49 +44,20 @@
         </div>
     </header>
 
-    <section class="container" id="profileSection" style="display: none; margin-top: 100px;">
-        <div class="profile-container">
-            <div class="profile-header">
-                <h2><i class="fa-solid fa-id-card"></i> Khách Quý Của Động</h2>
-                <button class="btn-back" onclick="showHome()">Về Trang Chủ</button>
-            </div>
-            <div class="profile-body">
-                <div class="profile-avatar-zone">
-                    <img id="userCurrentAvatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Felix" alt="Avatar">
-                    <p id="userProfileName"></p>
-                    <p id="userProfileEmail"></p>
-                    <button class="btn-logout" onclick="logoutFromProfile()">Đăng xuất</button>
-                </div>
-                <div class="profile-edit-zone">
-                    <div class="auth-group">
-                        <label>Đổi Danh Xưng:</label>
-                        <input type="text" id="editDisplayNameInput">
-                    </div>
-                    <label class="label-heading">Chọn Diện Mạo Chibi Premium:</label>
-                    <div id="avatarGridContainer" class="avatar-selection-grid"></div>
-                    <button class="btn-auth-submit" onclick="updateUserProfileData()">CẬP NHẬT HỒ SƠ</button>
-                </div>
-            </div>
-            <h3 class="shelf-title"><i class="fa-solid fa-bookmark"></i> Kệ Sách Sưu Tầm Của Chị</h3>
-            <div id="userBookshelfContainer" class="netflix-row-grid"></div>
-        </div>
-    </section>
-
     <div id="homeMainContent" style="margin-top: 70px;">
-        
         <section class="netflix-hero" id="featuredBook" style="cursor: pointer;">
-    <div class="hero-cover-blur"></div>
-    <div class="hero-content">
-        <span class="trending-badge"><i class="fa-solid fa-fire"></i> TÁC PHẨM ĐỀ CỬ HÔM NAY</span>
-        <h1 class="hero-title" id="heroTitle">Động Chăn Rùa Premium</h1>
-        <p class="hero-synopsis" id="heroSynopsis">Đang chọn lọc tác phẩm đỉnh cao dành riêng cho bạn...</p>
-        <div class="hero-buttons" style="margin-top: 20px; position: relative; z-index: 5;">
-            <a id="heroLink" href="#" class="btn-hero-play" style="display: inline-block; padding: 12px 28px; background: #ff4d6d; color: #fff; text-decoration: none; font-weight: 700; border-radius: 25px; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3); transition: transform 0.2s;">
-                <i class="fa-solid fa-play" style="margin-right: 8px;"></i> Đọc Ngay
-            </a>
-        </div>
-    </div>
-</section>
+            <div class="hero-cover-blur"></div>
+            <div class="hero-content">
+                <span class="trending-badge"><i class="fa-solid fa-fire"></i> TÁC PHẨM ĐỀ CỬ HÔM NAY</span>
+                <h1 class="hero-title" id="heroTitle">Động Chăn Rùa Premium</h1>
+                <p class="hero-synopsis" id="heroSynopsis">Đang chọn lọc tác phẩm đỉnh cao dành riêng cho bạn...</p>
+                <div class="hero-buttons" style="margin-top: 20px; position: relative; z-index: 5;">
+                    <a id="heroLink" href="#" class="btn-hero-play" style="display: inline-block; padding: 12px 28px; background: #ff4d6d; color: #fff; text-decoration: none; font-weight: 700; border-radius: 25px; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3); transition: transform 0.2s;">
+                        <i class="fa-solid fa-play" style="margin-right: 8px;"></i> Đọc Ngay
+                    </a>
+                </div>
+            </div>
+        </section>
 
         <section class="netflix-sub-bar">
             <nav class="netflix-nav">
@@ -97,7 +68,6 @@
                     <div class="dropdown-menu-vip" id="tagMenu"></div>
                 </div>
             </nav>
-
             <div class="netflix-search-box">
                 <input type="text" id="searchInput" placeholder="Tìm tác phẩm, tác giả...">
                 <button class="search-icon-btn" onclick="triggerSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -126,6 +96,34 @@
             <div class="netflix-row-grid" id="bookGrid"></div>
         </section>
     </div>
+
+    <section id="profileSection" class="profile-page-wrapper" style="display: none; margin-top: 100px;">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h2><i class="fa-solid fa-id-card"></i> Khách Quý Của Động</h2>
+                <button class="btn-back" onclick="showHome()">Về Trang Chủ</button>
+            </div>
+            <div class="profile-body">
+                <div class="profile-avatar-zone">
+                    <img id="userCurrentAvatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Felix" alt="Avatar">
+                    <p id="userProfileName"></p>
+                    <p id="userProfileEmail"></p>
+                    <button class="btn-logout" onclick="logoutFromProfile()">Đăng xuất</button>
+                </div>
+                <div class="profile-edit-zone">
+                    <div class="auth-group">
+                        <label>Đổi Danh Xưng:</label>
+                        <input type="text" id="editDisplayNameInput" placeholder="Tên mới...">
+                    </div>
+                    <label class="label-heading">Chọn Diện Mạo Chibi Premium:</label>
+                    <div id="avatarGridContainer" class="avatar-selection-grid"></div>
+                    <button class="btn-auth-submit" onclick="updateUserProfileData()">CẬP NHẬT HỒ SƠ</button>
+                </div>
+            </div>
+            <h3 class="shelf-title"><i class="fa-solid fa-bookmark"></i> Kệ Sách Sưu Tầm Của Chị</h3>
+            <div id="userBookshelfContainer" class="netflix-row-grid"></div>
+        </div>
+    </section>
 
     <div id="authModal" class="auth-modal" onclick="closeAuthModalOverlay(event)">
         <div class="auth-modal-content">

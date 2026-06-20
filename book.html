@@ -21,25 +21,25 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     
     <script src="assets/js/firebase.js"></script>
-    
     <script src="assets/js/index.js"></script>
     
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const storyId = urlParams.get('id');
+        // Sử dụng window.onload để đợi index.js chạy xong hoàn toàn
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const storyId = urlParams.get('id');
 
-        firebase.database().ref('stories/' + storyId).once('value').then(snapshot => {
-            const story = snapshot.val();
-            if (story) {
-                document.getElementById('bookTitle').innerText = story.title;
-                document.getElementById('bookCover').src = story.img || story.cover;
-                
-                document.getElementById('btnSaveToShelf').onclick = () => {
-                    // Bây giờ hàm này sẽ chạy được vì đã load index.js ở trên
-                    addToBookshelf(storyId, story);
-                };
-            }
-        });
+            firebase.database().ref('stories/' + storyId).once('value').then(snapshot => {
+                const story = snapshot.val();
+                if (story) {
+                    document.getElementById('bookTitle').innerText = story.title;
+                    document.getElementById('bookCover').src = story.img || story.cover;
+                    
+                    document.getElementById('btnSaveToShelf').onclick = () => {
+                        // Bây giờ hàm này chắc chắn đã tồn tại
+                        addToBookshelf(storyId, story);
+                    };
+                }
+            });
+        };
     </script>
-</body>
-</html>

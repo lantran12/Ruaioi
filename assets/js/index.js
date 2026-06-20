@@ -136,5 +136,106 @@ function openAuthModal() { document.getElementById('authModal').style.display = 
 function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
 function closeAuthModalOverlay(event) { if (event.target.id === 'authModal') closeAuthModal(); }
 
-// ... Các hàm còn lại như toggleAuthMode, submitAuthForm, renderUserProfileData ...
-// (Đã tích hợp sẵn logic như Chị cung cấp ở đoạn cuối)
+// --- 8. CÁC HÀM CÒN THIẾU (ĐĂNG NHẬP, ĐĂNG KÝ, HỒ SƠ) ---
+
+function toggleAuthMode() {
+    isSignUpMode = !isSignUpMode;
+    const authTitle = document.getElementById('authTitle');
+    const nickNameGroup = document.getElementById('nickNameGroup');
+    const btnAuthSubmit = document.getElementById('btnAuthSubmit');
+    const authToggleLink = document.getElementById('authToggleLink');
+    
+    if (isSignUpMode) {
+        authTitle.textContent = "GIA NHẬP RÙA STREAM";
+        nickNameGroup.style.display = 'block';
+        btnAuthSubmit.textContent = "BẮT ĐẦU TRẢI NGHIỆM";
+        authToggleLink.textContent = "Đã có tài khoản rồi? Bấm vào đây để Đăng nhập";
+    } else {
+        authTitle.textContent = "ĐĂNG NHẬP THÀNH VIÊN";
+        nickNameGroup.style.display = 'none';
+        btnAuthSubmit.textContent = "ĐĂNG NHẬP VÀO ĐỘNG NGAY";
+        authToggleLink.textContent = "Chưa có tài khoản? Bấm vào đây để Đăng ký";
+    }
+}
+
+function submitAuthForm() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+    const displayName = document.getElementById('authDisplayName').value.trim();
+    
+    if (!email || !password) { alert("Chị vui lòng điền đủ thông tin nha!"); return; }
+
+    if (isSignUpMode) {
+        auth.createUserWithEmailAndPassword(email, password).then((userCredential) => {
+            if (displayName) userCredential.user.updateProfile({ displayName: displayName });
+            alert("🎉 Đăng ký thành công!");
+            closeAuthModal();
+        }).catch(err => alert(err.message));
+    } else {
+        auth.signInWithEmailAndPassword(email, password).then(() => {
+            alert("🎉 Chào mừng chị trở lại!");
+            closeAuthModal();
+        }).catch(err => alert(err.message));
+    }
+}
+
+function renderUserProfileData(user) {
+    renderAvatarSelectionGrid();
+    
+    // Load ảnh avatar hiện tại nếu có
+    db.ref('users/' + user.uid).once('value').then(snapshot => {
+        const userData = snapshot.val();
+        if (userData && userData.avatar) {
+            document.getElementById('userCurrentAvatar').src = userData.avatar;
+        }
+    });
+
+    // Load Tủ Sách
+    const container = document.getElementById('userBookshelfContainer');
+    db.ref('users/' + user.uid + '/tuSach').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) { container.innerHTML = `<p>Tủ sách trống trơn! 🐾</p>`; return; }
+        buildBookshelfHTML(data, container);
+    });
+}
+
+function renderAvatarSelectionGrid() {
+    const container = document.getElementById('avatarGridContainer');
+    if (!container) return;
+    const cuteAvatars = [
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Lily",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Bear",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Cookie",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Coco",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Milo"
+    ];
+    container.innerHTML = cuteAvatars.map(url => `
+        <img src="${url}" class="avatar-option-img" onclick="selectAvatarOption(this, '${url}')">
+    `).join('');
+}
+
+function selectAvatarOption(imgEl, url) {
+    selectedAvatarUrl = url;
+    document.querySelectorAll('.avatar-option-img').forEach(img => img.style.border = '2px solid transparent');
+    imgEl.style.border = '2px solid #ff4d6d';
+}
+
+function updateUserProfileData() {
+    const user = auth.currentUser;
+    const newName = document.getElementById('editDisplayNameInput').value;
+    
+    let updates = {};
+    if (newName) {
+        user.updateProfile({ displayName: newName });
+        updates['displayName'] = newName;
+    }
+    if (selectedAvatarUrl) {
+        updates['avatar'] = selectedAvatarUrl;
+        document.getElementById('userCurrentAvatar').src = selectedAvatarUrl;
+    }
+
+    db.ref('users/' + user.uid).update(updates).then(() => {
+        alert("Cập nhật diện mạo thành công! ✨");
+    });
+}

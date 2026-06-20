@@ -299,85 +299,146 @@ function triggerSearch() {
     });
 }
 /* ==========================================================================
-   10. QUẢN LÝ ĐĂNG NHẬP VÀ KÍCH HOẠT NÚT ADMIN QUA UID BẢO MẬT
+   10. QUẢN LÝ ĐĂNG NHẬP, ĐĂNG XUẤT VÀ PHÂN QUYỀN ADMIN (UID CHUẨN)
    ========================================================================== */
 
-// Theo dõi trạng thái đăng nhập Realtime từ Firebase
+// Biến toàn cục để theo dõi chế độ của Modal (true = Đăng ký, false = Đăng nhập)
+let isSignUpMode = true; 
+
+// --- THEO DÕI TRẠNG THÁI ĐĂNG NHẬP REALTIME TỪ FIREBASE ---
 auth.onAuthStateChanged((user) => {
-    const loginBtn = document.querySelector('.login-btn') || document.querySelector('.nav-btn'); // Nút đăng nhập trên Header
-    const adminPanel = document.getElementById('adminPanel') || document.querySelector('.admin-panel'); // Khối bảng đăng truyện của chị
+    const btnHeaderAuth = document.getElementById('btnHeaderAuth'); // Nút avatar góc phải
+    const btnOpenAdminPanel = document.getElementById('btnOpenAdminPanel'); // Nút vương miện 👑
+    const adminPanel = document.getElementById('adminPanel'); // Bảng đăng truyện
 
     if (user) {
-        // --- TRƯỜNG HỢP: ĐÃ ĐĂNG NHẬP ---
+        // A. TRƯỜNG HỢP: ĐÃ ĐĂNG NHẬP THÀNH CÔNG
         console.log("Đăng nhập thành công với UID:", user.uid);
+        
+        // 1. Đổi icon người dùng thành icon Đăng xuất để chị click khi muốn thoát
+        if (btnHeaderAuth) {
+            btnHeaderAuth.innerHTML = `<i class="fa-solid fa-sign-out-alt" style="color: #ff4d6d;"></i>`;
+            btnHeaderAuth.title = "Đăng xuất tài khoản";
+            btnHeaderAuth.onclick = () => {
+                if(confirm("Chị muốn đăng xuất khỏi Động đúng không ạ? 🐢")) {
+                    auth.signOut().then(() => alert("Đã đăng xuất tài khoản thành công!"));
+                }
+            };
+        }
 
-        // Kiểm tra chính xác chuỗi UID quyền lực của chị
+        // 2. Kiểm tra chính xác chuỗi UID tối cao của Chị
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
-            
-            // 1. Biến nút Đăng nhập thành nút ADMIN bản Premium
-            if (loginBtn) {
-                loginBtn.innerHTML = `<i class="fa-solid fa-crown" style="color: #ffca28; margin-right: 5px;"></i> Admin`;
-                loginBtn.style.background = "var(--netflix-red)"; // Màu đỏ nổi bật
-                
-                // 2. Click vào nút Admin sẽ đóng/mở (Toggle) bảng đăng truyện mượt mà
-                loginBtn.onclick = () => {
-                    if (adminPanel) {
-                        if (adminPanel.style.display === 'block' || adminPanel.classList.contains('active')) {
-                            adminPanel.style.display = 'none';
-                            adminPanel.classList.remove('active');
-                        } else {
-                            adminPanel.style.display = 'block';
-                            adminPanel.classList.add('active');
-                            adminPanel.scrollIntoView({ behavior: 'smooth' }); // Cuộn màn hình xuống form đăng
-                        }
-                    } else {
-                        if (typeof toggleAdminPanel === 'function') toggleAdminPanel();
-                    }
-                };
-            }
+            if (btnOpenAdminPanel) btnOpenAdminPanel.style.display = 'inline-block'; // Hiện vương miện 👑
         } else {
-            // Nếu là tài khoản người đọc bình thường (Không trùng UID admin)
-            if (loginBtn) {
-                loginBtn.textContent = "Đăng xuất";
-                loginBtn.onclick = handleSignOut;
-            }
-            if (adminPanel) adminPanel.style.display = 'none';
+            if (btnOpenAdminPanel) btnOpenAdminPanel.style.display = 'none';
         }
 
     } else {
-        // --- TRƯỜNG HỢP: CHƯA ĐĂNG NHẬP HOẶC VỪA ĐĂNG XUẤT ---
-        if (loginBtn) {
-            loginBtn.innerHTML = `<i class="fa-regular fa-user"></i> Đăng nhập`;
-            loginBtn.style.background = "transparent"; // Reset giao diện nút
-            loginBtn.onclick = showLoginPopup; // Gọi hộp thoại đăng nhập
+        // B. TRƯỜNG HỢP: CHƯA ĐĂNG NHẬP HOẶC VỪA ĐĂNG XUẤT
+        if (btnHeaderAuth) {
+            btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
+            btnHeaderAuth.title = "Đăng nhập / Đăng ký";
+            btnHeaderAuth.onclick = openAuthModal; // Bấm vào gọi lại hộp thoại đăng nhập
         }
-        if (adminPanel) {
-            adminPanel.style.display = 'none';
-            adminPanel.classList.remove('active');
-        }
+        
+        // Giấu hoàn toàn nút vương miện và bảng đăng truyện
+        if (btnOpenAdminPanel) btnOpenAdminPanel.style.display = 'none';
+        if (adminPanel) adminPanel.style.display = 'none';
     }
 });
 
-// Hàm đăng xuất
-function handleSignOut() {
-    auth.signOut().then(() => {
-        alert("Đã đăng xuất tài khoản Động Chăn Rùa 🐢");
-    });
+// --- CÁC HÀM ĐIỀU KHIỂN HỘP THOẠI (AUTH MODAL) ---
+
+// Mở Modal Đăng Nhập / Đăng Ký
+function openAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) modal.style.display = 'flex';
 }
 
-// Hàm hiển thị hộp thoại đăng nhập bảo mật
-function showLoginPopup() {
-    const email = prompt("Nhập Email tài khoản Admin của chị:");
-    if (!email) return;
-    const password = prompt("Nhập mật khẩu Admin:");
-    if (!password) return;
+// Đóng Modal
+function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) modal.style.display = 'none';
+}
 
-    auth.signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-        alert("🎉 Chào mừng Quản trị viên tối cao trở lại Động!");
+// Đóng khi click ra ngoài vùng xám vùng nền
+function closeAuthModalOverlay(event) {
+    if (event.target.id === 'authModal') {
+        closeAuthModal();
+    }
+}
+
+// Chuyển đổi qua lại giữa chế độ Đăng Ký và Đăng Nhập
+function toggleAuthMode() {
+    isSignUpMode = !isSignUpMode;
+    const authTitle = document.getElementById('authTitle');
+    const nickNameGroup = document.getElementById('nickNameGroup');
+    const btnAuthSubmit = document.getElementById('btnAuthSubmit');
+    const authToggleLink = document.getElementById('authToggleLink');
+
+    if (isSignUpMode) {
+        if (authTitle) authTitle.textContent = "GIA NHẬP RÙA STREAM";
+        if (nickNameGroup) nickNameGroup.style.display = 'block';
+        if (btnAuthSubmit) btnAuthSubmit.textContent = "BẮT ĐẦU TRẢI NGHIỆM";
+        if (authToggleLink) authToggleLink.textContent = "Đã có tài khoản? Đăng nhập ngay";
+    } else {
+        if (authTitle) authTitle.textContent = "CHÀO MỪNG TRỞ LẠI ĐỘNG";
+        if (nickNameGroup) nickNameGroup.style.display = 'none'; // Đăng nhập thì ẩn ô biệt danh đi
+        if (btnAuthSubmit) btnAuthSubmit.textContent = "ĐĂNG NHẬP NGAY";
+        if (authToggleLink) authToggleLink.textContent = "Chưa có tài khoản? Đăng ký tại đây";
+    }
+}
+
+// --- XỬ LÝ GỬI FORM XÁC THỰC LÊN FIREBASE AUTH ---
+function submitAuthForm() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+    const displayName = document.getElementById('authDisplayName').value.trim();
+
+    if (!email || !password) {
+        alert("Chị ơi, vui lòng nhập đầy đủ Email và Mật mã nhé! 🐢");
+        return;
+    }
+
+    if (isSignUpMode) {
+        // 1. LOGIC XỬ LÝ ĐĂNG KÝ TÀI KHOẢN MỚI
+        auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Cập nhật tên hiển thị nếu có nhập
+            if (displayName) {
+                userCredential.user.updateProfile({ displayName: displayName });
+            }
+            alert("🎉 Đăng ký thành viên Động Chăn Rùa thành công!");
+            closeAuthModal();
+        })
+        .catch((error) => {
+            alert("Lỗi đăng ký: " + error.message);
+        });
+    } else {
+        // 2. LOGIC XỬ LÝ ĐĂNG NHẬP TÀI KHOẢN CÓ SẴN
+        auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+            alert("🎉 Đăng nhập thành công!");
+            closeAuthModal();
+        })
+        .catch((error) => {
+            alert("⚠️ Đăng nhập thất bại: " + error.message);
+        });
+    }
+}
+
+// Hàm xử lý nhanh khi người dùng quên mật khẩu
+function handleForgotPassword() {
+    const email = document.getElementById('authEmail').value.trim();
+    if (!email) {
+        alert("Vui lòng nhập Email của chị vào ô trống trước rồi bấm nút này nhé!");
+        return;
+    }
+    auth.sendPasswordResetEmail(email)
+    .then(() => {
+        alert("Một link đặt lại mật khẩu đã được gửi vào Email của chị, hãy kiểm tra hòm thư nha!");
     })
     .catch((error) => {
-        console.error("Lỗi xác thực:", error);
-        alert("⚠️ Tài khoản hoặc mật khẩu không chính xác rồi chị ơi!");
+        alert("Có lỗi xảy ra: " + error.message);
     });
 }

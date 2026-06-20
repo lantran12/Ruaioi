@@ -205,16 +205,21 @@ function renderAvatarSelectionGrid() {
     const cuteAvatars = [
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Lily",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Jack",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Mia",
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Bear",
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Cookie",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Buster",
         "https://api.dicebear.com/7.x/adventurer/svg?seed=Coco",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Milo"
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Milo",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver"
     ];
     container.innerHTML = cuteAvatars.map(url => `
-        <img src="${url}" class="avatar-option-img" onclick="selectAvatarOption(this, '${url}')">
+        <img src="${url}" class="avatar-option-img" onclick="selectAvatarOption(this, '${url}')" alt="Cute Avatar">
     `).join('');
 }
-
 function selectAvatarOption(imgEl, url) {
     selectedAvatarUrl = url;
     document.querySelectorAll('.avatar-option-img').forEach(img => img.style.border = '2px solid transparent');

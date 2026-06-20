@@ -20,26 +20,28 @@ const auth = firebase.auth();
 
 // Chạy các hàm chức năng khi trang tải xong
 document.addEventListener('DOMContentLoaded', () => {
+    // Luôn chạy các hàm này vì nó có mặt trên mọi trang
     initSubBarFilters();
-    loadGenresDropdown();
-    loadMainStories();
-    loadTopViews();
     listenToNotifications();
+    
+    // CHỈ CHẠY CÁC HÀM NÀY NẾU ĐANG Ở TRANG CHỦ (có chứa bookGrid)
+    if (document.getElementById('bookGrid')) {
+        loadGenresDropdown();
+        loadMainStories();
+        loadTopViews();
+    }
 });
 
 /* ==========================================================================
-   2. XỬ LÝ BỘ LỌC TẠI SUB-BAR (Mới phát hành / Đã trọn bộ)
+   2. XỬ LÝ BỘ LỌC TẠI SUB-BAR
    ========================================================================== */
 function initSubBarFilters() {
     const filterButtons = document.querySelectorAll('.nav-link-btn');
-    
     filterButtons.forEach(btn => {
         if (btn.id === 'tagDropdownBtn') return;
-
         btn.addEventListener('click', () => {
             filterButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
             const filterType = btn.getAttribute('data-filter');
             if (filterType === 'new') {
                 closeSearch();
@@ -52,13 +54,11 @@ function initSubBarFilters() {
 }
 
 /* ==========================================================================
-   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đọc trường 'img' chị tạo)
+   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN
    ========================================================================== */
 function handleFeaturedRandomBook(storiesData) {
     const keys = Object.keys(storiesData);
     if (keys.length === 0) return;
-
-    // Bốc ngẫu nhiên 1 Key (ID) truyện từ Firebase
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     const story = storiesData[randomKey];
 
@@ -70,13 +70,10 @@ function handleFeaturedRandomBook(storiesData) {
     if (heroTitle) heroTitle.innerText = story.title || "Tác phẩm độc quyền";
     if (heroSynopsis) heroSynopsis.innerText = story.description || story.synopsis || "Bấm vào để khám phá thế giới nội tâm đầy cảm xúc của tác phẩm này...";
 
-    // Tạo link dẫn tới trang chi tiết truyện của chị
     const storyReadUrl = `book.html?id=${randomKey}`;
     if (heroLink) heroLink.setAttribute('href', storyReadUrl);
 
-    // Ưu tiên đọc trường 'img' từ Form Admin của chị, nếu không có mới tìm trường 'cover' hoặc 'image'
     const storyImg = story.img || story.cover || story.image;
-
     if (storyImg && featuredBookSection) {
         featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(252,249,250,0.95) 40%, rgba(252,249,250,0.4)), url('${storyImg}')`, 'important');
         featuredBookSection.style.setProperty('background-size', 'cover', 'important');
@@ -93,21 +90,18 @@ function handleFeaturedRandomBook(storiesData) {
 }
 
 /* ==========================================================================
-   4. THẢ MENU THỂ LOẠI TẠI DROP-DOWN
+   4. THẢ MENU THỂ LOẠI
    ========================================================================== */
 function loadGenresDropdown() {
     const tagMenu = document.getElementById('tagMenu');
     if (!tagMenu) return;
-
     db.ref('genres').once('value').then((snapshot) => {
         tagMenu.innerHTML = '';
         if (!snapshot.exists()) return;
-
         snapshot.forEach((childSnapshot) => {
             const genreName = childSnapshot.val().name || childSnapshot.val();
             const span = document.createElement('span');
             span.textContent = genreName;
-            
             span.addEventListener('click', () => {
                 loadStoriesByCondition('genre', genreName, `📜 Thể Loại: ${genreName}`);
             });
@@ -117,7 +111,7 @@ function loadGenresDropdown() {
 }
 
 /* ==========================================================================
-   5. BỘ LỌC ĐIỀU KIỆN (Xổ dữ liệu ra vùng Tìm kiếm chuyên sâu)
+   5. BỘ LỌC ĐIỀU KIỆN
    ========================================================================== */
 function loadStoriesByCondition(field, value, titleText) {
     const searchSection = document.getElementById('searchResultsSection');
@@ -125,11 +119,9 @@ function loadStoriesByCondition(field, value, titleText) {
     const rowTitle = searchSection.querySelector('.row-title');
 
     if (!searchSection || !resultsGrid) return;
-
     if (rowTitle) rowTitle.innerText = titleText;
     searchSection.style.display = 'block';
     resultsGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang lọc tác phẩm...</div>';
-
     searchSection.scrollIntoView({ behavior: 'smooth' });
 
     db.ref('stories').orderByChild(field).equalTo(value).once('value')
@@ -139,14 +131,9 @@ function loadStoriesByCondition(field, value, titleText) {
             resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Động chưa tìm thấy truyện nào tương ứng 🐢</p>`;
             return;
         }
-
         snapshot.forEach((childSnapshot) => {
             resultsGrid.appendChild(createNetflixCard(childSnapshot.key, childSnapshot.val()));
         });
-    })
-    .catch((err) => {
-        console.error("Lỗi lọc dữ liệu:", err);
-        resultsGrid.innerHTML = '<p style="grid-column: 1/-1;">Đã xảy ra lỗi khi tìm kiếm.</p>';
     });
 }
 
@@ -156,66 +143,48 @@ function closeSearch() {
 }
 
 /* ==========================================================================
-   6. THƯ VIỆN CHÍNH (Mới Cập Nhật Trên Hệ Thống)
+   6. THƯ VIỆN CHÍNH
    ========================================================================== */
 function loadMainStories() {
     const bookGrid = document.getElementById('bookGrid');
     if (!bookGrid) return;
-
     bookGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang liên kết Động Chăn Rùa...</div>';
 
     db.ref('stories').orderByChild('updatedAt').once('value')
     .then((snapshot) => {
         bookGrid.innerHTML = '';
         if (!snapshot.exists()) return;
-
         const storiesData = snapshot.val();
-        
-        // Gọi hàm Random Banner Hero ngay tại đây
         handleFeaturedRandomBook(storiesData);
-
         const storiesArray = [];
         snapshot.forEach((childSnapshot) => {
             storiesArray.push({ id: childSnapshot.key, ...childSnapshot.val() });
         });
-
         storiesArray.reverse().forEach((story) => {
             bookGrid.appendChild(createNetflixCard(story.id, story));
         });
-    })
-    .catch((err) => {
-        console.error("Lỗi tải truyện chính:", err);
-        bookGrid.innerHTML = '<p style="grid-column: 1/-1;">Lỗi kết nối thư viện chính.</p>';
     });
 }
 
 /* ==========================================================================
-   7. TOP 5 ĐỘT PHÁ LƯỢT XEM (Hàng Ngang Kiểu Dáng Xịn)
+   7. TOP 5 ĐỘT PHÁ LƯỢT XEM
    ========================================================================== */
 function loadTopViews() {
     const nominationContainer = document.getElementById('nominationListContainer');
     if (!nominationContainer) return;
-
     db.ref('stories').orderByChild('views').limitToLast(5).once('value')
     .then((snapshot) => {
         nominationContainer.innerHTML = '';
         if (!snapshot.exists()) return;
-
         const topStories = [];
         snapshot.forEach((childSnapshot) => {
             topStories.push({ id: childSnapshot.key, ...childSnapshot.val() });
         });
-
-        topStories.reverse();
-
-        topStories.forEach((story, index) => {
+        topStories.reverse().forEach((story, index) => {
             const card = document.createElement('div');
             card.className = 'story-card';
             card.onclick = () => window.location.href = `book.html?id=${story.id}`;
-            
-            // Tự động kiểm tra trường ảnh mượt mà
             const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
-            
             card.innerHTML = `
                 <img src="${currentImg}" alt="${story.title}">
                 <div style="flex: 1; min-width: 0;">
@@ -229,32 +198,24 @@ function loadTopViews() {
 }
 
 /* ==========================================================================
-   8. LẮNG NGHE THÔNG BÁO REALTIME (Chuông thông báo trên Header)
+   8. LẮNG NGHE THÔNG BÁO
    ========================================================================== */
 function listenToNotifications() {
     const notiCountBadge = document.getElementById('notiCount');
     if (!notiCountBadge) return;
-    
     db.ref('notifications').on('value', (snapshot) => {
-        if (snapshot.exists()) {
-            notiCountBadge.textContent = snapshot.numChildren();
-        } else {
-            notiCountBadge.textContent = "0";
-        }
+        notiCountBadge.textContent = snapshot.exists() ? snapshot.numChildren() : "0";
     });
 }
 
 /* ==========================================================================
-   9. HÀM BỔ TRỢ: TẠO CARD TRUYỆN PHONG CÁCH NETFLIX (Kiểm tra trường 'img')
+   9. HÀM BỔ TRỢ: TẠO CARD
    ========================================================================== */
 function createNetflixCard(id, story) {
     const div = document.createElement('div');
     div.className = 'story-card';
     div.onclick = () => window.location.href = `book.html?id=${id}`;
-    
-    // Tự động dùng 'img' chị tạo, hoặc các trường cũ dự phòng
     const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
-    
     div.innerHTML = `
         <img src="${currentImg}" alt="${story.title}">
         <h4>${story.title}</h4>
@@ -263,13 +224,10 @@ function createNetflixCard(id, story) {
     return div;
 }
 
-// Hàm Tìm kiếm thủ công khi bấm kính lúp
 function triggerSearch() {
     const searchInput = document.getElementById('searchInput');
     if (!searchInput || !searchInput.value.trim()) return;
-    
     const keyword = searchInput.value.trim().toLowerCase();
-    
     const searchSection = document.getElementById('searchResultsSection');
     const resultsGrid = document.getElementById('resultsGrid');
     const rowTitle = searchSection.querySelector('.row-title');
@@ -277,30 +235,22 @@ function triggerSearch() {
     if (rowTitle) rowTitle.innerText = `🔍 Kết quả tìm kiếm cho: "${searchInput.value}"`;
     searchSection.style.display = 'block';
     resultsGrid.innerHTML = '';
-
     db.ref('stories').once('value').then((snapshot) => {
         if(!snapshot.exists()) return;
-        
         let hasResult = false;
         snapshot.forEach((childSnapshot) => {
             const story = childSnapshot.val();
-            const title = (story.title || '').toLowerCase();
-            const author = (story.author || '').toLowerCase();
-            
-            if(title.includes(keyword) || author.includes(keyword)) {
+            if((story.title || '').toLowerCase().includes(keyword) || (story.author || '').toLowerCase().includes(keyword)) {
                 resultsGrid.appendChild(createNetflixCard(childSnapshot.key, story));
                 hasResult = true;
             }
         });
-        
-        if(!hasResult) {
-            resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Không tìm thấy tác phẩm nào khớp từ khóa 🐢</p>`;
-        }
+        if(!hasResult) resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Không tìm thấy tác phẩm nào khớp từ khóa 🐢</p>`;
     });
 }
 
 /* ==========================================================================
-   10. QUẢN LÝ ĐĂNG NHẬP, ĐIỀU KHIỂN VƯƠNG MIỆN ADMIN VÀ HỒ SƠ / AVATAR
+   10. QUẢN LÝ ĐĂNG NHẬP & HỒ SƠ
    ========================================================================== */
 let isSignUpMode = true; 
 let selectedAvatarUrl = "";
@@ -309,8 +259,6 @@ let tuSachListenerRef = null;
 auth.onAuthStateChanged((user) => {
     const btnHeaderAuth = document.getElementById('btnHeaderAuth');
     let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
-
-    // Khởi tạo nút Admin nếu chưa có
     if (!btnAdminCrown && btnHeaderAuth) {
         btnAdminCrown = document.createElement('button');
         btnAdminCrown.id = 'btnOpenAdminPanel';
@@ -318,18 +266,14 @@ auth.onAuthStateChanged((user) => {
         btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 8px;";
         if (btnHeaderAuth.parentNode) {
             btnHeaderAuth.parentNode.style.display = "flex";
-            btnHeaderAuth.parentNode.style.alignItems = "center";
+            btnHeaderAuth.parentNode.alignItems = "center";
             btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth);
         }
     }
 
     if (user) {
-        // --- TRƯỜNG HỢP ĐÃ ĐĂNG NHẬP ---
-        // Thay thế đoạn này trong hàm onAuthStateChanged khi user đã đăng nhập:
         btnHeaderAuth.innerHTML = `Chào, ${user.displayName || 'Bạn'}`;
         btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
-        
-        // Gán sự kiện mở Profile thay vì mở Form Đăng nhập
         btnHeaderAuth.onclick = openProfileZone;
 
         if (document.getElementById('userProfileEmail')) document.getElementById('userProfileEmail').textContent = user.email;
@@ -338,15 +282,13 @@ auth.onAuthStateChanged((user) => {
         renderUserProfileData(user);
         loadUserBookshelf(user);
 
-        // Quyền Admin
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
             if (btnAdminCrown) {
                 btnAdminCrown.style.display = "flex";
-                btnAdminCrown.onclick = () => window.location.href = 'admin.html'; // Chị nhớ đổi đường dẫn nếu cần
+                btnAdminCrown.onclick = () => window.location.href = 'admin.html';
             }
         }
     } else {
-        // --- TRƯỜNG HỢP CHƯA ĐĂNG NHẬP ---
         btnHeaderAuth.innerHTML = '<i class="fa-regular fa-user"></i>';
         btnHeaderAuth.style.cssText = ""; 
         btnHeaderAuth.onclick = openAuthModal;
@@ -361,40 +303,36 @@ function openProfileZone() {
     if (profileSection) profileSection.style.display = 'block';
 }
 
-function renderUserProfileData(user) {
-    // 1. Hiển thị lưới chọn Avatar
-    renderAvatarSelectionGrid(); 
-    
-    // 2. Load thông tin hiện tại từ database về
-    db.ref('users/' + user.uid).once('value').then((snapshot) => {
-        const userData = snapshot.val();
-        if (userData) {
-            // Hiển thị tên (nếu có)
-            if (userData.displayName) {
-                document.getElementById('userProfileName').textContent = userData.displayName;
-            }
+function renderAvatarSelectionGrid() {
+    const container = document.getElementById('avatarGridContainer');
+    if (!container) return;
+    const cuteAvatars = [
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Lily",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Jack",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Mia",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Bear",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Cookie",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Buster",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Coco",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Milo",
+        "https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver"
+    ];
+    container.innerHTML = cuteAvatars.map(url => `
+        <img src="${url}" class="avatar-option-img" style="width: 50px; height: 50px; cursor: pointer; margin: 5px; border-radius: 50%; border: 2px solid transparent;" onclick="selectAvatarOption(this, '${url}')" alt="Cute Avatar">
+    `).join('');
+}
 
-            // --- ĐOẠN CHỊ CẦN THAY VÀO ĐÂY ---
-            const avatarImg = document.getElementById('userCurrentAvatar');
-            if (avatarImg) {
-                if (userData.avatar) {
-                    avatarImg.src = userData.avatar;
-                    selectedAvatarUrl = userData.avatar;
-                } else {
-                    avatarImg.src = "https://via.placeholder.com/100"; // Ảnh mặc định
-                }
-            }
-        }
-    });
 
-    // 3. Tự động tạo nút Lưu nếu chưa có
     const profileSection = document.getElementById('profileSection');
     if (!document.getElementById('btnUpdateProfile')) {
         const btn = document.createElement('button');
         btn.id = 'btnUpdateProfile';
         btn.textContent = "Lưu Thay Đổi Hồ Sơ";
         btn.style.cssText = "display: block; margin: 20px auto; background: #ff4d6d; color: white; padding: 12px 25px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;";
-        btn.onclick = updateProfileData;
+        btn.onclick = updateUserProfileData;
         profileSection.appendChild(btn);
     }
 }
@@ -418,23 +356,11 @@ function buildBookshelfHTML(data, container) {
 function renderAvatarSelectionGrid() {
     const container = document.getElementById('avatarGridContainer');
     if (!container) return;
-    const cuteAvatars = [
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Lily",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Jack",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Mia",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Bear",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Cookie",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Buster",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Coco",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Milo",
-        "https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver"
-    ];
-    container.innerHTML = cuteAvatars.map(url => `
-        <img src="${url}" class="avatar-option-img" style="width: 50px; height: 50px; cursor: pointer; margin: 5px; border-radius: 50%; border: 2px solid transparent;" onclick="selectAvatarOption(this, '${url}')" alt="Cute Avatar">
-    `).join('');
+    const cuteAvatars = ["Felix", "Lily", "Aneka", "Jack", "Mia", "Bear", "Cookie", "Buster", "Coco", "Lucky", "Milo", "Oliver"];
+    container.innerHTML = cuteAvatars.map(seed => {
+        const url = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+        return `<img src="${url}" class="avatar-option-img" style="width: 50px; height: 50px; cursor: pointer; margin: 5px; border-radius: 50%; border: 2px solid transparent;" onclick="selectAvatarOption(this, '${url}')" alt="Avatar">`;
+    }).join('');
 }
 
 function selectAvatarOption(imgEl, url) { 
@@ -472,7 +398,6 @@ function submitAuthForm() {
     const password = document.getElementById('authPassword').value.trim();
     const displayName = document.getElementById('authDisplayName').value.trim();
     if (!email || !password) { alert("Chị vui lòng điền đủ thông tin nha!"); return; }
-
     if (isSignUpMode) {
         auth.createUserWithEmailAndPassword(email, password).then((userCredential) => {
             if (displayName) userCredential.user.updateProfile({ displayName: displayName });
@@ -492,73 +417,43 @@ function showHome() {
 
 function logoutFromProfile() {
     if(confirm("Chị muốn đăng xuất tài khoản đúng không ạ? 🐢")) {
-        if (tuSachListenerRef) tuSachListenerRef.off(); // NGẮT LẮNG NGHE KHI ĐĂNG XUẤT
+        if (tuSachListenerRef) tuSachListenerRef.off();
         auth.signOut();
         location.reload(); 
     }
 }
-function updateUserProfileData() { // Chị check lại tên hàm này khớp với HTML nhé
-    const user = auth.currentUser;
-    // SỬA CHỖ NÀY: Dùng .value vì đây là thẻ <input>
-    const newName = document.getElementById('editDisplayNameInput').value; 
-    
-    if (!user) { alert("Chị ơi, chị chưa đăng nhập kìa!"); return; }
 
-    // Kiểm tra xem chị có gõ tên mới không, nếu không gõ thì giữ tên cũ
+function updateUserProfileData() {
+    const user = auth.currentUser;
+    const newName = document.getElementById('editDisplayNameInput').value; 
+    if (!user) { alert("Chị ơi, chị chưa đăng nhập kìa!"); return; }
     const finalName = newName.trim() === "" ? document.getElementById('userProfileName').textContent : newName;
 
-    user.updateProfile({
-        displayName: finalName
-    }).then(() => {
-        db.ref('users/' + user.uid).update({
-            displayName: finalName,
-            avatar: selectedAvatarUrl
-        }).then(() => {
+    user.updateProfile({ displayName: finalName }).then(() => {
+        db.ref('users/' + user.uid).update({ displayName: finalName, avatar: selectedAvatarUrl }).then(() => {
             alert("Đã cập nhật hồ sơ thành công! 🐢");
-            // Cập nhật ngay trên giao diện cho đẹp
             document.getElementById('userProfileName').textContent = finalName;
         });
-    }).catch((error) => {
-        alert("Lỗi rồi: " + error.message);
-    });
+    }).catch((error) => alert("Lỗi rồi: " + error.message));
 }
+
 function loadUserBookshelf(user) {
     const bookshelfContainer = document.getElementById('userBookshelfContainer');
-    if (!bookshelfContainer) {
-        console.warn("Không tìm thấy phần tử 'userBookshelfContainer' trong HTML");
-        return;
-    }
-
-    // 1. Ngắt listener cũ an toàn
-    if (tuSachListenerRef) {
-        tuSachListenerRef.off('value');
-    }
-
-    // 2. Tham chiếu tới đúng đường dẫn của User hiện tại
+    if (!bookshelfContainer) return;
+    if (tuSachListenerRef) tuSachListenerRef.off('value');
     tuSachListenerRef = db.ref('users/' + user.uid + '/tuSach');
-    
-    // 3. Lắng nghe dữ liệu
     tuSachListenerRef.on('value', (snapshot) => {
-        // Kiểm tra xem dữ liệu có tồn tại không
         if (snapshot.exists()) {
-            const data = snapshot.val();
-            console.log("Đã tải được dữ liệu tủ sách:", data); // Giúp chị kiểm tra trong F12
-            buildBookshelfHTML(data, bookshelfContainer);
+            buildBookshelfHTML(snapshot.val(), bookshelfContainer);
         } else {
-            console.log("Tủ sách của User này đang trống.");
             bookshelfContainer.innerHTML = "<p style='color: #777; text-align: center;'>Chị chưa lưu bộ truyện nào cả 🐢</p>";
         }
-    }, (error) => {
-        // 4. Nếu có lỗi về quyền truy cập, nó sẽ hiện ra đây
-        console.error("Lỗi khi kết nối Firebase tủ sách:", error);
-        bookshelfContainer.innerHTML = "<p style='color: red;'>Lỗi kết nối dữ liệu 🐢</p>";
     });
 }
+
 function addToBookshelf(storyId, storyData) {
     const user = auth.currentUser;
-    if (!user) { alert("Chị ơi, chị đăng nhập để lưu truyện nha!"); return; }
-
-    // Dùng .set() hoặc .update() tại đúng đường dẫn này
+    if (!user) { alert("Chị ơi, chị đăng nhập để lưu truyện nha!"); openAuthModal(); return; }
     db.ref('users/' + user.uid + '/tuSach/' + storyId).set({
         tenTruyen: storyData.title,
         image: storyData.img || storyData.cover || storyData.image,
@@ -566,7 +461,6 @@ function addToBookshelf(storyId, storyData) {
         addedAt: firebase.database.ServerValue.TIMESTAMP
     }).then(() => {
         alert("Đã lưu vào tủ sách của chị! 🐢");
-        // HÀM NÀY LÀ MẤU CHỐT: Nếu nó không tự cập nhật, chị có thể gọi lại loadUserBookshelf(user) ở đây
         loadUserBookshelf(user); 
     });
 }

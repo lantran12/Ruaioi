@@ -325,18 +325,6 @@ function renderAvatarSelectionGrid() {
     `).join('');
 }
 
-
-    const profileSection = document.getElementById('profileSection');
-    if (!document.getElementById('btnUpdateProfile')) {
-        const btn = document.createElement('button');
-        btn.id = 'btnUpdateProfile';
-        btn.textContent = "Lưu Thay Đổi Hồ Sơ";
-        btn.style.cssText = "display: block; margin: 20px auto; background: #ff4d6d; color: white; padding: 12px 25px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;";
-        btn.onclick = updateUserProfileData;
-        profileSection.appendChild(btn);
-    }
-}
-
 function buildBookshelfHTML(data, container) {
     container.innerHTML = Object.keys(data).map(key => {
         const b = data[key];
@@ -350,16 +338,6 @@ function buildBookshelfHTML(data, container) {
             </div>
             <button class="btn-remove-book" onclick="removeFromBookshelf('${key}')" style="background: none; border: none; cursor: pointer; font-size: 14px;">❌</button>
         </div>`;
-    }).join('');
-}
-
-function renderAvatarSelectionGrid() {
-    const container = document.getElementById('avatarGridContainer');
-    if (!container) return;
-    const cuteAvatars = ["Felix", "Lily", "Aneka", "Jack", "Mia", "Bear", "Cookie", "Buster", "Coco", "Lucky", "Milo", "Oliver"];
-    container.innerHTML = cuteAvatars.map(seed => {
-        const url = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
-        return `<img src="${url}" class="avatar-option-img" style="width: 50px; height: 50px; cursor: pointer; margin: 5px; border-radius: 50%; border: 2px solid transparent;" onclick="selectAvatarOption(this, '${url}')" alt="Avatar">`;
     }).join('');
 }
 

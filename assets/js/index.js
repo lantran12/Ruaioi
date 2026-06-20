@@ -640,6 +640,6 @@ function submitNewChapter() {
 }
 
 // 4. Nút Mở trang quản lý (đã có sẵn link trong HTML, hàm này để phòng hờ)
-function openStudioPage() {
-    window.location.href = "studio.html";
+function openImportPage() {
+    window.location.href = "import.html";
 }

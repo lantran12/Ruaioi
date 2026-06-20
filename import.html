@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Import Chương Truyện - Động Chăn Rùa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --bg: #fcf8f7;
+            --card-bg: #ffffff;
+            --text: #4a4a4a;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #333;
+            font-size: 1.6rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .meta-inputs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            flex: 1;
+        }
+        label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #7d7d7d;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            background: #fcf5f3;
+            border: none;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+        }
+        .upload-zone {
+            border: 2px dashed #a78bfa;
+            background: #f3f0ff;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+        .upload-zone:hover {
+            background: #ede9fe;
+        }
+        .upload-zone i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        /* Khu vực hiển thị kết quả bóc tách */
+        #resultPreview {
+            display: none;
+            border-top: 2px solid #f1f1f1;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .preview-box {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            background: #fff;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: bold;
+            font-size: 1.05rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1><i class="fa-solid fa-file-import"></i> Hệ Thống Đăng Chương Tự Động</h1>
+    <p style="color: #999; margin-bottom: 25px; font-size: 0.9rem;">Trang xử lý tách chương sạch sẽ, không dính dáng giao diện đọc truyện.</p>
+
+    <div class="meta-inputs">
+        <div class="input-group">
+            <label>ID TRUYỆN CHÍNH XÁC (Ví dụ: vuong-tai)</label>
+            <input type="text" id="storyId" placeholder="Nhập mã truyện trên hệ thống...">
+        </div>
+        <div class="input-group" style="max-width: 200px;">
+            <label>TRẠNG THÁI</label>
+            <select id="chapterStatus">
+                <option value="public">Công khai 🌍</option>
+                <option value="draft">Bản nháp 📝</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <i class="fa-regular fa-file-word"></i>
+        <p style="margin: 5px 0 0 0; font-weight: bold;">Bấm vào đây để chọn file truyện (.docx hoặc .txt)</p>
+        <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #888;">Hệ thống sẽ tự bóc tách Tiêu đề, Số chương và Nội dung bên trong.</p>
+        <input type="file" id="fileInput" accept=".docx, .txt" style="display: none;" onchange="handleFileImport(this)">
+    </div>
+
+    <div id="resultPreview">
+        <div class="preview-header">
+            <h3 style="margin: 0; color: #333;"><i class="fa-solid fa-eye"></i> Xem trước dữ liệu bóc tách</h3>
+        </div>
+        
+        <div class="preview-box">
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label>Tiêu đề chương (Sau khi tách)</label>
+                    <input type="text" id="previewTitle" style="background: #fff; border: 1px solid #ddd;">
+                </div>
+                <div style="max-width: 120px;">
+                    <label>Số chương</label>
+                    <input type="text" id="previewNumber" style="background: #fff; border: 1px solid #ddd; text-align: center;">
+                </div>
+            </div>
+            <div>
+                <label>Nội dung chương truyện</label>
+                <textarea id="previewContent" rows="15"></textarea>
+            </div>
+        </div>
+
+        <button class="btn-submit" onclick="uploadParsedChapter()"><i class="fa-solid fa-cloud-arrow-up"></i> Xác nhận & Đăng lên Động Chăn Rùa 🚀</button>
+    </div>
+</div>
+
+<script>
+    // ==========================================================================
+    // CẤU HÌNH FIREBASE (Dùng chung cấu hình tài khoản của chị)
+    // ==========================================================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
+        authDomain: "dongchanrua.firebaseapp.com",
+        databaseURL: "https://dongchanrua-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "dongchanrua",
+        storageBucket: "dongchanrua.firebasestorage.app",
+        messagingSenderId: "640115424540",
+        appId: "1:640115424540:web:c9713b7921c09283150ed9"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ==========================================================================
+    // LOGIC ĐỌC VÀ TÁCH CHƯƠNG TỰ ĐỘNG
+    // ==========================================================================
+    function handleFileImport(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const fileName = file.name.toLowerCase();
+
+        function processText(rawText) {
+            const chapterRegex = /^\s*Chương\s+(\d+)\s*[:\-\s]\s*(.*)$/i;
+            const lines = rawText.split(/\r?\n/);
+            
+            let foundIndex = -1;
+            let chapterNum = "";
+            let chapterName = "";
+
+            for (let i = 0; i < lines.length; i++) {
+                const currentLine = lines[i].trim();
+                const match = currentLine.match(chapterRegex);
+                if (match) {
+                    foundIndex = i;
+                    chapterNum = match[1];
+                    chapterName = match[2].trim();
+                    break;
+                }
+            }
+
+            if (foundIndex !== -1) {
+                // Điền dữ liệu vào các ô hiển thị lần lượt sạch sẽ
+                document.getElementById('previewNumber').value = chapterNum;
+                document.getElementById('previewTitle').value = `Chương ${chapterNum}: ${chapterName}`;
+                
+                // Cắt bỏ dòng tiêu đề và gom nội dung còn lại
+                lines.splice(foundIndex, 1);
+                document.getElementById('previewContent').value = lines.join('\n').trim();
+
+                // Hiện vùng xem trước
+                document.getElementById('resultPreview').style.display = 'block';
+            } else {
+                document.getElementById('previewNumber').value = "";
+                document.getElementById('previewTitle').value = "";
+                document.getElementById('previewContent').value = rawText.trim();
+                document.getElementById('resultPreview').style.display = 'block';
+                alert("Đã đọc được file nhưng không tìm thấy dòng dạng 'Chương xx: Tên chương' ở đầu, chị chỉnh thủ công lại nha! 🐢");
+            }
+        }
+
+        if (fileName.endsWith('.txt')) {
+            const reader = new FileReader();
+            reader.onload = function(e) { processText(e.target.result); };
+            reader.readAsText(file, 'UTF-8');
+        } else if (fileName.endsWith('.docx')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                mammoth.extractRawText({ arrayBuffer: e.target.result })
+                    .then(function(result) { processText(result.value); })
+                    .catch(function(err) { alert("Lỗi đọc file Word: " + err.message); });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    // ==========================================================================
+    // TIẾN HÀNH ĐĂNG LÊN DATABASE
+    // ==========================================================================
+    function uploadParsedChapter() {
+        const storyId = document.getElementById('storyId').value.trim();
+        const number = parseInt(document.getElementById('previewNumber').value);
+        const title = document.getElementById('previewTitle').value.trim();
+        const content = document.getElementById('previewContent').value.trim();
+        const status = document.getElementById('chapterStatus').value;
+
+        if (!storyId) {
+            alert("Chị ơi quên nhập 'ID TRUYỆN' ở trên kìa! 😭");
+            return;
+        }
+        if (!number || !title || !content) {
+            alert("Dữ liệu bóc tách đang bị thiếu, kiểm tra lại số chương hoặc nội dung nha chị.");
+            return;
+        }
+
+        const data = {
+            title: title,
+            number: number,
+            content: content,
+            status: status,
+            createdAt: Date.now(),
+            views: 0
+        };
+
+        db.ref(`chapters/${storyId}/${number}`).set(data)
+        .then(() => {
+            alert("🎉 Đăng chương thành công mĩ mãn lên hệ thống!");
+            // Đăng xong ẩn giao diện xem trước đi để sẵn sàng cho file tiếp theo
+            document.getElementById('resultPreview').style.display = 'none';
+            document.getElementById('fileInput').value = "";
+        })
+        .catch(err => alert("Lỗi đăng truyện: " + err.message));
+    }
+</script>
+
+</body>
+</html>

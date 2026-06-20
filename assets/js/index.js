@@ -34,7 +34,6 @@ function initSubBarFilters() {
     const filterButtons = document.querySelectorAll('.nav-link-btn');
     
     filterButtons.forEach(btn => {
-        // Bỏ qua nút Thể Loại vì nó dùng cơ chế Hover xổ Dropdown
         if (btn.id === 'tagDropdownBtn') return;
 
         btn.addEventListener('click', () => {
@@ -43,11 +42,9 @@ function initSubBarFilters() {
 
             const filterType = btn.getAttribute('data-filter');
             if (filterType === 'new') {
-                // Quay lại nạp danh sách truyện mới cập nhật tổng hợp
                 closeSearch();
                 loadMainStories();
             } else if (filterType === 'completed') {
-                // Lọc truyện theo trạng thái Hoàn thành
                 loadStoriesByCondition('status', 'Hoàn thành', '🍿 Danh Sách Truyện Đã Hoàn Thành');
             }
         });
@@ -55,7 +52,7 @@ function initSubBarFilters() {
 }
 
 /* ==========================================================================
-   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đổ trực tiếp lên Banner Hero Premium)
+   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đọc trường 'img' chị tạo)
    ========================================================================== */
 function handleFeaturedRandomBook(storiesData) {
     const keys = Object.keys(storiesData);
@@ -70,22 +67,22 @@ function handleFeaturedRandomBook(storiesData) {
     const heroLink = document.getElementById('heroLink');
     const featuredBookSection = document.getElementById('featuredBook');
 
-    // Cập nhật text tiêu đề và mô tả truyện công tâm
     if (heroTitle) heroTitle.innerText = story.title || "Tác phẩm độc quyền";
     if (heroSynopsis) heroSynopsis.innerText = story.description || story.synopsis || "Bấm vào để khám phá thế giới nội tâm đầy cảm xúc của tác phẩm này...";
 
-    // Tạo link dẫn tới trang chi tiết truyện (giữ nguyên cấu trúc book.html của chị)
+    // Tạo link dẫn tới trang chi tiết truyện của chị
     const storyReadUrl = `book.html?id=${randomKey}`;
     if (heroLink) heroLink.setAttribute('href', storyReadUrl);
 
-    // Dùng ảnh bìa truyện (story.cover) làm background mờ ảo chuẩn phong cách Netflix
-    if (story.cover && featuredBookSection) {
-        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(252,249,250,0.95) 40%, rgba(252,249,250,0.4)), url('${story.cover}')`, 'important');
+    // Ưu tiên đọc trường 'img' từ Form Admin của chị, nếu không có mới tìm trường 'cover' hoặc 'image'
+    const storyImg = story.img || story.cover || story.image;
+
+    if (storyImg && featuredBookSection) {
+        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(252,249,250,0.95) 40%, rgba(252,249,250,0.4)), url('${storyImg}')`, 'important');
         featuredBookSection.style.setProperty('background-size', 'cover', 'important');
         featuredBookSection.style.setProperty('background-position', 'center 20%', 'important');
     }
 
-    // Độc giả click vào bất cứ đâu trên Banner cũng bay thẳng vào trang đọc truyện
     if (featuredBookSection) {
         featuredBookSection.onclick = function(e) {
             if (e.target.tagName !== 'A' && e.target.parentElement.tagName !== 'A') {
@@ -111,7 +108,6 @@ function loadGenresDropdown() {
             const span = document.createElement('span');
             span.textContent = genreName;
             
-            // Khi click chọn 1 thể loại, gọi bộ lọc đổ ra vùng tìm kiếm chuyên sâu
             span.addEventListener('click', () => {
                 loadStoriesByCondition('genre', genreName, `🍿 Thể Loại: ${genreName}`);
             });
@@ -134,7 +130,6 @@ function loadStoriesByCondition(field, value, titleText) {
     searchSection.style.display = 'block';
     resultsGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang lọc tác phẩm...</div>';
 
-    // Cuộn màn hình nhẹ nhàng xuống khu vực kết quả bộ lọc
     searchSection.scrollIntoView({ behavior: 'smooth' });
 
     db.ref('stories').orderByChild(field).equalTo(value).once('value')
@@ -146,8 +141,7 @@ function loadStoriesByCondition(field, value, titleText) {
         }
 
         snapshot.forEach((childSnapshot) => {
-            const story = childSnapshot.val();
-            resultsGrid.appendChild(createNetflixCard(childSnapshot.key, story));
+            resultsGrid.appendChild(createNetflixCard(childSnapshot.key, childSnapshot.val()));
         });
     })
     .catch((err) => {
@@ -156,7 +150,6 @@ function loadStoriesByCondition(field, value, titleText) {
     });
 }
 
-// Hàm đóng bộ lọc tìm kiếm chuyên sâu
 function closeSearch() {
     const searchSection = document.getElementById('searchResultsSection');
     if (searchSection) searchSection.style.display = 'none';
@@ -178,7 +171,7 @@ function loadMainStories() {
 
         const storiesData = snapshot.val();
         
-        // TIỆN ÍCH: Gọi hàm Random Banner Hero ngay tại đây khi có đầy đủ dữ liệu truyện
+        // Gọi hàm Random Banner Hero ngay tại đây
         handleFeaturedRandomBook(storiesData);
 
         const storiesArray = [];
@@ -186,7 +179,6 @@ function loadMainStories() {
             storiesArray.push({ id: childSnapshot.key, ...childSnapshot.val() });
         });
 
-        // Đảo ngược mảng để truyện mới update nhảy lên đầu danh sách
         storiesArray.reverse().forEach((story) => {
             bookGrid.appendChild(createNetflixCard(story.id, story));
         });
@@ -214,7 +206,6 @@ function loadTopViews() {
             topStories.push({ id: childSnapshot.key, ...childSnapshot.val() });
         });
 
-        // Đảo thứ tự để truyện nhiều view nhất đứng đầu bảng xếp hạng
         topStories.reverse();
 
         topStories.forEach((story, index) => {
@@ -222,8 +213,11 @@ function loadTopViews() {
             card.className = 'story-card';
             card.onclick = () => window.location.href = `book.html?id=${story.id}`;
             
+            // Tự động kiểm tra trường ảnh mượt mà
+            const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
+            
             card.innerHTML = `
-                <img src="${story.cover || 'https://via.placeholder.com/180x250'}" alt="${story.title}">
+                <img src="${currentImg}" alt="${story.title}">
                 <div style="flex: 1; min-width: 0;">
                     <h4 style="margin-top:0; font-size:0.95rem; font-weight:700;">TOP ${index + 1} . ${story.title}</h4>
                     <p style="margin-bottom:0; font-size:0.8rem; color: var(--netflix-red); font-weight:600;"><i class="fa-regular fa-eye"></i> ${story.views || 0} lượt xem</p>
@@ -251,15 +245,18 @@ function listenToNotifications() {
 }
 
 /* ==========================================================================
-   Ô CHỨC NĂNG PHỤ: TẠO CARD TRUYỆN PHONG CÁCH NETFLIX
+   HÀM BỔ TRỢ: TẠO CARD TRUYỆN PHONG CÁCH NETFLIX (Kiểm tra trường 'img')
    ========================================================================== */
 function createNetflixCard(id, story) {
     const div = document.createElement('div');
     div.className = 'story-card';
     div.onclick = () => window.location.href = `book.html?id=${id}`;
     
+    // Tự động dùng 'img' chị tạo, hoặc các trường cũ dự phòng
+    const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
+    
     div.innerHTML = `
-        <img src="${story.cover || 'https://via.placeholder.com/180x250'}" alt="${story.title}">
+        <img src="${currentImg}" alt="${story.title}">
         <h4>${story.title}</h4>
         <p>${story.author || 'Động Chăn Rùa'}</p>
     `;
@@ -273,7 +270,6 @@ function triggerSearch() {
     
     const keyword = searchInput.value.trim().toLowerCase();
     
-    // Tìm kiếm tương đối quét qua thư viện chính
     const searchSection = document.getElementById('searchResultsSection');
     const resultsGrid = document.getElementById('resultsGrid');
     const rowTitle = searchSection.querySelector('.row-title');

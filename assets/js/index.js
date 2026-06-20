@@ -119,7 +119,7 @@ function loadGenresDropdown() {
 function loadStoriesByCondition(field, value, titleText) {
     const searchSection = document.getElementById('searchResultsSection');
     const resultsGrid = document.getElementById('resultsGrid');
-    const rowTitle = searchSection.querySelector('.row-title');
+    const rowTitle = searchSection?.querySelector('.row-title');
 
     if (!searchSection || !resultsGrid) return;
     if (rowTitle) rowTitle.innerText = titleText;
@@ -233,7 +233,7 @@ function triggerSearch() {
     const keyword = searchInput.value.trim().toLowerCase();
     const searchSection = document.getElementById('searchResultsSection');
     const resultsGrid = document.getElementById('resultsGrid');
-    const rowTitle = searchSection.querySelector('.row-title');
+    const rowTitle = searchSection?.querySelector('.row-title');
 
     if (rowTitle) rowTitle.innerText = `🔍 Kết quả tìm kiếm cho: "${searchInput.value}"`;
     searchSection.style.display = 'block';
@@ -275,6 +275,8 @@ auth.onAuthStateChanged((user) => {
     }
 
     if (user) {
+            renderAvatarSelectionGrid(); // 👈 THÊM DÒNG NÀY
+        
         btnHeaderAuth.innerHTML = `Chào, ${user.displayName || 'Bạn'}`;
         btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
         btnHeaderAuth.onclick = openProfileZone;
@@ -411,7 +413,7 @@ function updateUserProfileData() {
     const finalName = newName.trim() === "" ? document.getElementById('userProfileName').textContent : newName;
 
     user.updateProfile({ displayName: finalName }).then(() => {
-        db.ref('users/' + user.uid).update({ displayName: finalName, avatar: selectedAvatarUrl }).then(() => {
+        db.ref('users/' + user.uid).update({ displayName: finalName, avatar: selectedAvatarUrl || user.photoURL || "" }).then(() => {
             alert("Đã cập nhật hồ sơ thành công! 🐢");
             document.getElementById('userProfileName').textContent = finalName;
         });
@@ -445,3 +447,25 @@ function addToBookshelf(storyId, storyData) {
         loadUserBookshelf(user); 
     });
 }
+// ===== FIX MODAL CLICK NGOÀI =====
+function closeAuthModalOverlay(e) {
+    if (e.target.id === "authModal") {
+        closeAuthModal();
+    }
+}
+
+// ===== FIX QUÊN MẬT KHẨU =====
+function handleForgotPassword() {
+    const email = document.getElementById('authEmail').value;
+    if (!email) {
+        alert("Nhập email trước nha chị!");
+        return;
+    }
+
+    auth.sendPasswordResetEmail(email)
+        .then(() => alert("Đã gửi mail reset mật khẩu rồi đó 💌"))
+        .catch(err => alert(err.message));
+}
+document.getElementById("searchInput")?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") triggerSearch();
+});

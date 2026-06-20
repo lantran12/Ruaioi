@@ -249,3 +249,88 @@ body {
     font-weight: 700 !important;
     letter-spacing: 0.5px;
 }
+/* --- TỐI ƯU TRANG HỒ SƠ ĐỂ ĐỒNG BỘ VỚI STYLE CHÍNH --- */
+.profile-container {
+    max-width: 900px;
+    margin: 100px auto 40px; /* Thêm top margin để không bị header đè */
+    padding: 20px;
+    background: #fff;
+    border-radius: var(--radius-card);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-body {
+    display: flex;
+    gap: 40px;
+    padding: 20px 0;
+}
+
+.profile-avatar-zone {
+    text-align: center;
+    width: 220px;
+}
+
+#userCurrentAvatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--netflix-red);
+    margin-bottom: 15px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile-edit-zone { flex: 1; }
+
+.auth-group { margin-bottom: 20px; }
+.auth-group label { display: block; font-weight: 700; color: var(--smoke); font-size: 0.8rem; margin-bottom: 8px; text-transform: uppercase; }
+.auth-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+
+.avatar-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 10px;
+    margin: 15px 0 25px 0;
+}
+
+.avatar-option-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s, border 0.2s;
+    border: 2px solid transparent;
+}
+
+.avatar-option-img:hover { transform: scale(1.1); }
+
+.btn-logout { background: transparent; color: var(--netflix-red); border: 1px solid var(--netflix-red); padding: 8px 16px; border-radius: 20px; cursor: pointer; margin-top: 10px; }
+.btn-back { background: var(--onyx); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+
+/* Tủ sách trong Profile */
+.shelf-title { margin: 40px 0 20px 0; color: var(--onyx); }
+#userBookshelfContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.bookshelf-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background: #fcf9fa;
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(0,0,0,0.03);
+}

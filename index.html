@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Động Chăn Rùa - Premium Novel Streaming</title>
+    <!-- Nhúng font chữ sang mịn -->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
-    <!-- HEADER TRONG SUỐT TRÀN VIỀN (NETFLIX STYLE) -->
+    <!-- HEADER TRÀN VIỀN -->
     <header class="netflix-header">
         <div class="header-left-zone">
             <div class="logo">
                 <a href="index.html">Rùa<span>Stream</span></a>
             </div>
-            <!-- Thanh lọc tinh gọn tích hợp thẳng lên Header như Netflix -->
             <nav class="netflix-nav">
                 <button class="nav-link-btn active" data-filter="new">Mới Phát Hành</button>
                 <button class="nav-link-btn" data-filter="completed">Đã Trọn Bộ</button>
@@ -28,7 +28,6 @@
         </div>
 
         <div class="header-right-zone">
-            <!-- Ô tìm kiếm thu gọn thông minh -->
             <div class="netflix-search-box">
                 <input type="text" id="searchInput" placeholder="Tìm tác phẩm, tác giả...">
                 <button class="search-icon-btn" onclick="triggerSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -44,7 +43,6 @@
                 <button class="btn-admin-badge" id="btnOpenAdminPanel" style="display: none;" onclick="toggleAdminPanel()">👑</button>
             </div>
             
-            <!-- Panel Admin nhỏ gọn -->
             <div id="adminPanel" class="admin-panel" style="display: none;">
                 <h3>Editor Studio</h3>
                 <div class="admin-form">
@@ -59,7 +57,7 @@
         </div>
     </header>
 
-    <!-- TRANG HỒ SƠ ĐỘC GIẢ (GIỮ NGUYÊN TÍNH NĂNG CỦA CHỊ) -->
+    <!-- HỒ SƠ ĐỘC GIẢ -->
     <section class="container" id="profileSection" style="display: none; margin-top: 100px;">
         <div class="profile-container">
             <div class="profile-header">
@@ -88,21 +86,20 @@
         </div>
     </section>
 
-    <!-- KHU VỰC TRANG CHỦ NETFLIX LIGHT -->
-    <div id="homeMainContent">
+    <!-- TRANG CHỦ STREAMING -->
+    <div id="homeMainContent" style="margin-top: 70px;">
         
-        <!-- 1. NETFLIX HERO SPOTLIGHT (Banner cực đại tràn viền) -->
+        <!-- BANNER HERO -->
         <section class="netflix-hero" id="featuredBook">
-            <!-- JS sẽ tự động đổ dữ liệu Vip vào đây, dưới đây là khung nền sẵn -->
             <div class="hero-cover-blur"></div>
             <div class="hero-content">
-                <span class="trending-badge"><i class="fa-solid fa-fire"></i> TÁC PHẨM ĐANG ĐƯỢC ĐỀ CỬ NHIỀU NHẤT</span>
+                <span class="trending-badge"><i class="fa-solid fa-fire"></i> TÁC PHẨM ĐỀ CỬ ĐỘC QUYỀN</span>
                 <h1 class="hero-title">Động Chăn Rùa Premium</h1>
-                <p class="hero-synopsis">Đang chọn lọc những dòng chữ tinh túy nhất dành riêng cho tâm hồn của bạn...</p>
+                <p class="hero-synopsis">Đang chọn lọc tác phẩm đỉnh cao dành riêng cho bạn...</p>
             </div>
         </section>
 
-        <!-- DÀNH RIÊNG CHO KẾT QUẢ TÌM KIẾM / LỌC -->
+        <!-- KẾT QUẢ LỌC TÌM KIẾM -->
         <section class="netflix-section" id="searchResultsSection" style="display: none;">
             <div class="row-header">
                 <h2 class="row-title">🍿 Kết Quả Tìm Kiếm Chuyên Sâu</h2>
@@ -111,28 +108,24 @@
             <div id="resultsGrid" class="netflix-row-grid"></div>
         </section>
 
-        <!-- 2. HÀNG 1: BẢNG VÀNG THỊNH HÀNH (TOP VIEW XẾP NGANG CHUẨN ĐIỆN ẢNH) -->
+        <!-- TOP 5 XẾP NGANG -->
         <section class="netflix-section">
             <div class="row-header">
                 <h2 class="row-title">🏆 Top 5 Đột Phá Lượt Xem</h2>
             </div>
-            <div id="nominationListContainer" class="netflix-row-grid top-rank-style">
-                <!-- Top 5 dạng card ngang Netflix đổ tại đây -->
-            </div>
+            <div id="nominationListContainer" class="netflix-row-grid top-rank-style"></div>
         </section>
 
-        <!-- 3. HÀNG 2: THƯ VIỆN CHÍNH (XẾP LƯỚI KHÔNG GIỚI HẠN) -->
+        <!-- THƯ VIỆN CHÍNH -->
         <section class="netflix-section">
             <div class="row-header">
                 <h2 class="row-title">✨ Mới Cập Nhật Trên Hệ Thống</h2>
             </div>
-            <div class="netflix-row-grid" id="bookGrid">
-                <!-- Danh sách truyện toàn động -->
-            </div>
+            <div class="netflix-row-grid" id="bookGrid"></div>
         </section>
     </div>
 
-    <!-- POPUP ĐĂNG KÝ / ĐĂNG NHẬP -->
+    <!-- POPUP ĐĂNG NHẬP -->
     <div id="authModal" class="auth-modal" onclick="closeAuthModalOverlay(event)">
         <div class="auth-modal-content">
             <span class="close-modal-btn" onclick="closeAuthModal()">&times;</span>
@@ -155,16 +148,13 @@
         </div>
     </div>
 
-    <!-- FOOTER SANG XỊN -->
     <footer class="netflix-footer">
         <p>&copy; 2026 RÙA NOVEL STREAMING. ALL RIGHTS RESERVED.</p>
     </footer>
 
-    <!-- Các bộ thư viện Firebase v8 liên thông -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
     <script src="assets/js/firebase.js"></script>
     <script src="assets/js/index.js"></script>
     <script src="assets/js/notification.js"></script>
@@ -172,12 +162,7 @@
     <script>
         function toggleAdminPanel() {
             var panel = document.getElementById('adminPanel');
-            var currentStyle = window.getComputedStyle(panel).display;
-            if (currentStyle === 'none') {
-                panel.style.setProperty('display', 'block', 'important');
-            } else {
-                panel.style.setProperty('display', 'none', 'important');
-            }
+            panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
         }
     </script>
 </body>

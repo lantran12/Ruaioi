@@ -1,0 +1,247 @@
+<script>
+    // ==========================================================================
+    // CẤU HÌNH FIREBASE VÀ ĐƯỜNG ỐNG AUTH
+    // ==========================================================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
+        authDomain: "dongchanrua.firebaseapp.com",
+        databaseURL: "https://dongchanrua-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "dongchanrua",
+        storageBucket: "dongchanrua.firebasestorage.app",
+        messagingSenderId: "640115424540",
+        appId: "1:640115424540:web:c9713b7921c09283150ed9"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth(); 
+
+    // 🔒 MÃ UID ADMIN DUY NHẤT ĐƯỢC PHÉP TRUY CẬP
+    const ADMIN_UID = "BrZQ9s07ujfIYG1iPtC4vIhGgx33"; 
+
+    // ==========================================================================
+    // VÒNG BẢO VỆ CHỈ CHO UID CỦA CHỊ VÀO (ĐÃ FIX LỖI TRẮNG MÀN HÌNH)
+    // ==========================================================================
+    auth.onAuthStateChanged((user) => {
+        if (user && user.uid === ADMIN_UID) {
+            // Chuẩn UID của chị Trân rồi -> Mở cửa hiển thị hệ thống
+            if (document.body) {
+                document.body.style.setProperty('display', 'flex', 'important');
+            }
+            loadSidebarStories();
+        } else {
+            // Nếu chưa đăng nhập hoặc UID không khớp -> Báo lỗi và sút ra trang chủ
+            alert("⚠️ Lỗi truy cập! Thiết bị hoặc tài khoản này không có quyền Quản trị.");
+            window.location.href = "index.html"; 
+        }
+    });
+
+    let currentSelectedStoryId = "";
+
+    // 1. LẤY DANH SÁCH TRUYỆN ĐỔ VÀO SIDEBAR (Đã dọn dẹp đoạn trùng lặp)
+    function loadSidebarStories() {
+        const listContainer = document.getElementById('sidebarStoryList');
+        if (!listContainer) return; // Phòng hờ lỗi nếu thiếu thẻ HTML
+        
+        db.ref('stories').once('value').then((snapshot) => {
+            listContainer.innerHTML = '';
+            if(!snapshot.exists()) {
+                listContainer.innerHTML = '<div style="padding:20px; color:#999;">Trống trơn chị ơi!</div>';
+                return;
+            }
+            snapshot.forEach((child) => {
+                const id = child.key;
+                const story = child.val();
+                const cover = story.img || story.cover || story.image || 'https://via.placeholder.com/40x55';
+                
+                const div = document.createElement('div');
+                div.className = `story-item story-item-${id}`;
+                div.onclick = () => selectStory(id, story.title);
+                div.innerHTML = `
+                    <img src="${cover}" alt="Cover">
+                    <div class="story-item-info">
+                        <p class="story-item-title">${story.title}</p>
+                        <p class="story-item-id">ID: ${id}</p>
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+        }).catch(err => {
+            alert("Lỗi tải danh sách: " + err.message);
+        });
+    }
+
+    // 2. KHI CHỊ BẤM VÀO MỘT TRUYỆN BÊN TRÁI
+    function selectStory(storyId, storyTitle) {
+        currentSelectedStoryId = storyId;
+        const inputStoryId = document.getElementById('storyId');
+        if (inputStoryId) inputStoryId.value = storyId;
+        
+        document.querySelectorAll('.story-item').forEach(el => el.classList.remove('active'));
+        const activeEl = document.querySelector(`.story-item-${storyId}`);
+        if(activeEl) activeEl.classList.add('active');
+
+        const managerSection = document.getElementById('chapterManagerSection');
+        if (managerSection) managerSection.style.display = 'block';
+        
+        const managerTitle = document.getElementById('managerSectionTitle');
+        if (managerTitle) {
+            managerTitle.innerHTML = `<i class="fa-solid fa-list-ol" style="color: var(--primary);"></i> Quản Lý Chương: ${storyTitle}`;
+        }
+        loadStoryChapters(storyId);
+    }
+
+    // 3. TẢI DANH SÁCH CHƯƠNG LẺ CỦA TRUYỆN ĐANG CHỌN
+    function loadStoryChapters(storyId) {
+        const tbody = document.getElementById('chapterTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">Đang tải danh sách chương...</td></tr>';
+
+        db.ref(`chapters/${storyId}`).once('value').then((snapshot) => {
+            tbody.innerHTML = '';
+            if(!snapshot.exists()) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">Truyện này chưa đăng chương nào hết chị ơi! 🐢</td></tr>';
+                return;
+            }
+
+            const chapters = [];
+            snapshot.forEach((child) => {
+                const val = child.val();
+                chapters.push({ num: child.key, number: val.number || parseInt(child.key), ...val });
+            });
+
+            chapters.sort((a, b) => b.number - a.number);
+
+            chapters.forEach((ch) => {
+                const tr = document.createElement('tr');
+                let statusBadge = `<span class="badge badge-public">Công khai</span>`;
+                if(ch.status === 'draft' || ch.status === 'Bản nháp') statusBadge = `<span class="badge badge-draft">Bản nháp</span>`;
+                if(ch.password) statusBadge += ` <span class="badge badge-lock">Có Pass</span>`;
+
+                tr.innerHTML = `
+                    <td style="font-weight: bold; color: var(--primary);">Chương ${ch.number}</td>
+                    <td>${ch.title}</td>
+                    <td>${statusBadge}</td>
+                    <td><span style="font-family: monospace; color: #e11d48; font-weight: bold;">${ch.password || '—'}</span></td>
+                    <td style="text-align: center;">
+                        <button class="action-btn" onclick="editChapterClick('${ch.number}', '${ch.title.replace(/'/g, "\\'")}', '${ch.status || "Công khai"}', '${ch.password || ""}', \`${ch.content.replace(/`/g, "\\`").replace(/\$/g, "\\$")}\`)" title="Sửa chương"><i class="fa-regular fa-pen-to-square"></i> Sửa</button>
+                        <button class="action-btn" onclick="deleteChapterClick('${ch.number}')" style="color: #dc2626;" title="Xóa chương"><i class="fa-regular fa-trash-can"></i> Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    // 4. BẤM NÚT SỬA CHƯƠNG LẺ: ĐẨY DỮ LIỆU NGƯỢC LÊN FORM
+    function editChapterClick(num, title, status, password, content) {
+        document.getElementById('previewNumber').value = num;
+        document.getElementById('previewTitle').value = title;
+        document.getElementById('previewPassword').value = password;
+        document.getElementById('previewContent').value = content;
+        
+        const statusSelect = document.getElementById('chapterStatus');
+        if (statusSelect) statusSelect.value = status;
+        
+        const targetView = document.getElementById('storyId');
+        if (targetView) targetView.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 5. BẤM NÚT XÓA CHƯƠNG LẺ
+    function deleteChapterClick(num) {
+        if(confirm(`Chị Trân có chắc chắn muốn XÓA VĨNH VIỄN Chương ${num} không ạ? 🐢`)) {
+            db.ref(`chapters/${currentSelectedStoryId}/${num}`).remove().then(() => {
+                alert("Đã xóa chương thành công!");
+                loadStoryChapters(currentSelectedStoryId);
+            });
+        }
+    }
+
+    // 6. XỬ LÝ BÓC TÁCH FILE ĐẦU VÀO
+    function handleFileImport(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const fileName = file.name.toLowerCase();
+
+        function processText(rawText) {
+            const chapterRegex = /^\s*Chương\s+(\d+)\s*[:\-\s]\s*(.*)$/i;
+            const lines = rawText.split(/\r?\n/);
+            let foundIndex = -1, chapterNum = "", chapterName = "";
+
+            for (let i = 0; i < lines.length; i++) {
+                const currentLine = lines[i].trim();
+                const match = currentLine.match(chapterRegex);
+                if (match) {
+                    foundIndex = i; chapterNum = match[1]; chapterName = match[2].trim();
+                    break;
+                }
+            }
+
+            if (foundIndex !== -1) {
+                document.getElementById('previewNumber').value = chapterNum;
+                document.getElementById('previewTitle').value = `Chương ${chapterNum}: ${chapterName}`;
+                lines.splice(foundIndex, 1);
+                document.getElementById('previewContent').value = lines.join('\n').trim();
+            } else {
+                document.getElementById('previewNumber').value = "";
+                document.getElementById('previewTitle').value = "";
+                document.getElementById('previewContent').value = rawText.trim();
+                alert("Đọc được file nhưng không tự bóc được tiêu đề, chị điền tay hộ em nhé! 🐢");
+            }
+        }
+
+        if (fileName.endsWith('.txt')) {
+            const reader = new FileReader();
+            reader.onload = function(e) { processText(e.target.result); };
+            reader.readAsText(file, 'UTF-8');
+        } else if (fileName.endsWith('.docx')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                mammoth.extractRawText({ arrayBuffer: e.target.result })
+                    .then(function(result) { processText(result.value); })
+                    .catch(function(err) { alert("Lỗi đọc file Word: " + err.message); });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    // 7. NHẤN NÚT ĐỒNG BỘ GỬI LÊN DATABASE
+    function uploadParsedChapter() {
+        const storyId = document.getElementById('storyId').value.trim();
+        const number = parseInt(document.getElementById('previewNumber').value);
+        const title = document.getElementById('previewTitle').value.trim();
+        const content = document.getElementById('previewContent').value.trim();
+        const statusSelect = document.getElementById('chapterStatus');
+        const status = statusSelect ? statusSelect.value : "Công khai";
+        const password = document.getElementById('previewPassword').value.trim();
+
+        if (!storyId) { return alert("Chị ơi hãy chọn truyện bên trái hoặc điền ID truyện nha!"); }
+        if (!number || !title || !content) { return alert("Điền đủ thông tin chương truyện giúp em nhé chị."); }
+
+        const data = {
+            title: title,
+            number: number,
+            content: content,
+            status: status,
+            createdAt: Date.now(),
+            views: 0
+        };
+
+        if(password) {
+            data.password = password;
+        }
+
+        db.ref(`chapters/${storyId}/${number}`).set(data)
+        .then(() => {
+            alert("🎉 Đồng bộ chương thành công mĩ mãn lên hệ thống!");
+            document.getElementById('previewNumber').value = "";
+            document.getElementById('previewTitle').value = "";
+            document.getElementById('previewPassword').value = "";
+            document.getElementById('previewContent').value = "";
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) fileInput.value = "";
+            loadStoryChapters(storyId);
+        })
+        .catch(err => alert("Lỗi gửi dữ liệu: " + err.message));
+    }
+</script>

@@ -1,13 +1,10 @@
-/* ==========================================================================
-   1. HỆ MÀU NETFLIX LIGHT PREMIUM
-   ========================================================================== */
 :root {
-    --netflix-red: #ff4d6d;       /* Đỏ hồng rực rỡ thay cho màu đỏ Netflix gốc */
-    --p-pink: #ffb7b2;           /* Hồng phấn mịn */
-    --ivory-silk: #fcf9fa;       /* Nền lụa trắng kem siêu mịn */
-    --onyx: #181818;             /* Chữ đen tuyền quý phái */
-    --smoke: #666666;            /* Chữ phụ xám khói */
-    --radius-card: 8px;          /* Góc bo vuông nhẹ đặc trưng của phim ảnh */
+    --netflix-red: #ff4d6d;
+    --p-pink: #ffb7b2;
+    --ivory-silk: #fcf9fa;
+    --onyx: #181818;
+    --smoke: #666666;
+    --radius-card: 12px;
     --font-serif: 'Playfair Display', serif;
     --font-sans: 'Quicksand', sans-serif;
 }
@@ -19,16 +16,13 @@ body {
     font-family: var(--font-sans);
     color: var(--onyx);
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
 }
 
-/* ==========================================================================
-   2. THANH HEADER TRÀN VIỀN CHUẨN NỀN TẢNG STREAMING
-   ========================================================================== */
+/* HEADER CHUẨN STREAMING */
 .netflix-header {
-    background: linear-gradient(to bottom, rgba(252,249,250,0.95) 70%, rgba(252,249,250,0));
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    background: rgba(252, 249, 250, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     position: fixed;
     top: 0; left: 0; right: 0;
     height: 70px;
@@ -37,7 +31,7 @@ body {
     justify-content: space-between;
     align-items: center;
     z-index: 1000;
-    transition: background 0.3s;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
 }
 
 .header-left-zone, .header-right-zone { display: flex; align-items: center; gap: 25px; }
@@ -58,123 +52,98 @@ body {
     font-family: var(--font-sans);
     font-size: 0.9rem; font-weight: 500;
     color: var(--smoke); cursor: pointer;
-    transition: color 0.2s, transform 0.2s;
+    transition: color 0.2s;
 }
 .nav-link-btn:hover, .nav-link-btn.active { color: var(--netflix-red); font-weight: 600; }
 
-/* Ô tìm kiếm của Netflix thu gọn */
+/* Ô TÌM KIẾM CHUẨN VIP */
 .netflix-search-box {
     display: flex; align-items: center;
-    border: 1px solid rgba(0,0,0,0.1);
-    padding: 4px 12px; border-radius: 20px; background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 6px 14px; border-radius: 20px; background: #fff;
 }
 .netflix-search-box input {
     border: none; outline: none; background: transparent;
-    font-family: var(--font-sans); font-size: 0.85rem; width: 160px;
+    font-family: var(--font-sans); font-size: 0.85rem; width: 180px;
 }
 .search-icon-btn { background: none; border: none; cursor: pointer; color: var(--smoke); }
 
-/* Avatar tròn góc header */
 .btn-avatar-profile {
-    width: 34px; height: 34px; border-radius: 50%;
+    width: 36px; height: 36px; border-radius: 50%;
     background: var(--p-pink); border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center; color: #fff;
 }
 
-/* ==========================================================================
-   3. NETFLIX HERO SPOTLIGHT (Banner cực đại hoành tráng)
-   ========================================================================== */
+/* HERO BANNER CỰC ĐẠI */
 .netflix-hero {
     position: relative;
     width: 100%;
-    height: 65vh;
-    min-height: 400px;
-    background-size: cover !important;
-    background-position: center 20% !important;
+    height: 55vh;
+    min-height: 380px;
+    background: linear-gradient(135deg, #fff0f2 0%, #fff 100%);
     display: flex;
     align-items: center;
     padding: 0 4%;
-    margin-bottom: 20px;
-    box-shadow: inset 0 -80px 100px var(--ivory-silk);
+    border-radius: 0 0 30px 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.02);
 }
-/* Hiệu ứng lớp phủ mịn giúp chữ luôn nổi bật quý phái */
 .hero-cover-blur {
     position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(to right, rgba(252,249,250,0.95) 30%, rgba(252,249,250,0.2) 70%);
+    background: linear-gradient(to right, rgba(252,249,250,0.9) 40%, rgba(252,249,250,0));
     z-index: 1;
 }
-.hero-content { position: relative; z-index: 2; max-width: 550px; }
+.hero-content { position: relative; z-index: 2; max-width: 600px; }
 .trending-badge {
     display: inline-block; background: rgba(255, 77, 109, 0.1);
-    color: var(--netflix-red); padding: 6px 12px; border-radius: 4px;
-    font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 15px;
+    color: var(--netflix-red); padding: 6px 14px; border-radius: 20px;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 15px;
 }
-.hero-title { font-family: var(--font-serif); font-size: 3rem; font-weight: 700; line-height: 1.1; margin-bottom: 15px; }
-.hero-synopsis { font-size: 0.95rem; color: var(--smoke); line-height: 1.5; margin-bottom: 20px; }
+.hero-title { font-family: var(--font-serif); font-size: 2.8rem; font-weight: 700; margin-bottom: 15px; }
+.hero-synopsis { font-size: 1rem; color: var(--smoke); line-height: 1.6; }
 
-/* ==========================================================================
-   4. HÀNG LOẠT BĂNG CHUYỀN NGANG (ROW GRID) MƯỚT MẮT
-   ========================================================================== */
-.netflix-section { padding: 20px 4% 10px 4%; }
-.row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.row-title { font-family: var(--font-sans); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
+/* CÁC DẢI TRUYỆN ROW GRID */
+.netflix-section { padding: 30px 4% 10px 4%; }
+.row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.row-title { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
 
-/* Lưới hàng chạy mượt mà */
 .netflix-row-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 25px;
 }
 
-/* Thẻ truyện Netflix thu nhỏ, phóng to mượt khi di chuột qua */
 .netflix-row-grid > div, .story-card {
-    position: relative;
     cursor: pointer;
-    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 .netflix-row-grid > div img, .story-card img {
     width: 100%;
-    height: 240px;
+    height: 250px;
     object-fit: cover;
     border-radius: var(--radius-card);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    transition: box-shadow 0.4s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
 }
 .netflix-row-grid > div:hover {
-    transform: scale(1.06);
-    z-index: 10;
-}
-.netflix-row-grid > div:hover img, .story-card:hover img {
-    box-shadow: 0 12px 25px rgba(255, 77, 109, 0.15);
+    transform: translateY(-5px) scale(1.02);
 }
 .netflix-row-grid > div h4, .story-card h4 {
-    font-size: 0.95rem; font-weight: 600; margin-top: 8px;
+    font-size: 1rem; font-weight: 600; margin-top: 10px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.netflix-row-grid > div p, .story-card p { font-size: 0.8rem; color: var(--smoke); margin-top: 2px; }
+.netflix-row-grid > div p, .story-card p { font-size: 0.85rem; color: var(--smoke); margin-top: 3px; }
 
-/* Phong cách hiển thị Top Rank đặc biệt */
-.top-rank-style > div { display: flex; gap: 10px; align-items: center; background: #fff; padding: 10px; border-radius: var(--radius-card); }
-.top-rank-style > div img { width: 70px; height: 95px; }
+/* TOP 5 RANKING STYLE */
+.top-rank-style > div {
+    display: flex; gap: 15px; align-items: center; 
+    background: #fff; padding: 12px; border-radius: var(--radius-card);
+    border: 1px solid rgba(0,0,0,0.02);
+}
+.top-rank-style > div img { width: 70px; height: 95px; border-radius: 6px; }
 
-/* ==========================================================================
-   5. NỀN TẢNG TIỆN ÍCH PHỤ
-   ========================================================================== */
-.netflix-footer { text-align: center; padding: 40px 0; color: var(--smoke); font-size: 0.75rem; font-weight: 600; letter-spacing: 1px; margin-top: 60px; }
-.btn-close-row { background: none; border: none; color: var(--netflix-red); font-weight: 600; cursor: pointer; }
-
-/* Toàn bộ các hộp thoại quản lý */
-.admin-panel { position: absolute; top: 70px; right: 4%; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 280px; border: 1px solid rgba(0,0,0,0.05); }
-.admin-form input, .admin-form textarea { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; }
-.admin-form button { width: 100%; padding: 10px; background: var(--netflix-red); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
+/* UTILITIES */
+.netflix-footer { text-align: center; padding: 5px 0 40px; color: var(--smoke); font-size: 0.8rem; font-weight: 500; margin-top: 60px; }
+.noti-btn { font-size: 1.3rem; color: var(--onyx); position: relative; background: none; border: none; cursor: pointer; }
+.noti-btn .badge { position: absolute; top: -4px; right: -6px; background: var(--netflix-red); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+.admin-panel { position: absolute; top: 70px; right: 4%; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 290px; }
 .auth-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:9999; backdrop-filter: blur(5px); }
-.auth-modal-content { background:#fff; padding:30px; border-radius:12px; width:90%; max-width:380px; position:relative; }
-.auth-group { margin-bottom:15px; }
-.auth-group label { display:block; margin-bottom:5px; font-size:13px; font-weight:600; }
-.auth-group input { width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:inherit; }
-.btn-auth-submit { width:100%; padding:12px; background:var(--netflix-red); color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
-.avatar-selection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 120px; overflow-y: auto; margin: 10px 0; }
-.avatar-option-img { width: 100%; border-radius: 50%; cursor: pointer; }
-.avatar-option-img.selected { border: 2px solid var(--netflix-red); }
-.profile-container { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+.auth-modal-content { background:#fff; padding:30px; border-radius:16px; width:90%; max-width:380px; position:relative; }

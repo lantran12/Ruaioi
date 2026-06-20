@@ -414,7 +414,7 @@ function toggleAuthMode() {
     const authToggleLink = document.getElementById('authToggleLink');
 
     if (isSignUpMode) {
-        authTitle.textContent = "GIA NHẬP RÙA STREAM";
+        authTitle.textContent = "GIA NHẬP ĐỘNG RÙA";
         nickNameGroup.style.display = 'block';
         btnAuthSubmit.textContent = "BẮT ĐẦU TRẢI NGHIỆM";
         authToggleLink.textContent = "Đã có tài khoản rồi? Bấm vào đây để Đăng nhập";

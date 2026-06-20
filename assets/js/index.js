@@ -20,18 +20,21 @@ const auth = firebase.auth();
 
 // Chạy các hàm chức năng khi trang tải xong
 document.addEventListener('DOMContentLoaded', () => {
-    // Luôn chạy các hàm này vì nó có mặt trên mọi trang
-    initSubBarFilters();
-    listenToNotifications();
+    // Chỉ chạy các hàm này nếu tồn tại phần tử trên trang
+    if (document.querySelector('.nav-link-btn')) initSubBarFilters();
+    if (document.getElementById('notiCount')) listenToNotifications();
     
-    // CHỈ CHẠY CÁC HÀM NÀY NẾU ĐANG Ở TRANG CHỦ (có chứa bookGrid)
     if (document.getElementById('bookGrid')) {
         loadGenresDropdown();
         loadMainStories();
         loadTopViews();
     }
+    
+    // Đảm bảo không lỗi nếu trang book.html không có các section này
+    if (document.getElementById('avatarGridContainer')) {
+        renderAvatarSelectionGrid();
+    }
 });
-
 /* ==========================================================================
    2. XỬ LÝ BỘ LỌC TẠI SUB-BAR
    ========================================================================== */

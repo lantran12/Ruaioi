@@ -63,13 +63,15 @@ function listenAuthState() {
 
 // Hàm kiểm tra quyền Admin để hiện nút
 function checkAndGrantAdmin(user) {
-    const adminBtn = document.getElementById('adminBtn');
+    const adminBtn = document.getElementById('btnOpenAdminPanel'); 
+    
     if (adminBtn) {
-        adminBtn.style.display = (user.uid === ADMIN_UID) ? 'block' : 'none';
+        // Chỉ hiện nút nếu UID của người dùng khớp với ADMIN_UID
+        // Dùng 'inline-block' hoặc 'block' tùy vào layout của bạn
+        adminBtn.style.display = (user.uid === ADMIN_UID) ? 'inline-block' : 'none';
         console.log("Đã kiểm tra quyền Admin! 🌸");
     }
 }
-
 // =======================================================
 // ⚙️ CÁC HÀM ĐIỀU KHIỂN ĐÓNG MỞ VÀ XỬ LÝ FORM MODAL AUTH
 // =======================================================

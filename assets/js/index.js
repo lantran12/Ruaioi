@@ -233,7 +233,26 @@ function listenToNotifications() {
     });
 }
 
-// Hàm Tìm kiếm thủ công khi bấm kính lúp (Giữ nguyên code của chị)
+/* ==========================================================================
+   9. HÀM BỔ TRỢ: TẠO CARD TRUYỆN PHONG CÁCH NETFLIX (Kiểm tra trường 'img')
+   ========================================================================== */
+function createNetflixCard(id, story) {
+    const div = document.createElement('div');
+    div.className = 'story-card';
+    div.onclick = () => window.location.href = `book.html?id=${id}`;
+    
+    // Tự động dùng 'img' chị tạo, hoặc các trường cũ dự phòng
+    const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
+    
+    div.innerHTML = `
+        <img src="${currentImg}" alt="${story.title}">
+        <h4>${story.title}</h4>
+        <p>${story.author || 'Động Chăn Rùa'}</p>
+    `;
+    return div;
+}
+
+// Hàm Tìm kiếm thủ công khi bấm kính lúp
 function triggerSearch() {
     const searchInput = document.getElementById('searchInput');
     if (!searchInput || !searchInput.value.trim()) return;

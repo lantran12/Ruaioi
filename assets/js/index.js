@@ -1,6 +1,4 @@
-// ==========================================================================
 // 1. CẤU HÌNH FIREBASE 
-// ==========================================================================
 const firebaseConfig = {
     apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
     authDomain: "dongchanrua.firebaseapp.com",
@@ -312,7 +310,7 @@ auth.onAuthStateChanged((user) => {
     const btnNotification = document.getElementById('btnNotification'); 
     
     // Tự động tạo nút Vương Miện màu xanh Admin nằm CẠNH NHAU (ngang hàng)
-    let  = document.getElementById('btnOpenAdminPanel');
+    let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
     if (!btnAdminCrown && btnHeaderAuth) {
         btnAdminCrown = document.createElement('button');
         btnAdminCrown.id = 'btnOpenAdminPanel';
@@ -348,10 +346,11 @@ auth.onAuthStateChanged((user) => {
                 btnHeaderAuth.onclick = openProfileZone;
             }
             if (btnAdminCrown) {
-                   btnAdminCrown.style.display = 'inline-flex';
-                   btnAdminCrown.onclick = () => {
-                   window.location.href = "studio.html"; // Chuyển thẳng sang trang Studio chuyên nghiệp
-    };
+        btnAdminCrown.style.display = 'inline-flex';
+        btnAdminCrown.onclick = () => {
+            window.location.href = "studio.html"; // CHỈ CẦN DÒNG NÀY LÀ ĐỦ
+        };
+    }
 }
         } else {
             // Nếu là người đọc bình thường
@@ -567,78 +566,4 @@ function logoutFromProfile() {
     if(confirm("Chị muốn đăng xuất tài khoản đúng không ạ? 🐢")) {
         auth.signOut();
     }
-}
-
-
-// 1. Mở Popup và tự động tải danh sách truyện vào ô chọn
-function openAddChapterModal() {
-    document.getElementById('addChapterModal').style.display = 'flex';
-    
-    const dropdown = document.getElementById('selectStoryId');
-    // Làm sạch danh sách cũ
-    dropdown.innerHTML = '<option value="">-- Bấm vào đây để chọn truyện --</option>';
-
-    // Lấy dữ liệu truyện từ Firebase
-    db.ref('stories').once('value').then((snapshot) => {
-        if(snapshot.exists()) {
-            snapshot.forEach((child) => {
-                const storyId = child.key;
-                const storyData = child.val();
-                
-                const option = document.createElement('option');
-                option.value = storyId;
-                option.innerText = storyData.title; // Hiển thị tên truyện
-                dropdown.appendChild(option);
-            });
-        }
-    });
-}
-
-// 2. Đóng Popup
-function closeAddChapterModal() {
-    document.getElementById('addChapterModal').style.display = 'none';
-}
-
-// 3. Gửi dữ liệu chương mới lên Firebase
-function submitNewChapter() {
-    const selectedStoryId = document.getElementById('selectStoryId').value;
-    const title = document.getElementById('chapterTitleInput').value.trim();
-    const number = document.getElementById('chapterNumberInput').value.trim();
-    const password = document.getElementById('chapterPasswordInput').value.trim();
-    const content = document.getElementById('chapterContentInput').value.trim();
-    const status = document.querySelector('input[name="chapterStatus"]:checked').value;
-
-    if(!selectedStoryId) return alert("Chị ơi chưa chọn truyện kìa!");
-    if(!title || !number || !content) return alert("Vui lòng điền đầy đủ Tên, Số chương và Nội dung nha chị!");
-
-    // Kiểm tra xem chương đã tồn tại chưa để tránh ghi đè nhầm
-    db.ref(`chapters/${selectedStoryId}/${number}`).once('value').then((snapshot) => {
-        if (snapshot.exists() && !confirm("⚠️ Chương này đã tồn tại rồi, chị có chắc chắn muốn GHI ĐÈ nội dung mới lên không?")) {
-            return;
-        }
-
-        // Lưu vào Firebase
-        db.ref(`chapters/${selectedStoryId}/${number}`).set({
-            title: title,
-            number: parseInt(number),
-            content: content,
-            status: status,
-            password: password,
-            views: 0,
-            createdAt: Date.now()
-        }).then(() => {
-            alert("🎉 Đăng chương mới thành công rồi chị Trân ơi!");
-            closeAddChapterModal();
-            // Xóa trắng form sau khi đăng thành công
-            document.getElementById('chapterTitleInput').value = '';
-            document.getElementById('chapterNumberInput').value = '';
-            document.getElementById('chapterPasswordInput').value = '';
-            document.getElementById('chapterContentInput').value = '';
-        }).catch(err => alert("Lỗi rồi: " + err.message));
-    });
-}
-
-// 4. Nút Mở trang quản lý (đã có sẵn link trong HTML, hàm này để phòng hờ)
-function openImportPage() {
-    window.location.href = "import.html";
 }

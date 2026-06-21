@@ -311,40 +311,46 @@ auth.onAuthStateChanged((user) => {
     const btnHeaderAuth = document.getElementById('btnHeaderAuth'); 
     const btnNotification = document.getElementById('btnNotification'); 
     
-    // 1. Tạo nút Admin (nếu chưa có)
+    // 1. Đảm bảo nút Admin luôn tồn tại trong DOM
     let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
     if (!btnAdminCrown && btnHeaderAuth && btnHeaderAuth.parentNode) {
         btnAdminCrown = document.createElement('button');
         btnAdminCrown.id = 'btnOpenAdminPanel';
         btnAdminCrown.innerHTML = '👑';
         btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 8px;";
-        btnHeaderAuth.parentNode.appendChild(btnAdminCrown);
+        btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth.nextSibling);
     }
 
     // 2. Xử lý logic khi ĐÃ ĐĂNG NHẬP
     if (user) {
+        console.log("Đã đăng nhập với UID:", user.uid); // <--- KIỂM TRA DÒNG NÀY TRONG CONSOLE
+        
         if (btnNotification) btnNotification.style.display = 'inline-flex';
         
-        // Gán tên hiển thị
         if (btnHeaderAuth) {
             btnHeaderAuth.innerHTML = (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') ? "Chào, Chị Trân ạ" : `Chào, ${user.displayName || 'Thành Viên'}`;
             btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
             
-            // XÓA sạch các sự kiện cũ và gán đúng hàm Profile
-            btnHeaderAuth.onclick = null; 
-            btnHeaderAuth.onclick = openProfileZone;
+            // Chỉ gán hàm nếu nó tồn tại
+            if (typeof openProfileZone === 'function') {
+                btnHeaderAuth.onclick = openProfileZone;
+            } else {
+                console.error("Hàm openProfileZone chưa được định nghĩa!");
+            }
         }
 
         renderUserProfileData(user);
 
-        // PHÂN QUYỀN ADMIN
-        if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33' && btnAdminCrown) {
-            btnAdminCrown.style.display = 'flex';
-            btnAdminCrown.onclick = () => { window.location.href = "studio.html"; };
-        } else if (btnAdminCrown) {
-            btnAdminCrown.style.display = 'none';
+        // PHÂN QUYỀN ADMIN - ĐƯỢC ÉP HIỂN THỊ
+        if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
+            if (btnAdminCrown) {
+                btnAdminCrown.style.display = 'flex'; 
+                btnAdminCrown.onclick = () => { window.location.href = "studio.html"; };
+            }
+        } else {
+            if (btnAdminCrown) btnAdminCrown.style.display = 'none';
         }
-    } 
+    }
     // 3. Xử lý logic khi CHƯA ĐĂNG NHẬP
     else {
         if (btnNotification) btnNotification.style.display = 'none';
@@ -544,4 +550,16 @@ function logoutFromProfile() {
         auth.signOut();
     }
 }
-
+function openProfileZone() {
+    const profileSection = document.getElementById('profileSection');
+    const homeMainContent = document.getElementById('homeMainContent');
+    
+    if (profileSection) {
+        profileSection.style.display = 'block';
+    }
+    if (homeMainContent) {
+        homeMainContent.style.display = 'none';
+    }
+    // Chắc chắn cuộn lên đầu trang
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}

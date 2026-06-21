@@ -1,1 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rùa Novel | Studio</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link CSS chung của Chị -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <style>
+        /* CSS riêng cho trang Studio để không ảnh hưởng trang chủ */
+        .studio-container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        
+        .tab-menu { display: flex; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .tab-item { padding: 10px 20px; cursor: pointer; border-radius: 20px; font-weight: 600; color: #666; }
+        .tab-item.active { background: #eee; color: #000; }
+        
+        .search-box { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; }
+        
+        .story-card { border: 1px solid #eee; padding: 15px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .story-info h3 { margin: 0; font-size: 1.1rem; }
+        .badge { font-size: 0.8rem; padding: 4px 8px; border-radius: 5px; background: #f0f0f0; margin-right: 5px; }
+        
+        .form-section { margin-top: 40px; padding: 20px; border-top: 2px solid #f0f0f0; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        .btn-action { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: #7c3aed; color: white; }
+    </style>
+</head>
+<body>
 
+    <!-- Header đồng bộ -->
+    <header class="netflix-header">
+        <div class="header-left-zone">
+            <div class="logo">
+                <a href="index.html">Rùa<span>Novel</span></a>
+                <span style="font-size: 0.9rem; color: #666; margin-left: 10px;">| Studio</span>
+            </div>
+        </div>
+
+        <div class="header-right-zone" style="display: flex; align-items: center; gap: 10px;">
+            <div class="auth-buttons" id="authSection" style="display: flex; align-items: center;">
+                <button class="btn-avatar-profile" id="btnHeaderAuth" onclick="openAuthModal()"><i class="fa-regular fa-user"></i></button>
+            </div>
+            <button class="noti-btn" id="btnNotification">
+                <i class="fa-regular fa-bell"></i>
+                <span class="badge" id="notiCount">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="studio-container">
+        
+        <!-- Tabs -->
+        <div class="tab-menu">
+            <div class="tab-item active">Quản lý truyện</div>
+            <div class="tab-item">Đăng truyện</div>
+        </div>
+
+        <!-- Section Danh sách -->
+        <section class="management-section">
+            <h2>Chọn truyện để chỉnh sửa</h2>
+            <input type="text" class="search-box" placeholder="Tìm tên truyện hoặc tạo mới...">
+            
+            <div class="story-list">
+                <div class="story-card">
+                    <div class="story-info">
+                        <h3>Tên truyện của Chị 01</h3>
+                        <div style="margin-top: 5px;">
+                            <span class="badge">Nam MC</span>
+                            <span class="badge" style="color: #ea580c;">Đang viết</span>
+                        </div>
+                    </div>
+                    <button class="btn-action">Chỉnh sửa</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Đăng truyện -->
+        <section class="form-section">
+            <h2>Thông tin truyện mới</h2>
+            <div class="form-group">
+                <label>Tên truyện *</label>
+                <input type="text" class="form-control" placeholder="Nhập tên truyện...">
+            </div>
+            <div class="form-group">
+                <label>Tóm tắt truyện</label>
+                <textarea class="form-control" rows="5" placeholder="Viết tóm tắt truyện ở đây..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Bìa truyện (Cover)</label>
+                <input type="file" class="form-control">
+            </div>
+            <button class="btn-action btn-primary" style="width: 100%;">Lưu & Đăng</button>
+        </section>
+
+    </main>
+
+</body>
+</html>

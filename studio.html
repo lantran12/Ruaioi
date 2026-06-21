@@ -2,55 +2,75 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Studio Động Chăn Rùa</title>
-    <link rel="stylesheet" href="style.css">
-    </head>
+    <title>Studio Động Chăn Rùa - Quản Lý Truyện</title>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; }
+        .btn { padding: 12px 20px; border: none; cursor: pointer; border-radius: 6px; color: white; }
+        .btn-primary { background: #ff4d6d; }
+        .import-box { border: 2px dashed #ff4d6d; padding: 20px; margin-bottom: 20px; text-align: center; }
+    </style>
+</head>
 <body>
-    <header class="netflix-header">
-        <div class="logo"><a href="index.html">ĐỘNG<span>CHĂNRÙA</span></a></div>
-        <button onclick="openUploadModal()" class="btn-auth-submit" style="width:auto; padding: 10px 20px;">➕ Đăng truyện mới</button>
-    </header>
 
-    <main class="netflix-section" style="margin-top: 100px;">
-        <h2>Danh sách tác phẩm</h2>
-        <div id="adminStoryGrid" class="netflix-row-grid">
-            </div>
-    </main>
+<div class="container">
+    <h1>👑 Studio Chăn Rùa</h1>
+    
+    <label>Tên chương:</label>
+    <input type="text" id="chapterTitle" placeholder="Ví dụ: Chương 1 - Khởi đầu...">
 
-    <div id="uploadModal" class="modal-custom">
-        <div class="modal-content-custom">
-            <span class="close-modal-btn" onclick="closeModal()">&times;</span>
-            <h3>Đăng tác phẩm mới</h3>
-            <div class="form-group-custom">
-                <label>Tên truyện</label>
-                <input type="text" id="inputTitle" class="input-custom">
-            </div>
-            <button onclick="saveStory()" class="btn-submit-custom">Xác nhận đăng</button>
-        </div>
+    <div class="import-box">
+        <p>Chọn file Word (.docx) hoặc Text (.txt) để tự động import nội dung:</p>
+        <input type="file" id="fileInput" accept=".docx, .txt">
     </div>
 
-    <script>
-        // Khởi tạo Firebase như cũ
-        // Hàm load dữ liệu: 
-        function loadAdminStories() {
-            db.ref('stories').on('value', (snapshot) => {
-                const grid = document.getElementById('adminStoryGrid');
-                grid.innerHTML = '';
-                snapshot.forEach(child => {
-                    const card = createAdminCard(child.key, child.val());
-                    grid.appendChild(card);
-                });
-            });
+    <label>Nội dung chương:</label>
+    <div id="editor"></div>
+
+    <br>
+    <button class="btn btn-primary" onclick="publishChapter()">Đăng chương lên Động</button>
+</div>
+
+<script>
+    let editor;
+
+    // Khởi tạo CKEditor
+    ClassicEditor.create(document.querySelector('#editor'))
+        .then(newEditor => { editor = newEditor; })
+        .catch(error => { console.error(error); });
+
+    // Xử lý Import File
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        if (file.type === "text/plain") {
+            reader.onload = function(e) { editor.setData(e.target.result.replace(/\n/g, '<br>')); };
+            reader.readAsText(file);
+        } else if (file.name.endsWith('.docx')) {
+            reader.onload = function(e) {
+                mammoth.convertToHtml({arrayBuffer: e.target.result})
+                    .then(result => { editor.setData(result.value); })
+                    .catch(err => alert("Lỗi đọc file: " + err));
+            };
+            reader.readAsArrayBuffer(file);
         }
+    });
+
+    // Hàm Đăng chương (Giả lập)
+    function publishChapter() {
+        const title = document.getElementById('chapterTitle').value;
+        const content = editor.getData();
         
-        // Hàm đăng truyện:
-        function saveStory() {
-            const title = document.getElementById('inputTitle').value;
-            db.ref('stories').push({ title: title, updatedAt: Date.now() })
-            .then(() => { alert("Đã đăng!"); closeModal(); });
-        }
+        if (!title || !content) { alert("Chị ơi, nhớ nhập đủ tiêu đề và nội dung ạ!"); return; }
         
-        // ... Các hàm đóng mở modal
-    </script>
+        console.log("Dữ liệu chuẩn bị gửi Firebase:", { title, content });
+        alert("Chương '" + title + "' đã sẵn sàng để đẩy lên Firebase!");
+        // Ở đây chị dùng lệnh db.ref(...).push(...) như em đã chỉ ở trên nhé!
+    }
+</script>
 </body>
 </html>

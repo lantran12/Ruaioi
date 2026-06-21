@@ -260,3 +260,19 @@ body {
 .textarea-custom { min-height: 120px; }
 .btn-link-management { display: block; text-align: center; padding: 12px; background: #eedfff; color: #6b21a8; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 0.85rem; margin: 15px 0; border: 1px solid #d8b4fe; }
 .btn-submit-custom { width: 100%; padding: 14px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+
+.custom-dropdown select {
+    padding: 12px;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    cursor: pointer;
+}
+.btn-action {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}

@@ -64,10 +64,10 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Thể loại</label>
-                    <select class="form-control" id="genreSelect">
-                        </select>
-                </div>
+                        <label>Thể loại (Chọn nhiều mục)</label>
+                        <div id="genreContainer" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa;">
+                 </div>
+            </div>
             </div>
 
             <div class="form-group">
@@ -102,19 +102,44 @@
 
     <script src="assets/js/config.js"></script>
     <script>
-        // Kiểm tra xem GENDERS có tồn tại không để tránh lỗi
-        if (typeof GENDERS !== 'undefined') {
-            const select = document.getElementById('genreSelect');
-            GENDERS.forEach(item => {
-                let option = document.createElement('option');
-                option.value = item.id;
-                option.textContent = item.name;
-                select.appendChild(option);
-            });
-        } else {
-            console.error("Không tìm thấy file config.js hoặc biến GENDERS!");
-        }
-    </script>
+    if (typeof GENDERS !== 'undefined') {
+        const container = document.getElementById('genreContainer');
+        GENDERS.forEach(item => {
+            // Tạo wrapper cho checkbox
+            let label = document.createElement('label');
+            label.style.display = "flex";
+            label.style.alignItems = "center";
+            label.style.gap = "5px";
+            label.style.cursor = "pointer";
+            label.style.background = "#fff";
+            label.style.padding = "5px 10px";
+            label.style.borderRadius = "5px";
+            label.style.border = "1px solid #eee";
+
+            // Tạo checkbox
+            let checkbox = document.createElement('input');
+            checkbox.type = "checkbox";
+            checkbox.name = "genres";
+            checkbox.value = item.id;
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(item.name));
+            container.appendChild(label);
+        });
+    } else {
+        console.error("Không tìm thấy biến GENDERS!");
+    }
+
+    // Hàm lấy danh sách thể loại đã chọn khi Chị nhấn "Đăng tải"
+    function getSelectedGenres() {
+        const checkboxes = document.querySelectorAll('input[name="genres"]:checked');
+        let selected = [];
+        checkboxes.forEach((cb) => {
+            selected.push(cb.value);
+        });
+        return selected; // Kết quả sẽ là mảng: ["ngon-tinh", "tien-hiep"]
+    }
+</script>
 </body>
 </html>
 ```

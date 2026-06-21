@@ -152,12 +152,12 @@
     <script src="assets/js/notification.js"></script>
     <script src="assets/js/config.js"></script>
 
-   <script>
-        // 1. Hàm xử lý Modal Thể Loại
+    <script>
+        // Hàm xử lý Modal Thể Loại
         function openGenreModal() { document.getElementById('genreModal').style.display = 'flex'; }
         function closeGenreModal() { document.getElementById('genreModal').style.display = 'none'; }
 
-        // 2. Đổ dữ liệu Thể loại từ config.js vào Modal
+        // Đổ dữ liệu từ config.js vào Modal
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof GENDERS !== 'undefined') {
                 const container = document.getElementById('genreModalContainer');
@@ -170,29 +170,9 @@
                     container.appendChild(label);
                 });
             }
-
-            // 3. TỰ ĐỘNG CẬP NHẬT TÊN VÀ EMAIL TỪ FIREBASE
-            firebase.auth().onAuthStateChanged((user) => {
-                if (user) {
-                    // Nếu user đã đăng nhập, cập nhật giao diện
-                    const displayName = user.displayName || "Rùa Con"; // Lấy tên hoặc mặc định
-                    const email = user.email;
-
-                    // Cập nhật Header
-                    const headerBtn = document.getElementById('btnHeaderAuth');
-                    headerBtn.innerHTML = `<i class="fa-regular fa-user"></i> ${displayName}`;
-
-                    // Cập nhật Profile
-                    document.getElementById('userProfileName').innerText = displayName;
-                    document.getElementById('userProfileEmail').innerText = email;
-                } else {
-                    // Nếu chưa đăng nhập
-                    document.getElementById('btnHeaderAuth').innerHTML = `<i class="fa-regular fa-user"></i>`;
-                }
-            });
         });
 
-        // Hàm hỗ trợ admin (nếu có)
+        // Hàm cũ của Chị (để giữ nguyên logic admin panel nếu có)
         function toggleAdminPanel() {
             var panel = document.getElementById('adminPanel');
             if (panel) { panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none'; }

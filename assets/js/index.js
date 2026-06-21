@@ -572,3 +572,9 @@ function openProfileZone() {
     // Chắc chắn cuộn lên đầu trang
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+// ==========================================================================
+// FIX LỖI: THIẾU HÀM FILTER THEO THỂ LOẠI
+// ==========================================================================
+function filterBy(genreId) {
+    loadStoriesByCondition('genre', genreId, `📜 Thể loại: ${genreId}`);
+}

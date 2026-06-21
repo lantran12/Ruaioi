@@ -291,46 +291,37 @@ body {
     border-color: var(--netflix-red);
     transform: translateY(-2px);
 }
-/* --- BỔ SUNG STUDIO MƯỢT MÀ --- */
-.studio-grid { 
-    display: grid; 
-    grid-template-columns: 300px 1fr; 
-    gap: 30px; 
-    max-width: 1200px; 
-    margin: 100px auto 50px auto; 
-    padding: 0 4%;
-}
+/* --- TỐI ƯU GIAO DIỆN DI ĐỘNG (MOBILE-FIRST) --- */
+@media (max-width: 768px) {
+    /* Đảm bảo toàn bộ lưới studio xếp thành 1 cột */
+    .studio-grid {
+        grid-template-columns: 1fr !important;
+        margin: 80px 10px 20px 10px !important;
+        padding: 0 !important;
+        gap: 20px !important;
+    }
 
-.story-list-sidebar { 
-    background: #fff; 
-    padding: 25px; 
-    border-radius: var(--radius-card); 
-    border: 1px solid rgba(0,0,0,0.05);
-    height: 80vh; 
-    overflow-y: auto; 
-}
+    /* Đảm bảo các khung nội dung không bị tràn */
+    .story-list-sidebar, .work-area {
+        width: 100% !important;
+        padding: 20px !important;
+        border-radius: var(--radius-card) !important;
+    }
 
-.work-area { 
-    background: #fff; 
-    padding: 30px; 
-    border-radius: var(--radius-card); 
-    border: 1px solid rgba(0,0,0,0.05);
-}
+    /* Làm cho các input to lên, không bị zoom khi nhấn */
+    input[type="text"], .input-custom, select {
+        font-size: 16px !important; /* Quan trọng: 16px để iPhone không tự zoom */
+        padding: 14px !important;
+        width: 100% !important;
+    }
 
-.btn-main { 
-    background: var(--netflix-red); 
-    color: white; 
-    border: none; 
-    padding: 12px 25px; 
-    border-radius: 20px; 
-    cursor: pointer; 
-    font-weight: 700;
-}
+    /* Đảm bảo tiêu đề không bị quá nhỏ */
+    h2 { font-size: 1.5rem !important; }
 
-/* Đảm bảo Font luôn được áp dụng cho mọi thành phần Studio */
-.studio-grid, .studio-grid * {
-    font-family: var(--font-sans);
-}
-.studio-grid h2, .studio-grid h3 {
-    font-family: var(--font-serif);
+    /* Nút lưu chiếm trọn chiều ngang */
+    .btn-main {
+        width: 100% !important;
+        padding: 16px !important;
+        font-size: 1rem !important;
+    }
 }

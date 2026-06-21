@@ -52,7 +52,7 @@ function initSubBarFilters() {
 }
 
 /* ==========================================================================
-   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đã tùy chỉnh giao diện)
+   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đã giới hạn ký tự)
    ========================================================================== */
 function handleFeaturedRandomBook(storiesData) {
     const keys = Object.keys(storiesData);
@@ -62,22 +62,24 @@ function handleFeaturedRandomBook(storiesData) {
     const story = storiesData[randomKey];
 
     const heroTitle = document.getElementById('heroTitle');
-    const heroSynopsis = document.getElementById('heroSynopsis'); // Vẫn giữ để ẩn nó đi
+    const heroSynopsis = document.getElementById('heroSynopsis');
     const featuredBookSection = document.getElementById('featuredBook');
 
     if (heroTitle) heroTitle.innerText = story.title || "Tác phẩm độc quyền";
     
-    // Ẩn đoạn giới thiệu đi theo yêu cầu của chị
-    if (heroSynopsis) heroSynopsis.style.display = 'none';
+    // Giới hạn ký tự: 100 ký tự đổ lại
+    let rawSynopsis = story.description || story.synopsis || "Bấm vào để khám phá thế giới nội tâm đầy cảm xúc của tác phẩm này...";
+    if (rawSynopsis.length > 100) {
+        rawSynopsis = rawSynopsis.substring(0, 100) + "...";
+    }
+    if (heroSynopsis) heroSynopsis.innerText = rawSynopsis;
 
     const storyReadUrl = `book.html?id=${randomKey}`;
     const storyImg = story.img || story.cover || story.image;
 
     if (storyImg && featuredBookSection) {
-        // Điều chỉnh background: 
-        // Lớp phủ màu trắng nhạt (rgba(255,255,255,0.3)) giúp ảnh rõ hơn 
-        // nhưng vẫn giữ được độ mờ ảo nhẹ nhàng
-        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.3) 100%), url('${storyImg}')`, 'important');
+        // Ảnh rõ nét hơn với độ mờ 0.2
+        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.2) 100%), url('${storyImg}')`, 'important');
         featuredBookSection.style.setProperty('background-size', 'cover', 'important');
         featuredBookSection.style.setProperty('background-position', 'center', 'important');
     }

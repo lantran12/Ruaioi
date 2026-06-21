@@ -1,5 +1,5 @@
 // ==========================================================================
-// 1. CẤU HÌNH FIREBASE 
+// 1. CẤU HÌNH FIREBASE (Giữ nguyên cấu hình cũ của chị)
 // ==========================================================================
 const firebaseConfig = {
     apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
@@ -11,14 +11,12 @@ const firebaseConfig = {
     appId: "1:640115424540:web:c9713b7921c09283150ed9"
 };
 
-// Khởi tạo Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.database();
 const auth = firebase.auth();
 
-// Chạy các hàm chức năng khi trang tải xong
 document.addEventListener('DOMContentLoaded', () => {
     initSubBarFilters();
     loadGenresDropdown();
@@ -27,28 +25,25 @@ document.addEventListener('DOMContentLoaded', () => {
     listenToNotifications();
 });
 
-/* ==========================================================================
-   2. XỬ LÝ BỘ LỌC TẠI SUB-BAR (Mới phát hành / Đã trọn bộ)
-   ========================================================================== */
-function initSubBarFilters() {
-    const filterButtons = document.querySelectorAll('.nav-link-btn');
+// ==========================================================================
+// 2. CÁC HÀM XỬ LÝ DỮ LIỆU & GIAO DIỆN (Đã sửa lỗi chống tràn)
+// ==========================================================================
+
+function createNetflixCard(id, story) {
+    const div = document.createElement('div');
+    div.className = 'story-card';
+    // SỬA: Chống tràn bằng cách cố định chiều rộng cho card
+    div.style.cssText = "min-width: 150px; max-width: 150px; flex: 0 0 auto; cursor: pointer; margin-right: 10px;";
+    div.onclick = () => window.location.href = `book.html?id=${id}`;
     
-    filterButtons.forEach(btn => {
-        if (btn.id === 'tagDropdownBtn') return;
-
-        btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const filterType = btn.getAttribute('data-filter');
-            if (filterType === 'new') {
-                closeSearch();
-                loadMainStories();
-            } else if (filterType === 'completed') {
-                loadStoriesByCondition('status', 'Hoàn thành', '📜 Danh Sách Truyện Đã Hoàn Thành');
-            }
-        });
-    });
+    const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
+    
+    div.innerHTML = `
+        <img src="${currentImg}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+        <h4 style="margin: 8px 0 2px 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${story.title}</h4>
+        <p style="margin: 0; font-size: 11px; color: #777;">${story.author || 'Động Chăn Rùa'}</p>
+    `;
+    return div;
 }
 
 /* ==========================================================================

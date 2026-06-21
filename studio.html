@@ -2,62 +2,57 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio | Động Chăn Rùa</title>
-    <link rel="stylesheet" href="studio.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Studio - Động Chăn Rùa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="studio.css">
 </head>
 <body>
-
-<header class="topbar">
-    <div class="logo">
-        <img src="logo.png"> 
-        <h2 style="margin: 0; font-size: 1.5rem; color: #ff4d6d;">RùaNovel</h2>
+<header class="netflix-header">
+    <div class="header-left-zone">
+        <div class="logo">
+            <a href="index.html">Rùa<span>Novel</span></a>
+        </div>
     </div>
-    <div class="top-actions">
-        <button id="homeBtn"><i class="fa-solid fa-house"></i></button>
-        <button id="settingBtn"><i class="fa-solid fa-gear"></i></button>
-        <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i></button>
+
+    <div class="header-right-zone">
+        <button class="noti-btn">
+            <i class="fa-regular fa-bell"></i>
+            <span class="badge" id="notiCount">0</span>
+        </button>
+        
+        <div class="auth-buttons" id="authSection">
+            <button class="btn-avatar-profile" id="btnHeaderAuth" onclick="openAuthModal()">
+                <i class="fa-regular fa-user"></i>
+            </button>
+        </div>
     </div>
 </header>
-
-<main class="studio">
-    <aside class="sidebar">
-        <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="searchStory" type="text" placeholder="Tìm theo tên truyện hoặc tag..."></div>
-        <div class="sidebar-buttons"><button class="active">Quản lý truyện</button><button id="chapterBtn">Đăng chương</button></div>
-        <section class="story-panel">
-            <h2>Chọn truyện để chỉnh sửa</h2>
-            <p>Chọn một truyện có sẵn hoặc tạo truyện mới.</p>
-            <div id="newStoryCard" class="story new"><i class="fa-solid fa-plus"></i><div><h4>Tạo truyện mới</h4><span>Bắt đầu một dự án mới</span></div></div>
-            <div id="storyList"></div>
-        </section>
-    </aside>
-
-    <section class="editor">
-        <div class="editor-head"><small>ĐANG TẠO TRUYỆN MỚI</small><h1>Thông tin truyện mới</h1><p>Điền đầy đủ thông tin bên dưới để bắt đầu đăng nội dung.</p></div>
-        <form id="storyForm">
-            <div class="form-group"><label>Tên truyện *</label><input id="title" type="text" placeholder="Nhập tên truyện"></div>
-            <div class="form-group"><label>Tên tác giả *</label><input id="author" type="text" placeholder="Nhập tên tác giả"></div>
-            <div class="grid">
-                <div class="form-group"><label>Phân loại</label><select id="category"><option>Đam Mỹ</option><option>Bách Hợp</option><option>Ngôn Tình</option><option>Khác</option></select></div>
-                <div class="form-group"><label>Tiến độ</label><select id="status"><option>Đang cập nhật</option><option>Hoàn thành</option><option>Tạm ngưng</option></select></div>
+    <main>
+        <section class="hero"><div class="container hero-content"><h1>Studio</h1><p>Viết nên những câu chuyện của riêng bạn.</p><button id="newBookBtn" class="primary-btn"><i class="fa-solid fa-plus"></i> Tạo truyện mới</button></div></section>
+        <section class="dashboard"><div class="container"><div class="dashboard-card"><div class="stat"><h3 id="bookCount">0</h3><span>Truyện</span></div><div class="stat"><h3 id="chapterCount">0</h3><span>Chương</span></div><div class="stat"><h3 id="viewCount">0</h3><span>Lượt đọc</span></div><div class="stat"><h3 id="favoriteCount">0</h3><span>Yêu thích</span></div></div></div></section>
+        <section class="tabs"><div class="container"><button class="tab-btn active" data-tab="books"><i class="fa-solid fa-book-open"></i> Truyện của tôi</button><button class="tab-btn" data-tab="chapters"><i class="fa-solid fa-pen"></i> Chương</button><button class="tab-btn" data-tab="stats"><i class="fa-solid fa-chart-line"></i> Thống kê</button><button class="tab-btn" data-tab="setting"><i class="fa-solid fa-gear"></i> Cài đặt</button></div></section>
+        <section class="studio-content"><div class="container">
+            <div class="tab-panel active" id="books"><div class="book-grid" id="bookGrid"><div class="empty-state"><i class="fa-solid fa-book"></i><h2>Bạn chưa có truyện nào</h2><p>Hãy tạo tác phẩm đầu tiên.</p><button class="primary-btn" id="emptyCreateBtn"><i class="fa-solid fa-plus"></i> Tạo truyện</button></div></div></div>
+            <div class="tab-panel" id="chapters"><div class="coming"><i class="fa-solid fa-file-lines"></i><h2>Đăng chương</h2><p>Sau khi tạo truyện bạn có thể đăng chương tại đây.</p></div></div>
+            <div class="tab-panel" id="stats"><div class="coming"><i class="fa-solid fa-chart-column"></i><h2>Thống kê</h2><p>Theo dõi lượt xem, lượt thích và hiệu suất truyện.</p></div></div>
+            <div class="tab-panel" id="setting"><div class="coming"><i class="fa-solid fa-user-gear"></i><h2>Cài đặt Studio</h2><p>Các thiết lập dành cho tác giả sẽ xuất hiện tại đây.</p></div></div>
+        </div></section>
+        <div class="modal" id="bookModal"><div class="modal-content"><button class="close-modal" id="closeModal"><i class="fa-solid fa-xmark"></i></button><h2>Tạo truyện mới</h2><form id="bookForm">
+            <div class="form-group"><label>Tên truyện</label><input type="text" id="title" required></div>
+            <div class="form-group"><label>Tên tác giả</label><input type="text" id="author" required></div>
+            <div class="form-group"><label>Giới thiệu</label><textarea id="description" rows="6"></textarea></div>
+            <div class="form-group"><label>Thể loại</label><select id="category"><option value="Đam mỹ">Đam mỹ</option><option value="Ngôn tình">Ngôn tình</option><option value="Bách hợp">Bách hợp</option><option value="Huyền huyễn">Huyền huyễn</option><option value="Xuyên không">Xuyên không</option><option value="Cổ đại">Cổ đại</option><option value="Hiện đại">Hiện đại</option></select></div>
+            <div class="studio-card"><h3>Ảnh bìa</h3><div class="cover-upload"><div class="cover-preview" id="coverPreview"><i class="fa-solid fa-image"></i><span>Chưa có ảnh</span></div><label class="btn secondary"><input type="file" id="coverInput" accept="image/*" hidden> Chọn ảnh bìa</label></div></div>
+            <div class="studio-card">
+                <div class="card-title"><h3>Danh sách chương</h3><button class="btn" id="addChapterBtn"><i class="fa-solid fa-plus"></i> Thêm chương</button></div>
+                <div id="chapterList"><div class="chapter-item"><div class="chapter-left"><input type="text" placeholder="Tên chương"></div><div class="chapter-right"><button class="icon-btn"><i class="fa-solid fa-pen"></i></button><button class="icon-btn danger"><i class="fa-solid fa-trash"></i></button></div></div></div>
             </div>
-            <div class="form-group"><label>Tags</label><div id="tagBox" class="tag-box"></div></div>
-            <div class="form-group"><label>Tóm tắt truyện</label><textarea id="summary" rows="10" placeholder="Viết tóm tắt truyện..."></textarea></div>
-            <div class="form-group"><label>Mật khẩu truy cập</label><input id="password" type="password" placeholder="Để trống nếu không cần"></div>
-            <div class="form-group"><label>Trạng thái hiển thị</label><div class="radio-group"><label><input type="radio" name="visibility" value="public" checked> Public</label><label><input type="radio" name="visibility" value="private"> Bản nháp</label></div></div>
-            <div class="form-group"><label>Ảnh bìa</label><div id="coverUpload"><input id="coverInput" type="file" accept="image/*" hidden><div class="upload-area"><i class="fa-regular fa-image"></i><h3>Nhấn để tải ảnh bìa</h3><p>PNG • JPG • WEBP</p></div><img id="coverPreview" style="display:none;"></div></div>
-            <div class="buttons">
-                <button type="button" id="saveStory"><i class="fa-solid fa-floppy-disk"></i> Lưu truyện</button>
-                <button type="button" id="deleteStory" class="danger"><i class="fa-solid fa-trash"></i> Xóa</button>
-                <button type="reset">Làm mới</button>
-            </div>
-        </form>
-    </section>
-</main>
-
-<div id="toast"></div>
+            <div class="studio-card"><h3>Soạn chương</h3><input type="text" id="chapterTitle" placeholder="Tên chương"><textarea id="chapterContent" rows="18" placeholder="Viết nội dung chương tại đây..."></textarea></div>
+            <div class="studio-actions"><button class="btn secondary" id="saveDraft">Lưu nháp</button><button class="btn" id="publishNovel">Xuất bản truyện</button></div>
+        </form></div></div>
+    </main>
 <script type="module" src="studio.js"></script>
 </body>
 </html>

@@ -311,80 +311,51 @@ auth.onAuthStateChanged((user) => {
     const btnHeaderAuth = document.getElementById('btnHeaderAuth'); 
     const btnNotification = document.getElementById('btnNotification'); 
     
-    // Tự động tạo nút Vương Miện màu xanh Admin nằm CẠNH NHAU (ngang hàng)
+    // Kiểm tra và tạo nút Admin chỉ một lần duy nhất
     let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
     if (!btnAdminCrown && btnHeaderAuth) {
         btnAdminCrown = document.createElement('button');
         btnAdminCrown.id = 'btnOpenAdminPanel';
         btnAdminCrown.innerHTML = '👑';
+        btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 8px;";
         
-        // CSS ép nút vương miện có nền màu xanh admin, nằm ngang với nút chào
-        btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0;";
-        
-        if (btnHeaderAuth.parentNode) {
-            btnHeaderAuth.parentNode.style.display = "flex";
-            btnHeaderAuth.parentNode.style.alignItems = "center";
-            btnHeaderAuth.parentNode.style.gap = "8px"; // Khoảng cách giữa nút chào và vương miện
-            btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth.nextSibling);
-        }
+        // Chèn vào cạnh nút Profile
+        btnHeaderAuth.parentNode.appendChild(btnAdminCrown);
     }
 
     if (user) {
-        console.log("Đăng nhập thành công với UID:", user.uid);
-
-        if (btnNotification) btnNotification.style.display = 'inline-flex'; // HIỆN CHUÔNG
-        // Gắn dữ liệu Email và Tên vào form profile ẩn phía dưới
+        if (btnNotification) btnNotification.style.display = 'inline-flex';
+        
+        // Gán tên/email
         if (document.getElementById('userProfileEmail')) document.getElementById('userProfileEmail').textContent = user.email;
         if (document.getElementById('userProfileName')) document.getElementById('userProfileName').textContent = user.displayName || "Thành viên Động Rùa";
 
-        // KÍCH HOẠT CHẠY HÀM TẢI TỦ SÁCH THẬT TỪ DATABASE CỦA CHỊ
         renderUserProfileData(user);
 
-        // PHÂN QUYỀN ADMIN CHO CHỊ ĐỘNG CHĂN RÙA (UID CHUẨN)
+        // PHÂN QUYỀN ADMIN (UID CHUẨN)
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
-            if (btnHeaderAuth) {
-                btnHeaderAuth.innerHTML = `Chào, Chị Trân ạ`;
-                btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; flex-shrink: 0; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
-                btnHeaderAuth.onclick = openProfileZone;
-            }
-            if (btnAdminCrown) {
-                btnAdminCrown.style.display = 'inline-flex'; // Hiện vương miện xanh kế bên
-                btnAdminCrown.onclick = () => {
-            window.location.href = "studio.html"; // Chuyển hướng sang trang Studio
-        };
-            }
+            btnHeaderAuth.innerHTML = `Chào, Chị Trân ạ`;
+            btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
+            btnHeaderAuth.onclick = openProfileZone;
+            
+            btnAdminCrown.style.display = 'inline-flex';
+            btnAdminCrown.onclick = () => { window.location.href = "studio.html"; };
         } else {
-            // Nếu là người đọc bình thường
-            if (btnHeaderAuth) {
-                btnHeaderAuth.innerHTML = `Chào, ${user.displayName || 'Thành Viên'}`;
-                btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; flex-shrink: 0; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
-                btnHeaderAuth.onclick = openProfileZone;
-            }
-            if (btnAdminCrown) btnAdminCrown.style.display = 'none';
+            btnHeaderAuth.innerHTML = `Chào, ${user.displayName || 'Thành Viên'}`;
+            btnAdminCrown.style.display = 'none';
         }
     } else {
-        if (btnNotification) btnNotification.style.display = 'none'; // ẨN CHUÔNG
-        // TRƯỜNG HỢP: CHƯA ĐĂNG NHẬP / ĐĂNG XUẤT
-        if (btnHeaderAuth) {
-            btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
-            btnHeaderAuth.style.cssText = "width: 40px; height: 40px; padding: 0; border-radius: 50%; background: #ff4d6d; color: white; border: none; cursor: pointer;";
-            btnHeaderAuth.onclick = openAuthModal;
-        }
-        if (btnAdminCrown) btnAdminCrown.style.display = 'none';
+        if (btnNotification) btnNotification.style.display = 'none';
+        btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
+        btnHeaderAuth.style.cssText = "width: 40px; height: 40px; border-radius: 50%; background: #ff4d6d; color: white; border: none; cursor: pointer;";
+        btnHeaderAuth.onclick = openAuthModal;
+        btnAdminCrown.style.display = 'none';
 
-        // Khóa tủ sách nếu là khách vãng lai chưa đăng nhập
         const container = document.getElementById('userBookshelfContainer');
-        if (container) {
-            container.innerHTML = `<div class="bookshelf-empty" style="color: #ff4d6d; font-weight: bold; text-align: center; width: 100%; padding: 20px 0;">⚠️ Vui lòng đăng nhập để sử dụng tủ sách cá nhân!</div>`;
-        }
+        if (container) container.innerHTML = `<div class="bookshelf-empty" style="color: #ff4d6d; font-weight: bold; text-align: center; width: 100%; padding: 20px 0;">⚠️ Vui lòng đăng nhập để sử dụng tủ sách cá nhân!</div>`;
         showHome();
     }
 });
-
-function openProfileZone() {
-    if (document.getElementById('homeMainContent')) document.getElementById('homeMainContent').style.display = 'none';
-    if (document.getElementById('profileSection')) document.getElementById('profileSection').style.display = 'block';
-}
 
 // --- B. CÁC HÀM XỬ LÝ HỒ SƠ & AVATAR (THU NHỎ ẢNH & LOAD TỦ SÁCH) ---
 function renderUserProfileData(user) {

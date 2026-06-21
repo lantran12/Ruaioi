@@ -62,24 +62,20 @@
             <div class="tab-item">Đăng truyện</div>
         </div>
 
-        <!-- Section Danh sách -->
-        <section class="management-section">
-            <h2>Chọn truyện để chỉnh sửa</h2>
-            <input type="text" class="search-box" placeholder="Tìm tên truyện hoặc tạo mới...">
-            
-            <div class="story-list">
-                <div class="story-card">
-                    <div class="story-info">
-                        <h3>Tên truyện của Chị 01</h3>
-                        <div style="margin-top: 5px;">
-                            <span class="badge">Nam MC</span>
-                            <span class="badge" style="color: #ea580c;">Đang viết</span>
-                        </div>
-                    </div>
-                    <button class="btn-action">Chỉnh sửa</button>
-                </div>
-            </div>
-        </section>
+        <!-- Phần này thay thế cho khu vực "Chọn truyện để chỉnh sửa" -->
+<section class="management-section">
+    <h2>Chọn truyện để chỉnh sửa</h2>
+    
+    <!-- Dropdown menu thay cho danh sách card -->
+    <div class="custom-dropdown">
+        <select class="form-control" onchange="console.log('Chuyển truyện:', this.value)">
+            <option value="" disabled selected>-- Chọn truyện từ danh sách --</option>
+            <option value="story1">Tên truyện của Chị 01</option>
+            <option value="story2">Tên truyện của Chị 02</option>
+            <option value="new">+ Tạo truyện mới</option>
+        </select>
+    </div>
+</section>
 
         <!-- Section Đăng truyện -->
         <section class="form-section">
@@ -96,8 +92,8 @@
                 <label>Bìa truyện (Cover)</label>
                 <input type="file" class="form-control">
             </div>
-            <button class="btn-action btn-primary" style="width: 100%;">Lưu & Đăng</button>
-        </section>
+<button type="button" class="btn-action" style="background: #e5e7eb; color: #374151; flex: 1;">Lưu nháp</button>
+    <button type="submit" class="btn-action btn-primary" style="background: #7c3aed; color: white; flex: 1;">Đăng tải</button>        </section>
 
     </main>
 

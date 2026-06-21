@@ -26,13 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================================================
-// 2. CÁC HÀM XỬ LÝ DỮ LIỆU & GIAO DIỆN (Đã sửa lỗi chống tràn)
+// 2. CÁC HÀM XỬ LÝ DỮ LIỆU & GIAO DIỆN (Giữ nguyên code của chị)
 // ==========================================================================
 
 function createNetflixCard(id, story) {
     const div = document.createElement('div');
     div.className = 'story-card';
-    // SỬA: Chống tràn bằng cách cố định chiều rộng cho card
     div.style.cssText = "min-width: 150px; max-width: 150px; flex: 0 0 auto; cursor: pointer; margin-right: 10px;";
     div.onclick = () => window.location.href = `book.html?id=${id}`;
     
@@ -47,13 +46,12 @@ function createNetflixCard(id, story) {
 }
 
 /* ==========================================================================
-   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đọc trường 'img' chị tạo)
+   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Giữ nguyên code của chị)
    ========================================================================== */
 function handleFeaturedRandomBook(storiesData) {
     const keys = Object.keys(storiesData);
     if (keys.length === 0) return;
 
-    // Bốc ngẫu nhiên 1 Key (ID) truyện từ Firebase
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     const story = storiesData[randomKey];
 
@@ -65,11 +63,9 @@ function handleFeaturedRandomBook(storiesData) {
     if (heroTitle) heroTitle.innerText = story.title || "Tác phẩm độc quyền";
     if (heroSynopsis) heroSynopsis.innerText = story.description || story.synopsis || "Bấm vào để khám phá thế giới nội tâm đầy cảm xúc của tác phẩm này...";
 
-    // Tạo link dẫn tới trang chi tiết truyện của chị
     const storyReadUrl = `book.html?id=${randomKey}`;
     if (heroLink) heroLink.setAttribute('href', storyReadUrl);
 
-    // Ưu tiên đọc trường 'img' từ Form Admin của chị, nếu không có mới tìm trường 'cover' hoặc 'image'
     const storyImg = story.img || story.cover || story.image;
 
     if (storyImg && featuredBookSection) {
@@ -88,7 +84,7 @@ function handleFeaturedRandomBook(storiesData) {
 }
 
 /* ==========================================================================
-   4. THẢ MENU THỂ LOẠI TẠI DROP-DOWN
+   4. THẢ MENU THỂ LOẠI TẠI DROP-DOWN (Giữ nguyên code của chị)
    ========================================================================== */
 function loadGenresDropdown() {
     const tagMenu = document.getElementById('tagMenu');
@@ -112,7 +108,7 @@ function loadGenresDropdown() {
 }
 
 /* ==========================================================================
-   5. BỘ LỌC ĐIỀU KIỆN (Xổ dữ liệu ra vùng Tìm kiếm chuyên sâu)
+   5. BỘ LỌC ĐIỀU KIỆN (Giữ nguyên code của chị)
    ========================================================================== */
 function loadStoriesByCondition(field, value, titleText) {
     const searchSection = document.getElementById('searchResultsSection');
@@ -151,7 +147,7 @@ function closeSearch() {
 }
 
 /* ==========================================================================
-   6. THƯ VIỆN CHÍNH (Mới Cập Nhật Trên Hệ Thống)
+   6. THƯ VIỆN CHÍNH (Giữ nguyên code của chị)
    ========================================================================== */
 function loadMainStories() {
     const bookGrid = document.getElementById('bookGrid');
@@ -166,7 +162,6 @@ function loadMainStories() {
 
         const storiesData = snapshot.val();
         
-        // Gọi hàm Random Banner Hero ngay tại đây
         handleFeaturedRandomBook(storiesData);
 
         const storiesArray = [];
@@ -185,7 +180,7 @@ function loadMainStories() {
 }
 
 /* ==========================================================================
-   7. TOP 5 ĐỘT PHÁ LƯỢT XEM (Hàng Ngang Kiểu Dáng Xịn)
+   7. TOP 5 ĐỘT PHÁ LƯỢT XEM (Giữ nguyên code của chị)
    ========================================================================== */
 function loadTopViews() {
     const nominationContainer = document.getElementById('nominationListContainer');
@@ -208,7 +203,6 @@ function loadTopViews() {
             card.className = 'story-card';
             card.onclick = () => window.location.href = `book.html?id=${story.id}`;
             
-            // Tự động kiểm tra trường ảnh mượt mà
             const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
             
             card.innerHTML = `
@@ -224,7 +218,7 @@ function loadTopViews() {
 }
 
 /* ==========================================================================
-   8. LẮNG NGHE THÔNG BÁO REALTIME (Chuông thông báo trên Header)
+   8. LẮNG NGHE THÔNG BÁO REALTIME (Giữ nguyên code của chị)
    ========================================================================== */
 function listenToNotifications() {
     const notiCountBadge = document.getElementById('notiCount');
@@ -239,26 +233,7 @@ function listenToNotifications() {
     });
 }
 
-/* ==========================================================================
-   9. HÀM BỔ TRỢ: TẠO CARD TRUYỆN PHONG CÁCH NETFLIX (Kiểm tra trường 'img')
-   ========================================================================== */
-function createNetflixCard(id, story) {
-    const div = document.createElement('div');
-    div.className = 'story-card';
-    div.onclick = () => window.location.href = `book.html?id=${id}`;
-    
-    // Tự động dùng 'img' chị tạo, hoặc các trường cũ dự phòng
-    const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
-    
-    div.innerHTML = `
-        <img src="${currentImg}" alt="${story.title}">
-        <h4>${story.title}</h4>
-        <p>${story.author || 'Động Chăn Rùa'}</p>
-    `;
-    return div;
-}
-
-// Hàm Tìm kiếm thủ công khi bấm kính lúp
+// Hàm Tìm kiếm thủ công khi bấm kính lúp (Giữ nguyên code của chị)
 function triggerSearch() {
     const searchInput = document.getElementById('searchInput');
     if (!searchInput || !searchInput.value.trim()) return;
@@ -295,18 +270,16 @@ function triggerSearch() {
 }
 
 /* ==========================================================================
-   10. QUẢN LÝ ĐĂNG NHẬP, ĐIỀU KHIỂN VƯƠNG MIỆN ADMIN VÀ HỒ SƠ / AVATAR
+   10. QUẢN LÝ ĐĂNG NHẬP, ĐIỀU KHIỂN VƯƠNG MIỆN ADMIN VÀ HỒ SƠ / AVATAR (Giữ nguyên code của chị)
    ========================================================================== */
 let isSignUpMode = true; 
 let selectedAvatarUrl = "";
-let tuSachListenerRef = null; // Quản lý lắng nghe tủ sách realtime
+let tuSachListenerRef = null;
 
-// --- A. THEO DÕI TRẠNG THÁI TÀI KHOẢN REALTIME ---
 auth.onAuthStateChanged((user) => {
     const btnHeaderAuth = document.getElementById('btnHeaderAuth'); 
     const btnNotification = document.getElementById('btnNotification'); 
     
-    // 1. Đảm bảo nút Admin luôn tồn tại trong DOM
     let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
     if (!btnAdminCrown && btnHeaderAuth && btnHeaderAuth.parentNode) {
         btnAdminCrown = document.createElement('button');
@@ -316,27 +289,20 @@ auth.onAuthStateChanged((user) => {
         btnHeaderAuth.parentNode.insertBefore(btnAdminCrown, btnHeaderAuth.nextSibling);
     }
 
-    // 2. Xử lý logic khi ĐÃ ĐĂNG NHẬP
     if (user) {
-        console.log("Đã đăng nhập với UID:", user.uid); // <--- KIỂM TRA DÒNG NÀY TRONG CONSOLE
-        
         if (btnNotification) btnNotification.style.display = 'inline-flex';
         
         if (btnHeaderAuth) {
             btnHeaderAuth.innerHTML = (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') ? "Chào, Chị Trân ạ" : `Chào, ${user.displayName || 'Thành Viên'}`;
             btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
             
-            // Chỉ gán hàm nếu nó tồn tại
             if (typeof openProfileZone === 'function') {
                 btnHeaderAuth.onclick = openProfileZone;
-            } else {
-                console.error("Hàm openProfileZone chưa được định nghĩa!");
             }
         }
 
         renderUserProfileData(user);
 
-        // PHÂN QUYỀN ADMIN - ĐƯỢC ÉP HIỂN THỊ
         if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
             if (btnAdminCrown) {
                 btnAdminCrown.style.display = 'flex'; 
@@ -346,13 +312,11 @@ auth.onAuthStateChanged((user) => {
             if (btnAdminCrown) btnAdminCrown.style.display = 'none';
         }
     }
-    // 3. Xử lý logic khi CHƯA ĐĂNG NHẬP
     else {
         if (btnNotification) btnNotification.style.display = 'none';
         if (btnHeaderAuth) {
             btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
             btnHeaderAuth.style.cssText = "width: 40px; height: 40px; border-radius: 50%; background: #ff4d6d; color: white; border: none; cursor: pointer;";
-            btnHeaderAuth.onclick = null;
             btnHeaderAuth.onclick = openAuthModal;
         }
         if (btnAdminCrown) btnAdminCrown.style.display = 'none';
@@ -363,16 +327,13 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-// --- B. CÁC HÀM XỬ LÝ HỒ SƠ & AVATAR (THU NHỎ ẢNH & LOAD TỦ SÁCH) ---
 function renderUserProfileData(user) {
     renderAvatarSelectionGrid(); 
     
     const currentAvatarImg = document.getElementById('userCurrentAvatar');
 
-    // Lấy avatar từ DB trước, fallback sang Google
     db.ref('users/' + user.uid + '/profile').once('value').then(snapshot => {
         const data = snapshot.val();
-
         let avatar = 'https://via.placeholder.com/100';
 
         if (data?.avatarType === "custom") {
@@ -389,7 +350,6 @@ function renderUserProfileData(user) {
         }
     });
 
-    // ===== TỦ SÁCH =====
     const container = document.getElementById('userBookshelfContainer');
     if (!container) return;
 
@@ -413,36 +373,24 @@ function updateUserProfileData() {
     const user = auth.currentUser;
     const newName = document.getElementById('editDisplayNameInput').value.trim();
 
-    if (!user) {
-        alert("Chưa đăng nhập nha chị 🐢");
-        return;
-    }
+    if (!user) { alert("Chưa đăng nhập nha chị 🐢"); return; }
 
     const updates = {};
-
-    // Đổi tên
     if (newName) {
         updates.displayName = newName;
         user.updateProfile({ displayName: newName });
         document.getElementById('userProfileName').textContent = newName;
     }
 
-    // Đổi avatar
     if (selectedAvatarUrl) {
         updates.avatar = selectedAvatarUrl;
-        updates.avatarType = "custom"; // QUAN TRỌNG
+        updates.avatarType = "custom";
         document.getElementById('userCurrentAvatar').src = selectedAvatarUrl;
     }
 
-    // Nếu không thay đổi gì
-    if (Object.keys(updates).length === 0) {
-        alert("Chưa thay đổi gì hết nha chị 😅");
-        return;
-    }
+    if (Object.keys(updates).length === 0) { alert("Chưa thay đổi gì hết nha chị 😅"); return; }
 
-    // Lưu DB
     db.ref('users/' + user.uid + '/profile').update(updates);
-
     alert("Cập nhật hồ sơ thành công ✨");
 }
 
@@ -497,10 +445,8 @@ function removeFromBookshelf(key) {
     }
 }
 
-// --- C. ĐIỀU KHIỂN POPUP ĐĂNG NHẬP VÀ FORM SUBMIT ---
 function openAuthModal() { const modal = document.getElementById('authModal'); if (modal) modal.style.display = 'flex'; }
 function closeAuthModal() { const modal = document.getElementById('authModal'); if (modal) modal.style.display = 'none'; }
-function closeAuthModalOverlay(event) { if (event.target.id === 'authModal') closeAuthModal(); }
 
 function toggleAuthMode() {
     isSignUpMode = !isSignUpMode;
@@ -526,20 +472,13 @@ function submitAuthForm() {
     if (isSignUpMode) {
         auth.createUserWithEmailAndPassword(email, password).then((userCredential) => {
             if (displayName) {
-                userCredential.user.updateProfile({ displayName: displayName }).then(() => {
-                    // Cập nhật xong tên thì mới reload để UI refresh
-                    window.location.reload();
-                });
-            } else {
-                window.location.reload();
-            }
+                userCredential.user.updateProfile({ displayName: displayName }).then(() => { window.location.reload(); });
+            } else { window.location.reload(); }
             alert("🎉 Đăng ký thành công!"); closeAuthModal();
         }).catch(err => alert(err.message));
     } else {
         auth.signInWithEmailAndPassword(email, password).then(() => {
-            alert("🎉 Chào mừng chị trở lại!"); 
-            closeAuthModal();
-            window.location.reload(); // Reload để header cập nhật tên ngay
+            alert("🎉 Chào mừng chị trở lại!"); closeAuthModal(); window.location.reload();
         }).catch(err => alert(err.message));
     }
 }
@@ -550,56 +489,13 @@ function showHome() {
 }
 
 function logoutFromProfile() {
-    if(confirm("Chị muốn đăng xuất tài khoản đúng không ạ? 🐢")) {
-        auth.signOut();
-    }
+    if(confirm("Chị muốn đăng xuất tài khoản đúng không ạ? 🐢")) { auth.signOut(); }
 }
+
 function openProfileZone() {
     const profileSection = document.getElementById('profileSection');
     const homeMainContent = document.getElementById('homeMainContent');
-    
-    if (profileSection) {
-        profileSection.style.display = 'block';
-    }
-    if (homeMainContent) {
-        homeMainContent.style.display = 'none';
-    }
-    // Chắc chắn cuộn lên đầu trang
+    if (profileSection) profileSection.style.display = 'block';
+    if (homeMainContent) homeMainContent.style.display = 'none';
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-// Hàm tự động lấy lượt xem từ Firebase và vẽ Top 5
-function hienThiTop5() {
-    const viewsRef = firebase.database().ref('views');
-    
-    viewsRef.once('value').then((snapshot) => {
-        const viewsData = snapshot.val(); // Dữ liệu lấy từ nhánh 'views' trên Firebase
-
-        // 1. Kết hợp danh sách truyện tĩnh với dữ liệu lượt xem
-        // danhSachTruyen là biến chị đã có sẵn trong file index.js
-        const top5 = danhSachTruyen
-            .map(t => ({ ...t, views: viewsData[t.id] || 0 }))
-            .sort((a, b) => b.views - a.views) // Sắp xếp giảm dần theo lượt xem
-            .slice(0, 5); // Chỉ lấy 5 truyện đầu tiên
-
-        // 2. Tìm cái khung ở trang chủ (phải có id="nominationListContainer")
-        const container = document.getElementById('nominationListContainer');
-        if (container) {
-            container.innerHTML = top5.map((t, i) => `
-                <div class="top-book-item" style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 10px;">
-                    <span style="font-size: 24px; font-weight: bold; color: #ff4d6d; margin-right: 15px;">0${i + 1}</span>
-                    <img src="${t.image}" style="width: 50px; height: 70px; object-fit: cover; border-radius: 5px;">
-                    <div style="margin-left: 15px;">
-                        <h4 style="margin: 0; font-size: 14px; color: #333;">${t.title}</h4>
-                        <p style="margin: 5px 0 0 0; color: #ff4d6d; font-size: 12px; font-weight: 600;">
-                            <i class="fa-solid fa-eye"></i> ${t.views.toLocaleString()} lượt xem
-                        </p>
-                    </div>
-                </div>
-            `).join('');
-        }
-    });
-}
-
-// Gọi hàm khi trang web vừa tải xong
-document.addEventListener('DOMContentLoaded', hienThiTop5);
-

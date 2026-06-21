@@ -1,55 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Quicksand:wght@400;600;700&display=swap');
 
 :root {
-    --netflix-red: #ff4d6d;
-    --p-pink: #ffb7b2;
-    --ivory-silk: #fcf9fa;
-    --onyx: #181818;
-    --smoke: #666666;
-    --radius-card: 12px;
-    --font-serif: 'Playfair Display', serif;
-    --font-sans: 'Quicksand', sans-serif;
+    --netflix-red: #ff4d6d; --p-pink: #ffb7b2; --ivory-silk: #fcf9fa;
+    --onyx: #181818; --smoke: #666666; --radius-card: 12px;
+    --font-serif: 'Playfair Display', serif; --font-sans: 'Quicksand', sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-    background-color: var(--ivory-silk);
-    font-family: var(--font-sans);
-    color: var(--onyx);
-    -webkit-font-smoothing: antialiased;
-}
+body { background-color: var(--ivory-silk); font-family: var(--font-sans); color: var(--onyx); }
 
 /* HEADER */
 .netflix-header {
-    background: rgba(252, 249, 250, 0.95);
-    backdrop-filter: blur(20px);
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 70px;
-    padding: 0 4%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 1000;
-    border-bottom: 1px solid rgba(255, 77, 109, 0.12);
+    background: rgba(252, 249, 250, 0.95); backdrop-filter: blur(20px);
+    position: fixed; top: 0; left: 0; right: 0; height: 70px; padding: 0 4%;
+    display: flex; justify-content: space-between; align-items: center; z-index: 1000; border-bottom: 1px solid rgba(255,77,109,0.12);
 }
-
 .netflix-header .logo a { font-weight: 800; font-size: 1.6rem; color: var(--netflix-red); text-decoration: none; }
-.netflix-header .logo span { color: var(--onyx); font-weight: 400; }
 
 /* HERO BANNER */
 .netflix-hero {
-    position: relative;
-    width: 100%;
-    height: 45vh;
-    min-height: 320px;
+    position: relative; width: 100%; height: 45vh; min-height: 320px;
     background: linear-gradient(135deg, #fff0f2 0%, #fff 100%);
-    display: flex;
-    align-items: center;
-    padding: 0 4%;
+    display: flex; align-items: center; padding: 0 4%;
 }
-.hero-content { position: relative; z-index: 2; max-width: 600px; }
+.hero-content { max-width: 600px; }
 .hero-title { font-family: var(--font-serif); font-size: 2.6rem; margin-bottom: 12px; }
 
 /* NAV & SEARCH */
@@ -58,8 +32,8 @@ body {
 .nav-link-btn { background: none; border: none; font-size: 0.95rem; font-weight: 600; color: var(--smoke); cursor: pointer; }
 .nav-link-btn:hover { color: var(--netflix-red); }
 
-.netflix-search-box { display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.08); padding: 8px 16px; border-radius: 24px; background: #fff; }
-.netflix-search-box input { border: none; outline: none; background: transparent; padding-left: 8px; }
+.netflix-search-box { display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.08); padding: 8px 16px; border-radius: 24px; }
+.netflix-search-box input { border: none; outline: none; background: transparent; padding-left: 8px; width: 220px; }
 
 /* GRID TRUYỆN */
 .netflix-section { padding: 30px 4% 10px 4%; }
@@ -68,12 +42,17 @@ body {
 .story-card img { width: 100%; height: 250px; object-fit: cover; border-radius: var(--radius-card); }
 .story-card:hover { transform: translateY(-5px); }
 
-/* MODAL AUTH */
-.auth-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:9999; backdrop-filter: blur(5px); }
-.auth-modal-content { background:#fff; padding:30px; border-radius:16px; width:380px; }
+/* MODAL CHUNG */
+.auth-modal, .modal-custom {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999;
+}
+.auth-modal-content, .modal-content-custom { background: #fff; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; }
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
     .netflix-sub-bar { flex-direction: column; gap: 15px; }
+    .netflix-search-box { width: 100%; }
+    .netflix-search-box input { width: 100%; }
     .hero-title { font-size: 2rem; }
 }

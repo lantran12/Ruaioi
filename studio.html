@@ -9,17 +9,17 @@
     <link rel="stylesheet" href="assets/css/style.css">
     
     <style>
-        body { font-family: 'Quicksand', sans-serif; }
+        body { font-family: 'Quicksand', sans-serif; background: #fafafa; }
         .studio-container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
         .tab-menu { display: flex; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .tab-item { padding: 10px 20px; cursor: pointer; border-radius: 20px; font-weight: 600; color: #666; }
-        .tab-item.active { background: #eee; color: #000; }
-        .form-section { padding: 20px; border: 1px solid #eee; border-radius: 15px; }
+        .tab-item.active { background: #ffe5ec; color: #ff4d6d; }
+        .form-section { padding: 20px; border: 1px solid #eee; border-radius: 15px; background: white; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
         .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: 'Quicksand', sans-serif; font-size: 14px; background: #fff; }
         .btn-action { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; }
-        .btn-primary { background: #7c3aed; color: white; }
+        .btn-primary { background: #ff4d6d; color: white; }
     </style>
 </head>
 <body>
@@ -47,20 +47,20 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>Tên truyện *</label>
-                    <input type="text" class="form-control" placeholder="Nhập tên truyện...">
+                    <input type="text" id="titleInput" class="form-control" placeholder="Nhập tên truyện...">
                 </div>
                 <div class="form-group">
                     <label>Tên tác giả *</label>
-                    <input type="text" class="form-control" placeholder="Tên tác giả...">
+                    <input type="text" id="authorInput" class="form-control" placeholder="Tên tác giả...">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>Trạng thái</label>
-                    <select class="form-control">
-                        <option value="dang-cap-nhat">Đang cập nhật</option>
-                        <option value="tron-bo">Trọn bộ</option>
+                    <select id="statusSelect" class="form-control">
+                        <option value="Đang cập nhật">Đang cập nhật</option>
+                        <option value="Hoàn thành">Trọn bộ</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -73,35 +73,32 @@
             </div>
 
             <div class="form-group">
-                <label>Bìa truyện (Cover)</label>
-                <div class="form-control" style="border: 2px dashed #ccc; text-align: center;" onclick="document.getElementById('fileInput').click()">
-                    <i class="fa-regular fa-image"></i> Nhấn để chọn ảnh bìa
-                    <input type="file" id="fileInput" style="display: none;">
-                </div>
+                <label>Bìa truyện (Link ảnh)</label>
+                <input type="text" id="coverInput" class="form-control" placeholder="Dán link ảnh bìa vào đây...">
             </div>
 
             <div class="form-group">
                 <label>Giới thiệu</label>
-                <textarea class="form-control" rows="3" placeholder="Viết giới thiệu ngắn..."></textarea>
+                <textarea id="descInput" class="form-control" rows="3" placeholder="Viết giới thiệu ngắn..."></textarea>
             </div>
 
             <div class="form-group">
                 <label>Editor dò mìn</label>
-                <input type="text" class="form-control" placeholder="Ghi chú nếu có...">
+                <input type="text" id="editorNote" class="form-control" placeholder="Ghi chú nếu có...">
             </div>
-
 
             <div style="display: flex; gap: 15px; margin-top: 25px;">
                 <button type="button" class="btn-action" style="background: #f3f4f6; color: #374151;">Lưu nháp</button>
-                <button type="submit" class="btn-action btn-primary">Đăng tải</button>
+                <button type="button" onclick="handleCreateStory()" class="btn-action btn-primary">Đăng tải</button>
             </div>
         </section>
+
         <section id="manageStoriesSection" style="margin-top: 50px; padding: 20px; border-top: 2px dashed #ff4d6d;">
-    <h2 style="color: #ff4d6d;">📋 Danh sách truyện đã đăng</h2>
-    <div id="adminStoryList" style="margin-top: 20px;">
-        <p>Đang tải danh sách truyện...</p>
-    </div>
-</section>
+            <h2 style="color: #ff4d6d;">📋 Danh sách truyện đã đăng</h2>
+            <div id="adminStoryList" style="margin-top: 20px;">
+                <p>Đang liên kết với Động Chăn Rùa...</p>
+            </div>
+        </section>
     </main>
 
     <div id="genreModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
@@ -112,6 +109,8 @@
         </div>
     </div>
 
+    <script type="module" src="assets/js/studio.js"></script>
+    
     <script src="assets/js/config.js"></script>
     <script>
         function openGenreModal() { document.getElementById('genreModal').style.display = 'flex'; }
@@ -122,12 +121,13 @@
             document.getElementById('selectedGenresText').innerText = checkboxes.length > 0 ? `Đã chọn ${checkboxes.length} thể loại` : "Chọn thể loại...";
         }
 
+        // Đổ thể loại từ config vào modal
         if (typeof GENDERS !== 'undefined') {
             const container = document.getElementById('genreModalContainer');
             GENDERS.forEach(item => {
                 let label = document.createElement('label');
                 label.style.padding = "8px"; label.style.border = "1px solid #eee"; label.style.borderRadius = "6px"; label.style.cursor = "pointer";
-                label.innerHTML = `<input type="checkbox" value="${item.id}" style="margin-right: 5px;"> ${item.name}`;
+                label.innerHTML = `<input type="checkbox" value="${item.name}" style="margin-right: 5px;"> ${item.name}`;
                 container.appendChild(label);
             });
         }

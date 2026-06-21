@@ -320,3 +320,21 @@ body {
         font-size: 16px !important;
     }
 }
+/* Layout chính */
+.studio-layout { display: grid; grid-template-columns: 350px 1fr; gap: 30px; margin-top: 30px; }
+
+/* Thẻ truyện dạng Card */
+.story-card {
+    background: #fff; border: 1px solid #f0f0f0; padding: 20px;
+    border-radius: 20px; margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    transition: 0.3s; cursor: pointer;
+}
+.story-card:hover { border-color: var(--netflix-red); }
+.add-new { border: 2px dashed #e5e7eb; text-align: center; color: var(--smoke); }
+
+/* Responsive Mobile - Tự xuống hàng */
+@media (max-width: 768px) {
+    .studio-layout { grid-template-columns: 1fr; }
+    .studio-container { padding: 15px; }
+}

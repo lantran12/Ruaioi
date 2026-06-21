@@ -311,45 +311,50 @@ auth.onAuthStateChanged((user) => {
     const btnHeaderAuth = document.getElementById('btnHeaderAuth'); 
     const btnNotification = document.getElementById('btnNotification'); 
     
-    // Kiểm tra và tạo nút Admin chỉ một lần duy nhất
+    // 1. Tạo nút Admin (nếu chưa có)
     let btnAdminCrown = document.getElementById('btnOpenAdminPanel');
-    if (!btnAdminCrown && btnHeaderAuth) {
+    if (!btnAdminCrown && btnHeaderAuth && btnHeaderAuth.parentNode) {
         btnAdminCrown = document.createElement('button');
         btnAdminCrown.id = 'btnOpenAdminPanel';
         btnAdminCrown.innerHTML = '👑';
         btnAdminCrown.style.cssText = "background: #2e8b57; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 8px;";
-        
-        // Chèn vào cạnh nút Profile
         btnHeaderAuth.parentNode.appendChild(btnAdminCrown);
     }
 
+    // 2. Xử lý logic khi ĐÃ ĐĂNG NHẬP
     if (user) {
         if (btnNotification) btnNotification.style.display = 'inline-flex';
         
-        // Gán tên/email
-        if (document.getElementById('userProfileEmail')) document.getElementById('userProfileEmail').textContent = user.email;
-        if (document.getElementById('userProfileName')) document.getElementById('userProfileName').textContent = user.displayName || "Thành viên Động Rùa";
+        // Gán tên hiển thị
+        if (btnHeaderAuth) {
+            btnHeaderAuth.innerHTML = (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') ? "Chào, Chị Trân ạ" : `Chào, ${user.displayName || 'Thành Viên'}`;
+            btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
+            
+            // XÓA sạch các sự kiện cũ và gán đúng hàm Profile
+            btnHeaderAuth.onclick = null; 
+            btnHeaderAuth.onclick = openProfileZone;
+        }
 
         renderUserProfileData(user);
 
-        // PHÂN QUYỀN ADMIN (UID CHUẨN)
-        if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33') {
-            btnHeaderAuth.innerHTML = `Chào, Chị Trân ạ`;
-            btnHeaderAuth.style.cssText = "width: auto; padding: 0 12px; border-radius: 20px; font-size: 13px; background: #ff4d6d; color: white; border: none; height: 36px; cursor: pointer;";
-            btnHeaderAuth.onclick = openProfileZone;
-            
-            btnAdminCrown.style.display = 'inline-flex';
+        // PHÂN QUYỀN ADMIN
+        if (user.uid === 'BrZQ9s07ujfIYG1iPtC4vIhGgx33' && btnAdminCrown) {
+            btnAdminCrown.style.display = 'flex';
             btnAdminCrown.onclick = () => { window.location.href = "studio.html"; };
-        } else {
-            btnHeaderAuth.innerHTML = `Chào, ${user.displayName || 'Thành Viên'}`;
+        } else if (btnAdminCrown) {
             btnAdminCrown.style.display = 'none';
         }
-    } else {
+    } 
+    // 3. Xử lý logic khi CHƯA ĐĂNG NHẬP
+    else {
         if (btnNotification) btnNotification.style.display = 'none';
-        btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
-        btnHeaderAuth.style.cssText = "width: 40px; height: 40px; border-radius: 50%; background: #ff4d6d; color: white; border: none; cursor: pointer;";
-        btnHeaderAuth.onclick = openAuthModal;
-        btnAdminCrown.style.display = 'none';
+        if (btnHeaderAuth) {
+            btnHeaderAuth.innerHTML = `<i class="fa-regular fa-user"></i>`;
+            btnHeaderAuth.style.cssText = "width: 40px; height: 40px; border-radius: 50%; background: #ff4d6d; color: white; border: none; cursor: pointer;";
+            btnHeaderAuth.onclick = null;
+            btnHeaderAuth.onclick = openAuthModal;
+        }
+        if (btnAdminCrown) btnAdminCrown.style.display = 'none';
 
         const container = document.getElementById('userBookshelfContainer');
         if (container) container.innerHTML = `<div class="bookshelf-empty" style="color: #ff4d6d; font-weight: bold; text-align: center; width: 100%; padding: 20px 0;">⚠️ Vui lòng đăng nhập để sử dụng tủ sách cá nhân!</div>`;

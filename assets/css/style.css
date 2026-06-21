@@ -318,18 +318,47 @@ body {
 
 #featuredBook {
   position: relative;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  padding: 20px;
   overflow: hidden;
-  height: 280px;  /* 🔥 THÊM DÒNG NÀY */
+  background: #fff;
 }
 
+/* ẢNH NẰM BÊN PHẢI + MỜ */
+#featuredBook::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.25;
+  z-index: 1;
+}
+
+/* LỚP TRẮNG ĐỂ CHỮ RÕ */
 #featuredBook::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.85);
+  background: linear-gradient(to right, #fff 40%, rgba(255,255,255,0.6));
+  z-index: 2;
 }
 
+/* TEXT LUÔN Ở TRÊN */
 #featuredBook * {
   position: relative;
-  z-index: 2;
+  z-index: 3;
+}
+
+/* GIỚI HẠN CHỮ BÊN TRÁI */
+#featuredBook .featured-content {
+  max-width: 55%;
+}
+#featuredBook::after {
+  background-image: var(--bg-image-url);
 }

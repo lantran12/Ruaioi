@@ -1,56 +1,63 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio RùaNovel</title>
-    <link rel="stylesheet" href="assets/css/style.css">.
-    <script src="assets/js/studio.js" type="module"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio | Động Chăn Rùa</title>
+    <link rel="stylesheet" href="studio.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
-<body style="background-color: #fcf9fa;">
+<body>
 
-    <header class="netflix-header">
-        <div class="logo"><a href="index.html">Rùa<span>Novel</span></a></div>
-    </header>
-
-   <main class="studio-container">
-    <div class="studio-header">
-        <h1>Chọn truyện để chỉnh sửa</h1>
-        <p>Chọn một truyện có sẵn hoặc tạo truyện mới ngay trong danh sách này.</p>
+<header class="topbar">
+    <div class="logo">
+        <img src="logo.png"> 
+        <h2 style="margin: 0; font-size: 1.5rem; color: #ff4d6d;">RùaNovel</h2>
     </div>
+    <div class="top-actions">
+        <button id="homeBtn"><i class="fa-solid fa-house"></i></button>
+        <button id="settingBtn"><i class="fa-solid fa-gear"></i></button>
+        <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+</header>
 
-    <div class="studio-layout">
-        <section id="storyList" class="story-list">
-            <div class="story-card add-new" onclick="openCreateForm()">
-                <p><strong>+ Tạo truyện mới</strong></p>
-                <span>Mở form trắng để tạo truyện</span>
-            </div>
-            </section>
-
-        <section class="editor-area">
-            <div class="form-group">
-                <label>Tên truyện *</label>
-                <input type="text" id="storyTitle" placeholder="Nhập tên truyện...">
-            </div>
-            <button class="btn-main" onclick="saveStory()">Lưu truyện</button>
+<main class="studio">
+    <aside class="sidebar">
+        <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="searchStory" type="text" placeholder="Tìm theo tên truyện hoặc tag..."></div>
+        <div class="sidebar-buttons"><button class="active">Quản lý truyện</button><button id="chapterBtn">Đăng chương</button></div>
+        <section class="story-panel">
+            <h2>Chọn truyện để chỉnh sửa</h2>
+            <p>Chọn một truyện có sẵn hoặc tạo truyện mới.</p>
+            <div id="newStoryCard" class="story new"><i class="fa-solid fa-plus"></i><div><h4>Tạo truyện mới</h4><span>Bắt đầu một dự án mới</span></div></div>
+            <div id="storyList"></div>
         </section>
-    </div>
+    </aside>
+
+    <section class="editor">
+        <div class="editor-head"><small>ĐANG TẠO TRUYỆN MỚI</small><h1>Thông tin truyện mới</h1><p>Điền đầy đủ thông tin bên dưới để bắt đầu đăng nội dung.</p></div>
+        <form id="storyForm">
+            <div class="form-group"><label>Tên truyện *</label><input id="title" type="text" placeholder="Nhập tên truyện"></div>
+            <div class="form-group"><label>Tên tác giả *</label><input id="author" type="text" placeholder="Nhập tên tác giả"></div>
+            <div class="grid">
+                <div class="form-group"><label>Phân loại</label><select id="category"><option>Đam Mỹ</option><option>Bách Hợp</option><option>Ngôn Tình</option><option>Khác</option></select></div>
+                <div class="form-group"><label>Tiến độ</label><select id="status"><option>Đang cập nhật</option><option>Hoàn thành</option><option>Tạm ngưng</option></select></div>
+            </div>
+            <div class="form-group"><label>Tags</label><div id="tagBox" class="tag-box"></div></div>
+            <div class="form-group"><label>Tóm tắt truyện</label><textarea id="summary" rows="10" placeholder="Viết tóm tắt truyện..."></textarea></div>
+            <div class="form-group"><label>Mật khẩu truy cập</label><input id="password" type="password" placeholder="Để trống nếu không cần"></div>
+            <div class="form-group"><label>Trạng thái hiển thị</label><div class="radio-group"><label><input type="radio" name="visibility" value="public" checked> Public</label><label><input type="radio" name="visibility" value="private"> Bản nháp</label></div></div>
+            <div class="form-group"><label>Ảnh bìa</label><div id="coverUpload"><input id="coverInput" type="file" accept="image/*" hidden><div class="upload-area"><i class="fa-regular fa-image"></i><h3>Nhấn để tải ảnh bìa</h3><p>PNG • JPG • WEBP</p></div><img id="coverPreview" style="display:none;"></div></div>
+            <div class="buttons">
+                <button type="button" id="saveStory"><i class="fa-solid fa-floppy-disk"></i> Lưu truyện</button>
+                <button type="button" id="deleteStory" class="danger"><i class="fa-solid fa-trash"></i> Xóa</button>
+                <button type="reset">Làm mới</button>
+            </div>
+        </form>
+    </section>
 </main>
-<div id="createStoryModal" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-btn" onclick="hideCreateForm()">&times;</span>
-        <h2>Tạo truyện mới</h2>
-        <div class="form-group">
-            <label>Tên truyện</label>
-            <input type="text" id="storyTitle" placeholder="Nhập tên truyện...">
-        </div>
-        <div class="form-group">
-            <label>Tác giả</label>
-            <input type="text" id="storyAuthor" placeholder="Nhập tên tác giả...">
-        </div>
-        <button class="btn-main" onclick="saveStory()">Lưu truyện lên Động</button>
-    </div>
-</div>
+
+<div id="toast"></div>
+<script type="module" src="studio.js"></script>
 </body>
 </html>

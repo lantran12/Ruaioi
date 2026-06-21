@@ -259,3 +259,34 @@ body {
 .textarea-custom { min-height: 120px; }
 .btn-link-management { display: block; text-align: center; padding: 12px; background: #eedfff; color: #6b21a8; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 0.85rem; margin: 15px 0; border: 1px solid #d8b4fe; }
 .btn-submit-custom { width: 100%; padding: 14px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+
+/* Tận dụng các biến màu từ trang chủ */
+.studio-container {
+    background: white;
+    padding: 30px;
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+/* Biến khung CKEditor thành phong cách của chị */
+.ck.ck-editor__main .ck-content {
+    min-height: 400px;
+    font-family: var(--font-sans) !important;
+    border-bottom-left-radius: var(--radius-card) !important;
+    border-bottom-right-radius: var(--radius-card) !important;
+}
+
+/* Danh sách truyện dạng thẻ giống trang chủ */
+.studio-story-card {
+    background: white;
+    padding: 15px;
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: 0.3s;
+    cursor: pointer;
+}
+.studio-story-card:hover {
+    border-color: var(--netflix-red);
+    transform: translateY(-2px);
+}

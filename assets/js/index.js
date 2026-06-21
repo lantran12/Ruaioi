@@ -567,3 +567,39 @@ function openProfileZone() {
     // Chắc chắn cuộn lên đầu trang
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+// Hàm tự động lấy lượt xem từ Firebase và vẽ Top 5
+function hienThiTop5() {
+    const viewsRef = firebase.database().ref('views');
+    
+    viewsRef.once('value').then((snapshot) => {
+        const viewsData = snapshot.val(); // Dữ liệu lấy từ nhánh 'views' trên Firebase
+
+        // 1. Kết hợp danh sách truyện tĩnh với dữ liệu lượt xem
+        // danhSachTruyen là biến chị đã có sẵn trong file index.js
+        const top5 = danhSachTruyen
+            .map(t => ({ ...t, views: viewsData[t.id] || 0 }))
+            .sort((a, b) => b.views - a.views) // Sắp xếp giảm dần theo lượt xem
+            .slice(0, 5); // Chỉ lấy 5 truyện đầu tiên
+
+        // 2. Tìm cái khung ở trang chủ (phải có id="nominationListContainer")
+        const container = document.getElementById('nominationListContainer');
+        if (container) {
+            container.innerHTML = top5.map((t, i) => `
+                <div class="top-book-item" style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 10px;">
+                    <span style="font-size: 24px; font-weight: bold; color: #ff4d6d; margin-right: 15px;">0${i + 1}</span>
+                    <img src="${t.image}" style="width: 50px; height: 70px; object-fit: cover; border-radius: 5px;">
+                    <div style="margin-left: 15px;">
+                        <h4 style="margin: 0; font-size: 14px; color: #333;">${t.title}</h4>
+                        <p style="margin: 5px 0 0 0; color: #ff4d6d; font-size: 12px; font-weight: 600;">
+                            <i class="fa-solid fa-eye"></i> ${t.views.toLocaleString()} lượt xem
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    });
+}
+
+// Gọi hàm khi trang web vừa tải xong
+document.addEventListener('DOMContentLoaded', hienThiTop5);
+

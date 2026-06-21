@@ -4,38 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rùa Novel | Studio</title>
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Link CSS chung của Chị -->
     <link rel="stylesheet" href="assets/css/style.css">
     
     <style>
-        /* CSS riêng cho trang Studio để không ảnh hưởng trang chủ */
         .studio-container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
-        
         .tab-menu { display: flex; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .tab-item { padding: 10px 20px; cursor: pointer; border-radius: 20px; font-weight: 600; color: #666; }
         .tab-item.active { background: #eee; color: #000; }
-        
-        .search-box { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; }
-        
-        .story-card { border: 1px solid #eee; padding: 15px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .story-info h3 { margin: 0; font-size: 1.1rem; }
-        .badge { font-size: 0.8rem; padding: 4px 8px; border-radius: 5px; background: #f0f0f0; margin-right: 5px; }
-        
-        .form-section { margin-top: 40px; padding: 20px; border-top: 2px solid #f0f0f0; }
+        .form-section { padding: 20px; border: 1px solid #eee; border-radius: 15px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        
-        .btn-action { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-action { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; }
         .btn-primary { background: #7c3aed; color: white; }
     </style>
 </head>
 <body>
 
-    <!-- Header đồng bộ -->
     <header class="netflix-header">
         <div class="header-left-zone">
             <div class="logo">
@@ -43,89 +30,91 @@
                 <span style="font-size: 0.9rem; color: #666; margin-left: 10px;">| Studio</span>
             </div>
         </div>
-
-        <div class="header-right-zone" style="display: flex; align-items: center; gap: 10px;">
-            <button class="btn-back"
-    onclick="window.location.href='index.html'"
-    style="background:#ffe5ec;color:#ff4d6d;border:none;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;">
-    Về Trang Chủ
-</button>
+        <div class="header-right-zone">
+            <button class="btn-back" onclick="window.location.href='index.html'" style="background:#ffe5ec;color:#ff4d6d;border:none;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;">Về Trang Chủ</button>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="studio-container">
-        
-        <!-- Tabs -->
         <div class="tab-menu">
             <div class="tab-item active">Quản lý truyện</div>
             <div class="tab-item">Đăng truyện</div>
         </div>
 
-       <section class="form-section">
-    <h2>Thông tin truyện mới</h2>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div class="form-group">
-            <label>Tên truyện *</label>
-            <input type="text" class="form-control" placeholder="Nhập tên truyện...">
-        </div>
-        <div class="form-group">
-            <label>Tên tác giả *</label>
-            <input type="text" class="form-control" placeholder="Tên tác giả...">
-        </div>
-    </div>
+        <section class="form-section">
+            <h2>Thông tin truyện mới</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Tên truyện *</label>
+                    <input type="text" class="form-control" placeholder="Nhập tên truyện...">
+                </div>
+                <div class="form-group">
+                    <label>Tên tác giả *</label>
+                    <input type="text" class="form-control" placeholder="Tên tác giả...">
+                </div>
+            </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div class="form-group">
-            <label>Trạng thái</label>
-            <select class="form-control">
-                <option value="dang-cap-nhat">Đang cập nhật</option>
-                <option value="tron-bo">Trọn bộ</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Thể loại</label>
-            <select class="form-control">
-                <option value="ngon-tinh">Ngôn tình</option>
-                <option value="tien-hiep">Tiên hiệp</option>
-                <option value="dam-my">Đam mỹ</option>
-            </select>
-        </div>
-    </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Trạng thái</label>
+                    <select class="form-control">
+                        <option value="dang-cap-nhat">Đang cập nhật</option>
+                        <option value="tron-bo">Trọn bộ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Thể loại</label>
+                    <select class="form-control" id="genreSelect">
+                        </select>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label>Bìa truyện (Cover)</label>
-        <div class="form-control" style="border: 2px dashed #ccc; text-align: center; padding: 20px; cursor: pointer;">
-            <i class="fa-regular fa-image" style="font-size: 20px; display: block; margin-bottom: 5px;"></i>
-            Nhấn để chọn ảnh bìa
-            <input type="file" style="display: none;">
-        </div>
-    </div>
+            <div class="form-group">
+                <label>Bìa truyện (Cover)</label>
+                <div class="form-control" style="border: 2px dashed #ccc; text-align: center; cursor: pointer;" onclick="document.getElementById('fileInput').click()">
+                    <i class="fa-regular fa-image"></i> Nhấn để chọn ảnh bìa
+                    <input type="file" id="fileInput" style="display: none;">
+                </div>
+            </div>
 
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            <div class="form-group">
+                <label>Giới thiệu</label>
+                <textarea class="form-control" rows="3" placeholder="Viết giới thiệu ngắn..."></textarea>
+            </div>
 
-    <div class="form-group">
-        <label>Giới thiệu</label>
-        <textarea class="form-control" rows="3" placeholder="Viết giới thiệu ngắn..."></textarea>
-    </div>
+            <div class="form-group">
+                <label>Editor dò mìn</label>
+                <input type="text" class="form-control" placeholder="Ghi chú nếu có...">
+            </div>
 
-    <div class="form-group">
-        <label>Editor dò mìn</label>
-        <input type="text" class="form-control" placeholder="Ghi chú nếu có...">
-    </div>
+            <div class="form-group">
+                <label>Nội dung</label>
+                <textarea id="editor" class="form-control" rows="10" placeholder="Soạn thảo nội dung..."></textarea>
+            </div>
 
-    <div class="form-group">
-        <label>Nội dung</label>
-        <textarea id="editor" class="form-control" rows="10" placeholder="Soạn thảo nội dung tại đây..."></textarea>
-    </div>
-
-    <div class="form-actions" style="display: flex; gap: 15px; margin-top: 25px;">
-        <button type="button" class="btn-action" style="background: #f3f4f6; color: #374151; flex: 1;">Lưu nháp</button>
-        <button type="submit" class="btn-action btn-primary" style="background: #7c3aed; color: white; flex: 1;">Đăng tải</button>
-    </div>
-</section>
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button type="button" class="btn-action" style="background: #f3f4f6; color: #374151;">Lưu nháp</button>
+                <button type="submit" class="btn-action btn-primary">Đăng tải</button>
+            </div>
+        </section>
     </main>
 
+    <script src="assets/js/config.js"></script>
+    <script>
+        // Kiểm tra xem GENDERS có tồn tại không để tránh lỗi
+        if (typeof GENDERS !== 'undefined') {
+            const select = document.getElementById('genreSelect');
+            GENDERS.forEach(item => {
+                let option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.name;
+                select.appendChild(option);
+            });
+        } else {
+            console.error("Không tìm thấy file config.js hoặc biến GENDERS!");
+        }
+    </script>
 </body>
 </html>
+```

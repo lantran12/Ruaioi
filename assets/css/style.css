@@ -315,3 +315,21 @@ body {
     color: #ff4d6d;
     font-weight: 700;
 }
+
+#featuredBook {
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+#featuredBook::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.85);
+}
+
+#featuredBook * {
+  position: relative;
+  z-index: 2;
+}

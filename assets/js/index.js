@@ -78,7 +78,7 @@ function handleFeaturedRandomBook(storiesData) {
     const storyImg = story.img || story.cover || story.image;
 
     if (storyImg && featuredBookSection) {
-        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(252,249,250,0.95) 40%, rgba(252,249,250,0.4)), url('${storyImg}')`, 'important');
+        featuredBookSection.style.setProperty('--bg-image-url', `url('${storyImg}')`);
         featuredBookSection.style.setProperty('background-size', 'cover', 'important');
         featuredBookSection.style.setProperty('background-position', 'center 20%', 'important');
     }

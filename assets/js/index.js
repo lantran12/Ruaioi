@@ -52,46 +52,36 @@ function initSubBarFilters() {
 }
 
 /* ==========================================================================
-   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đọc trường 'img' chị tạo)
+   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đã tùy chỉnh giao diện)
    ========================================================================== */
 function handleFeaturedRandomBook(storiesData) {
     const keys = Object.keys(storiesData);
     if (keys.length === 0) return;
 
-    // Bốc ngẫu nhiên 1 Key (ID) truyện từ Firebase
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     const story = storiesData[randomKey];
 
     const heroTitle = document.getElementById('heroTitle');
-    const heroSynopsis = document.getElementById('heroSynopsis');
-    const heroLink = document.getElementById('heroLink');
+    const heroSynopsis = document.getElementById('heroSynopsis'); // Vẫn giữ để ẩn nó đi
     const featuredBookSection = document.getElementById('featuredBook');
 
     if (heroTitle) heroTitle.innerText = story.title || "Tác phẩm độc quyền";
-    if (heroSynopsis) heroSynopsis.innerText = story.description || story.synopsis || "Bấm vào để khám phá thế giới nội tâm đầy cảm xúc của tác phẩm này...";
+    
+    // Ẩn đoạn giới thiệu đi theo yêu cầu của chị
+    if (heroSynopsis) heroSynopsis.style.display = 'none';
 
-    // Tạo link dẫn tới trang chi tiết truyện của chị
     const storyReadUrl = `book.html?id=${randomKey}`;
-    if (heroLink) heroLink.setAttribute('href', storyReadUrl);
-
-    // Ưu tiên đọc trường 'img' từ Form Admin của chị, nếu không có mới tìm trường 'cover' hoặc 'image'
     const storyImg = story.img || story.cover || story.image;
 
     if (storyImg && featuredBookSection) {
-        featuredBookSection.style.setProperty('--bg-image-url', `url('${storyImg}')`);
+        // Điều chỉnh background: 
+        // Lớp phủ màu trắng nhạt (rgba(255,255,255,0.3)) giúp ảnh rõ hơn 
+        // nhưng vẫn giữ được độ mờ ảo nhẹ nhàng
+        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.3) 100%), url('${storyImg}')`, 'important');
         featuredBookSection.style.setProperty('background-size', 'cover', 'important');
-        featuredBookSection.style.setProperty('background-position', 'center 20%', 'important');
-    }
-
-    if (featuredBookSection) {
-        featuredBookSection.onclick = function(e) {
-            if (e.target.tagName !== 'A' && e.target.parentElement.tagName !== 'A') {
-                window.location.href = storyReadUrl;
-            }
-        };
+        featuredBookSection.style.setProperty('background-position', 'center', 'important');
     }
 }
-
 /* ==========================================================================
    4. THẢ MENU THỂ LOẠI TẠI DROP-DOWN
    ========================================================================== */

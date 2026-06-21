@@ -319,7 +319,7 @@ body {
 #featuredBook {
   position: relative;
   overflow: hidden;
-  min-height: 300px;
+  height: 280px;  /* 🔥 THÊM DÒNG NÀY */
 }
 
 #featuredBook::before {

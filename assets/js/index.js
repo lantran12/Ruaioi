@@ -530,12 +530,21 @@ function submitAuthForm() {
 
     if (isSignUpMode) {
         auth.createUserWithEmailAndPassword(email, password).then((userCredential) => {
-            if (displayName) userCredential.user.updateProfile({ displayName: displayName });
+            if (displayName) {
+                userCredential.user.updateProfile({ displayName: displayName }).then(() => {
+                    // Cập nhật xong tên thì mới reload để UI refresh
+                    window.location.reload();
+                });
+            } else {
+                window.location.reload();
+            }
             alert("🎉 Đăng ký thành công!"); closeAuthModal();
         }).catch(err => alert(err.message));
     } else {
         auth.signInWithEmailAndPassword(email, password).then(() => {
-            alert("🎉 Chào mừng chị trở lại!"); closeAuthModal();
+            alert("🎉 Chào mừng chị trở lại!"); 
+            closeAuthModal();
+            window.location.reload(); // Reload để header cập nhật tên ngay
         }).catch(err => alert(err.message));
     }
 }

@@ -101,3 +101,44 @@ function resetForm() {
 window.handleCreateStory = handleCreateStory;
 window.resetForm = resetForm;
 
+// --- BỔ SUNG: HÀM ĐỔ DANH SÁCH TRUYỆN VÀO SELECT (Dùng cho tab Đăng chương) ---
+window.loadStoryListForSelect = function() {
+    const select = document.getElementById('storySelect');
+    if (!select) return;
+
+    // Reset danh sách trước khi load (tránh bị trùng nếu bấm nhiều lần)
+    select.innerHTML = '<option value="">-- Chọn truyện để đăng chương --</option>';
+
+    const storiesRef = ref(db, 'stories');
+    get(storiesRef).then((snapshot) => {
+        if (!snapshot.exists()) return;
+
+        snapshot.forEach((childSnapshot) => {
+            const story = childSnapshot.val();
+            const option = document.createElement('option');
+            option.value = childSnapshot.key; // ID truyện
+            option.textContent = story.title;  // Tên truyện
+            select.appendChild(option);
+        });
+    });
+};
+
+// --- BỔ SUNG: HÀM XỬ LÝ KHI BẤM ĐĂNG TẢI CHƯƠNG ---
+window.handleUploadContent = function() {
+    const storyId = document.getElementById('storySelect').value;
+    const fileInput = document.getElementById('fileInput');
+
+    if (!storyId) {
+        alert("Chị ơi, chị chọn truyện trước nhé! 🐢");
+        return;
+    }
+    if (fileInput.files.length === 0) {
+        alert("Chị chưa chọn file nội dung (.txt, .docx) kìa! 🐢");
+        return;
+    }
+
+    // Ở đây sau này chị sẽ code xử lý đọc file
+    // Chị có thể dùng FileReader để đọc nội dung file .txt
+    console.log("Đang chuẩn bị đăng chương cho truyện ID:", storyId);
+    alert("Đang xử lý file cho truyện: " + storyId + ". Chị đợi xíu nhé...");
+};

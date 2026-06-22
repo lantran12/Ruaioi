@@ -114,7 +114,7 @@
         <div class="genre-modal-box">
             <h3 style="margin-top: 0; color: #ff4d6d; font-family: 'Playfair Display', serif;">Chọn thể loại</h3>
             <div id="genreModalContainer" class="genre-grid"></div>
-            <button onclick="closeGenreModal()" style="width: 100%; padding: 12px; background: #ff4d6d; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Xong</button>
+            <button onclick="applyGenreFilter()" style="width: 100%; padding: 12px; background: #ff4d6d; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Xong</button>
         </div>
     </div>
 
@@ -163,14 +163,18 @@
                 const container = document.getElementById('genreModalContainer');
                 container.innerHTML = '';
                 GENDERS.forEach(item => {
-                    let label = document.createElement('label');
-                    label.className = 'genre-item';
-                    label.innerHTML = `<input type="checkbox" value="${item.id}" style="margin-right: 8px;"> ${item.name}`;
-                    label.onclick = () => { filterBy(item.id); closeGenreModal(); };
-                    container.appendChild(label);
-                });
-            }
-        });
+    let label = document.createElement("label");
+    label.className = "genre-item";
+
+    label.innerHTML = `
+        <input type="checkbox"
+               class="genre-checkbox"
+               value="${item.id}">
+        ${item.name}
+    `;
+
+    container.appendChild(label);
+});
 
         // Hàm cũ của Chị (để giữ nguyên logic admin panel nếu có)
         function toggleAdminPanel() {

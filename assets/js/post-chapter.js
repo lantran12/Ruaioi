@@ -47,9 +47,23 @@ window.deleteChapter = (chapNum) => {
 };
 
 // 4. Hàm chuyển tab (Giao diện)
+// Thêm các hàm này vào file post-chapter.js để không bị báo lỗi khi nhấn nút
 window.switchTab = (tab) => {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     document.getElementById(tab + 'Tab').classList.add('active');
     document.getElementById('btn' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+};
+
+window.resetChapterForm = () => {
+    document.getElementById('chapterForm').reset();
+};
+
+window.handleBulkImport = (input) => {
+    console.log("Đang import file...");
+    // Logic đọc file .txt/.docx của chị ở đây
+};
+
+window.saveAllChaptersToFirebase = () => {
+    console.log("Đang lưu hàng loạt...");
 };

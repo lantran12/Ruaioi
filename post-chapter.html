@@ -82,6 +82,15 @@
     const db = firebase.database();
     let parsedChaptersList = [];
 
+    function updateStoryMetadata(storyId, chapterNumber) {
+    const now = new Date();
+    const dateString = now.toLocaleDateString('vi-VN'); 
+    db.ref('stories/' + storyId).update({
+        latestChapter: parseInt(chapterNumber),
+        updatedAt: dateString
+    });
+}
+
     function showSection(id, btn) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -207,48 +216,58 @@
 
     // GỬI ĐỒNG LOẠT LÊN FIREBASE KHI BẤM NÚT XÁC NHẬN
     async function saveAllChaptersToFirebase() {
-        const storyId = document.getElementById('selectedStoryId').value;
-        if (!storyId) {
-            return alert("Chị Trân ơi, hãy chọn 1 truyện ở danh sách bên trái trước khi bấm Lưu nha! 🐢");
-        }
+    const storyId = document.getElementById('selectedStoryId').value;
+    if (!storyId) return alert("Chị ơi, hãy chọn 1 truyện bên trái trước nha! 🐢");
+    if (parsedChaptersList.length === 0) return;
 
-        if (parsedChaptersList.length === 0) return;
+    const statusBar = document.getElementById('statusBar');
+    statusBar.style.display = 'block';
+    statusBar.innerText = `⏳ Đang xử lý... Xin đợi chị nhé!`;
 
-        const statusBar = document.getElementById('statusBar');
-        statusBar.style.display = 'block';
-        statusBar.innerText = `⏳ Hệ thống đang đẩy luồng dữ liệu... Xin vui lòng đợi trong giây lát!`;
+    let successCount = 0;
+    let maxChapter = 0;
 
-        let successCount = 0;
+    for (const ch of parsedChaptersList) {
+        if (ch.number > maxChapter) maxChapter = ch.number;
 
-        // Chạy vòng lặp đẩy bất đồng bộ từng chương lên nhánh chapters/ID_TRUYEN/SỐ_CHƯƠNG
-        for (const ch of parsedChaptersList) {
-            const dataToUpload = {
-                title: ch.title,
-                number: ch.number,
-                content: ch.content,
-                status: "Công khai",
-                createdAt: Date.now(),
-                views: 0
-            };
+        const dataToUpload = {
+            title: ch.title,
+            number: ch.number,
+            content: ch.content,
+            status: "Công khai",
+            updatedAt: Date.now()
+        };
 
-            try {
-                await db.ref(`chapters/${storyId}/${ch.number}`).set(dataToUpload);
-                successCount++;
-                statusBar.innerText = `🚀 Tiến trình: Đang tải lên chương (${successCount}/${parsedChaptersList.length})...`;
-            } catch (err) {
-                console.error("Lỗi chương " + ch.number + ": " + err.message);
+        try {
+            const chapterRef = db.ref(`chapters/${storyId}/${ch.number}`);
+            const snapshot = await chapterRef.once('value');
+            
+            if (snapshot.exists()) {
+                // Nếu đã tồn tại, chỉ update nội dung, KHÔNG sửa views/comment
+                await chapterRef.update(dataToUpload);
+            } else {
+                // Nếu mới tinh, thêm views: 0 vào
+                dataToUpload.views = 0;
+                await chapterRef.set(dataToUpload);
             }
+            successCount++;
+            statusBar.innerText = `🚀 Đang tải chương (${successCount}/${parsedChaptersList.length})...`;
+        } catch (err) {
+            console.error("Lỗi chương " + ch.number + ": " + err.message);
         }
-
-        statusBar.style.background = '#dcfce7';
-        statusBar.style.color = '#15803d';
-        statusBar.innerHTML = `🎉 Tuyệt vời ông mặt trời! Đã import thành công vĩnh viễn <b>${successCount} chương</b> vào hệ thống của chị Trân! 🐢`;
-        
-        // Reset dọn dẹp file cũ sau khi xong việc
-        document.getElementById('fileInput').value = '';
-        parsedChaptersList = [];
-        document.getElementById('btnConfirmImport').style.display = 'none';
     }
+
+    // Cập nhật nhánh truyện
+    updateStoryMetadata(storyId, maxChapter);
+
+    statusBar.style.background = '#dcfce7';
+    statusBar.style.color = '#15803d';
+    statusBar.innerHTML = `🎉 Xong! Đã import <b>${successCount} chương</b> và cập nhật thông tin truyện cho chị Trân! 🐢`;
+    
+    document.getElementById('fileInput').value = '';
+    parsedChaptersList = [];
+    document.getElementById('btnConfirmImport').style.display = 'none';
+}
 </script>
 </body>
 </html>

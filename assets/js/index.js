@@ -109,11 +109,9 @@ function loadGenresDropdown() {
 }
 
 /* ==========================================================================
-   5. BỘ LỌC ĐIỀU KIỆN (Đã tích hợp tra cứu ID và xử lý Object/Array)
+   5. BỘ LỌC ĐIỀU KIỆN (ĐÃ FIX: Tương thích Firebase V8)
    ========================================================================== */
 function loadStoriesByCondition(field, value, titleText) {
-    // 1. TÌM TÊN THẬT TỪ ID (Nếu lọc theo thể loại, chuyển 'guong-vo' thành 'Gương vỡ lại lành')
-    const filterValue = value;
     const searchSection = document.getElementById('searchResultsSection');
     const resultsGrid = document.getElementById('resultsGrid');
     const rowTitle = searchSection.querySelector('.row-title');
@@ -125,7 +123,7 @@ function loadStoriesByCondition(field, value, titleText) {
     resultsGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang lọc tác phẩm...</div>';
     searchSection.scrollIntoView({ behavior: 'smooth' });
 
-    // 2. LẤY DỮ LIỆU TỪ FIREBASE
+    // Dùng cú pháp V8: db.ref(...).once('value')
     db.ref('stories').once('value').then((snapshot) => {
         resultsGrid.innerHTML = '';
         if (!snapshot.exists()) {
@@ -139,18 +137,34 @@ function loadStoriesByCondition(field, value, titleText) {
             const id = childSnapshot.key;
             let match = false;
 
-            // 3. SO SÁNH ĐIỀU KIỆN
+            // KIỂM TRA ĐIỀU KIỆN LỌC
             if (field === 'genres') {
-                // Chuyển Object tags thành mảng để dùng .includes()
+                // Chuyển Object về mảng để check
                 const genresData = story.genres ? Object.values(story.genres) : [];
-                const genresData = story.genres ? Object.values(story.genres) : [];
+                // So sánh bằng cách chuyển về chữ thường để tránh lỗi viết hoa/thường
+                if (genresData.some(g => g.toString().trim().toLowerCase() === value.trim().toLowerCase())) {
+                    match = true;
+                }
+            } else {
+                if (story[field] === value) {
+                    match = true;
+                }
+            }
 
-console.log("Đang lọc:", filterValue);
-console.log("Genres truyện:", genresData);
+            if (match) {
+                resultsGrid.appendChild(createNetflixCard(id, story));
+                found = true;
+            }
+        });
 
-match = genresData.some(g =>
-    g.trim().toLowerCase() === filterValue.trim().toLowerCase()
-);
+        if (!found) {
+            resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Không tìm thấy truyện nào có tag "${value}" 🐢</p>`;
+        }
+    }).catch((error) => {
+        console.error("Lỗi lọc:", error);
+        resultsGrid.innerHTML = `<p style="grid-column: 1/-1;">Đã xảy ra lỗi khi lọc truyện 🐢</p>`;
+    });
+}
 /* ==========================================================================
    6. THƯ VIỆN CHÍNH (Mới Cập Nhật Trên Hệ Thống)
    ========================================================================== */

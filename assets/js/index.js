@@ -270,27 +270,17 @@ function createNetflixCard(id, story) {
     div.className = 'story-card';
     div.onclick = () => window.location.href = `book.html?id=${id}`;
     
-    // 1. Xử lý ảnh
+    // Tự động dùng 'img' chị tạo, hoặc các trường cũ dự phòng
     const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
-    // 2. Xử lý Tag (lấy tối đa 2 tag đầu tiên cho gọn)
-    const tagsHtml = (story.genres && Array.isArray(story.genres)) 
-        ? story.genres.slice(0, 2).map(tag => `<span class="tag-badge">${tag}</span>`).join('') 
-        : "";
-
-    // 3. Xử lý số chương (giả sử chị lưu totalChapters, nếu chưa có thì hiển thị mặc định)
-    const chapterCount = story.totalChapters || 0; 
     
     div.innerHTML = `
-        <div class="card-img-wrapper">
-            <img src="${currentImg}" alt="${story.title}">
-            <span class="chapter-count">${chapterCount} Chương</span>
-        </div>
+        <img src="${currentImg}" alt="${story.title}">
         <h4>${story.title}</h4>
-        <p class="author-name">${story.author || 'Động Chăn Rùa'}</p>
-        <div class="tags-container">${tagsHtml}</div>
+        <p>${story.author || 'Động Chăn Rùa'}</p>
     `;
     return div;
 }
+
 // Hàm Tìm kiếm thủ công khi bấm kính lúp
 function triggerSearch() {
     const searchInput = document.getElementById('searchInput');

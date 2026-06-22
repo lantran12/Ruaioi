@@ -15,25 +15,34 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // Thêm hàm này vào để code không bị lỗi khi gọi
-function loadAdminStoryList() {
+// Thay thế hàm loadAdminStoryList cũ trong studio.js bằng đoạn này
+async function loadAdminStoryList() {
     const list = document.getElementById("adminStoryList");
     if (!list) return;
-    list.innerHTML = "";
-    const storiesRef = ref(db, "stories");
-    onChildAdded(storiesRef, (snapshot) => {
-        const id = snapshot.key;
-        const story = snapshot.val();
-        const item = document.createElement("div");
-        item.id = "story-" + id;
-        item.style = "padding:15px;margin-bottom:10px;background:white;border-radius:12px;display:flex;justify-content:space-between;align-items:center;";
-        item.innerHTML = `<div><h4 style="margin:0">${story.title}</h4><div style="font-size:13px;color:#777">ID : ${id}</div></div>
-        <div>
-            <button onclick="editStory('${id}')">Sửa</button>
-            <button onclick="deleteStory('${id}')">Xóa</button>
-            <button onclick="openPostModal('${id}','${story.title}')">Đăng chương</button>
-        </div>`;
-        list.appendChild(item);
-    });
+    
+    // Lấy dữ liệu 1 lần duy nhất từ Firebase
+    const snapshot = await get(ref(db, "stories"));
+    list.innerHTML = ""; 
+    
+    if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+            const id = childSnapshot.key;
+            const story = childSnapshot.val();
+            const item = document.createElement("div");
+            item.style = "padding:20px;margin-bottom:15px;background:white;border-radius:15px;display:flex;justify-content:space-between;align-items:center;border:1px solid #f0f0f0;box-shadow: 0 2px 5px rgba(0,0,0,0.05);";
+            item.innerHTML = `
+                <div>
+                    <h3 style="margin:0 0 5px 0; font-size: 18px;">${story.title}</h3>
+                    <div style="font-size:13px;color:#999">ID: ${id}</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="editStory('${id}')" style="background:#fff3bf; border:none; padding:8px 15px; border-radius:20px; font-weight:600; cursor:pointer; font-size:13px; color:#854d0e;">Sửa</button>
+                    <button onclick="deleteStory('${id}')" style="background:#ffe3e3; border:none; padding:8px 15px; border-radius:20px; font-weight:600; cursor:pointer; font-size:13px; color:#c92a2a;">Xóa</button>
+                    <button onclick="openPostModal('${id}','${story.title}')" style="background:#d3f9d8; border:none; padding:8px 15px; border-radius:20px; font-weight:600; cursor:pointer; font-size:13px; color:#2b8a3e;">Đăng chương</button>
+                </div>`;
+            list.appendChild(item);
+        });
+    }
 }
 
 // Xử lý tạo/sửa truyện
@@ -175,3 +184,14 @@ window.openPostModal = async (id, title) => {
 window.closePostModal = () => {
     document.getElementById("postChapterModal").style.display = "none";
 };
+
+// Dán toàn bộ đoạn này vào DÒNG CUỐI CÙNG của file studio.js
+window.editStory = editStory;
+window.deleteStory = deleteStory;
+window.openPostModal = openPostModal;
+window.closePostModal = closePostModal;
+window.handleCreateStory = handleCreateStory;
+window.handleImportFile = handleImportFile;
+window.handleUploadContent = handleUploadContent;
+window.resetForm = resetForm;
+window.loadAdminStoryList = loadAdminStoryList; // Quan trọng để gọi được hàm này

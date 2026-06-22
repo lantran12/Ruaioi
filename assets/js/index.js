@@ -606,3 +606,15 @@ function openProfileZone() {
 function filterBy(genreName) {
     loadStoriesByCondition('genres', genreName, `📜 Thể loại: ${genreName}`);
 }
+function closeSearch() {
+    const section = document.getElementById("searchResultsSection");
+
+    if (section) {
+        section.style.display = "none";
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}

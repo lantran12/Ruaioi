@@ -144,10 +144,32 @@ window.deleteStory = (id) => {
     }
 };
 
-window.openPostModal = (id, title) => {
+// Thay hàm openPostModal cũ bằng đoạn này
+window.openPostModal = async (id, title) => {
+    // 1. Mở Modal và điền thông tin
     document.getElementById("modalStoryId").value = id;
     document.getElementById("modalStoryTitle").innerText = title;
     document.getElementById("postChapterModal").style.display = "flex";
+
+    // 2. Tải danh sách chương hiện có của truyện đó
+    const chapterPreview = document.getElementById("chapterPreview");
+    chapterPreview.style.display = "block";
+    chapterPreview.innerHTML = "Đang tải danh sách chương cũ...";
+
+    const snapshot = await get(ref(db, `stories/${id}/chapters`));
+    
+    if (snapshot.exists()) {
+        chapterPreview.innerHTML = "<h4>Danh sách chương hiện có:</h4>";
+        snapshot.forEach(child => {
+            const ch = child.val();
+            chapterPreview.innerHTML += `
+                <div style="padding:5px; border-bottom:1px solid #eee; font-size: 13px;">
+                    <b>Chương ${ch.number}</b>: ${ch.title}
+                </div>`;
+        });
+    } else {
+        chapterPreview.innerHTML = "Chưa có chương nào.";
+    }
 };
 
 window.closePostModal = () => {

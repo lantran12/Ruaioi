@@ -109,11 +109,18 @@ function loadGenresDropdown() {
 }
 
 /* ==========================================================================
-   5. BỘ LỌC ĐIỀU KIỆN (Đã sửa để lọc được cả Object và String)
+   5. BỘ LỌC ĐIỀU KIỆN (Đã tích hợp tra cứu ID và xử lý Object/Array)
    ========================================================================== */
 function loadStoriesByCondition(field, value, titleText) {
+    // 1. TÌM TÊN THẬT TỪ ID (Nếu lọc theo thể loại)
+    let filterValue = value;
+    if (field === 'genres' && typeof GENDERS !== 'undefined') {
+        const foundGenre = GENDERS.find(g => g.id === value);
+        if (foundGenre) filterValue = foundGenre.name; 
+    }
+
     const searchSection = document.getElementById('searchResultsSection');
-    const resultsGrid = document.getElementById('resultsGrid');
+    const resultsGrid = document.getElementById('searchResultsSection').querySelector('#resultsGrid');
     const rowTitle = searchSection.querySelector('.row-title');
 
     if (!searchSection || !resultsGrid) return;
@@ -139,13 +146,13 @@ function loadStoriesByCondition(field, value, titleText) {
 
             // KIỂM TRA ĐIỀU KIỆN LỌC
             if (field === 'genres') {
-                // SỬA Ở ĐÂY: Chuyển Object các tag về mảng để kiểm tra
+                // Chuyển Object dữ liệu trong Firebase thành mảng để so sánh
                 const genresData = story.genres ? Object.values(story.genres) : [];
-                if (genresData.includes(value)) {
+                if (genresData.includes(filterValue)) {
                     match = true;
                 }
             } else {
-                // Lọc theo status, author (giá trị đơn)
+                // Lọc theo các trường khác
                 if (story[field] === value) {
                     match = true;
                 }
@@ -158,7 +165,7 @@ function loadStoriesByCondition(field, value, titleText) {
         });
 
         if (!found) {
-            resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Không tìm thấy truyện nào có tag "${value}" 🐢</p>`;
+            resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Không tìm thấy truyện có tag "${filterValue}" 🐢</p>`;
         }
     });
 }

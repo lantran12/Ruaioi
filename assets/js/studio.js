@@ -1,12 +1,16 @@
-import { db, auth, ref, onChildAdded, onAuthStateChanged, remove } from "./firebase.js";
-import { set, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { db, auth } from "./firebase.js";
+import { ref, set, update, get, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"; 
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+// --- CÁC BIẾN TOÀN CỤC ---
 let importedChapters = [];
 let currentStoryId = null;
+let currentUser = null;
 
-// Kiểm tra quyền Admin
+// --- KIỂM TRA QUYỀN TRUY CẬP ---
 onAuthStateChanged(auth, (user) => {
     if (user && user.uid === "BrZQ9s07ujfIYG1iPtC4vIhGgx33") {
+        currentUser = user;
         loadAdminStoryList();
     } else {
         alert("Chị không có quyền vào đây!");
@@ -14,38 +18,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Thêm hàm này vào để code không bị lỗi khi gọi
-// Thay thế hàm loadAdminStoryList cũ trong studio.js bằng đoạn này
-async function loadAdminStoryList() {
-    const list = document.getElementById("adminStoryList");
-    if (!list) return;
-    
-    // Lấy dữ liệu 1 lần duy nhất từ Firebase
-    const snapshot = await get(ref(db, "stories"));
-    list.innerHTML = ""; 
-    
-    if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-            const id = childSnapshot.key;
-            const story = childSnapshot.val();
-            const item = document.createElement("div");
-            item.style = "padding:20px;margin-bottom:15px;background:white;border-radius:15px;display:flex;justify-content:space-between;align-items:center;border:1px solid #f0f0f0;box-shadow: 0 2px 5px rgba(0,0,0,0.05);";
-            item.innerHTML = `
-                <div>
-                    <h3 style="margin:0 0 5px 0; font-size: 18px;">${story.title}</h3>
-                    <div style="font-size:13px;color:#999">ID: ${id}</div>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <button onclick="editStory('${id}')" style="background:#fff3bf; border:none; padding:8px 15px; border-radius:20px; font-weight:600; cursor:pointer; font-size:13px; color:#854d0e;">Sửa</button>
-                    <button onclick="deleteStory('${id}')" style="background:#ffe3e3; border:none; padding:8px 15px; border-radius:20px; font-weight:600; cursor:pointer; font-size:13px; color:#c92a2a;">Xóa</button>
-                    <button onclick="openPostModal('${id}','${story.title}')" style="background:#d3f9d8; border:none; padding:8px 15px; border-radius:20px; font-weight:600; cursor:pointer; font-size:13px; color:#2b8a3e;">Đăng chương</button>
-                </div>`;
-            list.appendChild(item);
-        });
-    }
-}
-
-// Xử lý tạo/sửa truyện
+// --- QUẢN LÝ TRUYỆN ---
 async function handleCreateStory() {
     const customId = document.getElementById("idInput").value.trim().toLowerCase();
     const title = document.getElementById("titleInput").value;
@@ -53,10 +26,11 @@ async function handleCreateStory() {
     const status = document.getElementById("statusSelect").value;
     const cover = document.getElementById("coverInput").value;
     const description = document.getElementById("descInput").value;
-    
+    const selectedGenres = [];
+    document.querySelectorAll("#genreModalContainer input:checked").forEach(cb => selectedGenres.push(cb.value));
+
     if (!customId) { alert("Chưa nhập ID truyện."); return; }
     
-    const selectedGenres = Array.from(document.querySelectorAll("#genreModalContainer input:checked")).map(cb => cb.value);
     const storyRef = ref(db, "stories/" + customId);
     const isEditing = document.getElementById("idInput").readOnly;
     const storyData = { title, author, status, cover, description, genres: selectedGenres, updatedAt: Date.now() };
@@ -73,125 +47,91 @@ async function handleCreateStory() {
     loadAdminStoryList();
 }
 
-// Đọc và tách chương
+function resetForm() {
+    document.getElementById("idInput").value = "";
+    document.getElementById("titleInput").value = "";
+    document.getElementById("authorInput").value = "";
+    document.getElementById("coverInput").value = "";
+    document.getElementById("descInput").value = "";
+    if(document.getElementById("editorNote")) document.getElementById("editorNote").value = "";
+    document.getElementById("selectedGenresText").innerText = "Chọn thể loại...";
+    document.querySelectorAll("#genreModalContainer input").forEach(cb => cb.checked = false);
+}
+
+function loadAdminStoryList() {
+    const list = document.getElementById("adminStoryList");
+    if(!list) return;
+    list.innerHTML = "";
+    onChildAdded(ref(db, "stories"), (snapshot) => {
+        const id = snapshot.key;
+        const story = snapshot.val();
+        const item = document.createElement("div");
+        item.id = "story-" + id;
+        item.style = "padding:15px;margin-bottom:10px;background:white;border-radius:12px;display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;";
+        item.innerHTML = `<div><h4 style="margin:0">${story.title}</h4><div style="font-size:13px;color:#777">ID : ${id}</div></div>
+        <div style="display:flex;gap:8px;"><button onclick="editStory('${id}')">Sửa</button><button onclick="deleteStory('${id}')">Xóa</button><button onclick="openPostModal('${id}','${story.title}')">Đăng chương</button></div>`;
+        list.appendChild(item);
+    });
+}
+
+// --- QUẢN LÝ CHƯƠNG (FILE IMPORT) ---
 async function handleImportFile() {
     const input = document.getElementById("chapterFileInput");
     if (!input.files.length) { alert("Chưa chọn file."); return; }
     const file = input.files[0];
     let text = "";
-
-    if (file.name.endsWith(".txt")) {
-        text = await file.text();
-    } else if (file.name.endsWith(".docx")) {
-        const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+    
+    if (file.name.endsWith(".txt")) { text = await file.text(); }
+    else if (file.name.endsWith(".docx")) {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
         text = result.value;
-    } else {
-        alert("Chỉ hỗ trợ TXT và DOCX");
-        return;
-    }
+    } else { alert("Chỉ hỗ trợ TXT và DOCX"); return; }
+    
+    splitChapters(text);
+}
 
+function splitChapters(text) {
     importedChapters = [];
     const preview = document.getElementById("chapterPreview");
     preview.style.display = "block";
-    preview.innerHTML = "";
-
-    const arr = text.split(/(?=Chương\s+\d+\s*:)/gi);
+    preview.innerHTML = "<h4>Đang xử lý...</h4>";
+    
+    // Tách chương theo từ khóa "Chương"
+    const arr = text.split(/(?=Chương\s+\d+)/gi);
     arr.forEach(item => {
         item = item.trim();
         if (item.length < 10) return;
-        importedChapters.push({ title: item.split("\n")[0], content: item });
+        const firstLine = item.split("\n")[0];
+        importedChapters.push({ title: firstLine, content: item });
     });
-
-    preview.innerHTML = `<h4>Đã tìm thấy ${importedChapters.length} chương</h4>`;
-    importedChapters.forEach((ch, i) => {
-        preview.innerHTML += `<div style="padding:10px;margin-bottom:8px;border:1px solid #ddd;border-radius:8px;"><b>${i + 1}. ${ch.title}</b></div>`;
+    
+    preview.innerHTML = "<h4>Đã tìm thấy " + importedChapters.length + " chương</h4>";
+    importedChapters.forEach((chapter, index) => {
+        preview.innerHTML += `<div style="padding:5px;border-bottom:1px solid #eee;">${index + 1}. ${chapter.title}</div>`;
     });
 }
 
-// Upload chương lên Firebase
 async function handleUploadContent() {
     const storyId = document.getElementById("modalStoryId").value;
-    if (!storyId || importedChapters.length === 0) { alert("Thiếu dữ liệu!"); return; }
-    
+    if (!storyId || importedChapters.length === 0) { alert("Dữ liệu không hợp lệ."); return; }
     try {
         for (let i = 0; i < importedChapters.length; i++) {
             await set(ref(db, `stories/${storyId}/chapters/chapter-${i + 1}`), { 
-                number: i + 1, ...importedChapters[i] 
+                number: i + 1, title: importedChapters[i].title, content: importedChapters[i].content 
             });
         }
-        const date = new Date().toLocaleDateString("vi-VN");
-        await update(ref(db, `stories/${storyId}`), { latestChapter: importedChapters.length, updatedAt: date });
-        
+        await update(ref(db, `stories/${storyId}`), { latestChapter: importedChapters.length });
         alert("Đăng thành công!");
-        document.getElementById("chapterPreview").innerHTML = "";
-        importedChapters = [];
         closePostModal();
-    } catch (e) { alert("Upload thất bại."); }
+    } catch (err) { alert("Lỗi upload."); }
 }
 
-function resetForm() {
-    document.getElementById("idInput").value = "";
-    document.querySelectorAll("input, textarea").forEach(i => i.value = "");
-    document.getElementById("selectedGenresText").innerText = "Chọn thể loại...";
-    document.querySelectorAll("#genreModalContainer input").forEach(cb => cb.checked = false);
-}
-
-window.handleCreateStory = handleCreateStory;
-window.handleImportFile = handleImportFile;
-window.handleUploadContent = handleUploadContent;
-window.resetForm = resetForm;
-
-// Thêm các hàm này vào studio.js
-window.editStory = (id) => { 
-    console.log("Đang sửa truyện:", id); 
-    // Chị viết code gán dữ liệu vào các ô input ở đây
-};
-
-window.deleteStory = (id) => {
-    if (confirm("Chị chắc chắn muốn xóa truyện này không?")) {
-        remove(ref(db, "stories/" + id));
-    }
-};
-
-// Thay hàm openPostModal cũ bằng đoạn này
-window.openPostModal = async (id, title) => {
-    // 1. Mở Modal và điền thông tin
-    document.getElementById("modalStoryId").value = id;
-    document.getElementById("modalStoryTitle").innerText = title;
-    document.getElementById("postChapterModal").style.display = "flex";
-
-    // 2. Tải danh sách chương hiện có của truyện đó
-    const chapterPreview = document.getElementById("chapterPreview");
-    chapterPreview.style.display = "block";
-    chapterPreview.innerHTML = "Đang tải danh sách chương cũ...";
-
-    const snapshot = await get(ref(db, `stories/${id}/chapters`));
-    
-    if (snapshot.exists()) {
-        chapterPreview.innerHTML = "<h4>Danh sách chương hiện có:</h4>";
-        snapshot.forEach(child => {
-            const ch = child.val();
-            chapterPreview.innerHTML += `
-                <div style="padding:5px; border-bottom:1px solid #eee; font-size: 13px;">
-                    <b>Chương ${ch.number}</b>: ${ch.title}
-                </div>`;
-        });
-    } else {
-        chapterPreview.innerHTML = "Chưa có chương nào.";
-    }
-};
-
-window.closePostModal = () => {
-    document.getElementById("postChapterModal").style.display = "none";
-};
-
-// Dán toàn bộ đoạn này vào DÒNG CUỐI CÙNG của file studio.js
-window.editStory = editStory;
-window.deleteStory = deleteStory;
-window.openPostModal = openPostModal;
-window.closePostModal = closePostModal;
-window.handleCreateStory = handleCreateStory;
-window.handleImportFile = handleImportFile;
-window.handleUploadContent = handleUploadContent;
-window.resetForm = resetForm;
-window.loadAdminStoryList = loadAdminStoryList; // Quan trọng để gọi được hàm này
+// --- GẮN HÀM VÀO WINDOW ĐỂ HTML GỌI ĐƯỢC ---
+Object.assign(window, {
+    handleCreateStory,
+    resetForm,
+    loadAdminStoryList,
+    handleImportFile,
+    handleUploadContent
+});

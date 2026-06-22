@@ -109,22 +109,32 @@ function loadGenresDropdown() {
 }
 
 /* ==========================================================================
-   5. BỘ LỌC ĐA THỂ LOẠI (Lọc truyện chứa TẤT CẢ các tag được chọn)
+   5. BỘ LỌC ĐIỀU KIỆN (Bản chuẩn cuối cùng cho chị)
    ========================================================================== */
-function loadStoriesByCondition(field, selectedTags, titleText) {
-    // selectedTags lúc này là một MẢNG, ví dụ: ["Vô Hạn Lưu", "Hài hước"]
+function loadStoriesByCondition(field, value, titleText) {
+    // 1. TÌM TÊN THẬT TỪ ID
+    let filterValue = value;
+    let finalTitle = titleText; // Tiêu đề mặc định
+    
+    if (field === 'genres' && typeof GENDERS !== 'undefined') {
+        const foundGenre = GENDERS.find(g => g.id === value);
+        if (foundGenre) {
+            filterValue = foundGenre.name; 
+            finalTitle = `📜 Thể loại: ${foundGenre.name}`; // Cập nhật tiêu đề hiển thị
+        }
+    }
+
     const searchSection = document.getElementById('searchResultsSection');
     const resultsGrid = document.getElementById('resultsGrid');
     const rowTitle = searchSection.querySelector('.row-title');
 
-    if (!searchSection || !resultsGrid) return;
-
-    if (rowTitle) rowTitle.innerText = titleText;
+    // Cập nhật tiêu đề hiển thị bằng finalTitle
+    if (rowTitle) rowTitle.innerText = finalTitle; 
+    
     searchSection.style.display = 'block';
     resultsGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang lọc tác phẩm...</div>';
     searchSection.scrollIntoView({ behavior: 'smooth' });
 
-    // Dùng db.ref V8 để lấy dữ liệu
     db.ref('stories').once('value').then((snapshot) => {
         resultsGrid.innerHTML = '';
         if (!snapshot.exists()) {
@@ -136,20 +146,18 @@ function loadStoriesByCondition(field, selectedTags, titleText) {
         snapshot.forEach((childSnapshot) => {
             const story = childSnapshot.val();
             const id = childSnapshot.key;
-            let match = true; // Mặc định giả định là khớp
+            let match = false;
 
-            if (field === 'genres' && story.genres) {
-                // Chuyển thể loại của truyện thành mảng chữ thường để so sánh
-                const storyGenres = Object.values(story.genres).map(g => String(g).trim().toLowerCase());
-                
-                // Kiểm tra: Phải chứa ĐỦ các tag trong danh sách selectedTags
-                selectedTags.forEach(tag => {
-                    if (!storyGenres.includes(String(tag).trim().toLowerCase())) {
-                        match = false; // Nếu thiếu 1 tag là loại ngay
-                    }
-                });
-            } else if (field !== 'genres') {
-                if (story[field] !== selectedTags[0]) match = false;
+            if (field === 'genres') {
+                const genresData = story.genres ? Object.values(story.genres) : [];
+                // So sánh bằng tên thật (filterValue)
+                if (genresData.some(g => String(g).trim().toLowerCase() === String(filterValue).trim().toLowerCase())) {
+                    match = true;
+                }
+            } else {
+                if (story[field] === value) {
+                    match = true;
+                }
             }
 
             if (match) {
@@ -159,7 +167,7 @@ function loadStoriesByCondition(field, selectedTags, titleText) {
         });
 
         if (!found) {
-            resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Không tìm thấy truyện nào có đủ các tag này 🐢</p>`;
+            resultsGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--smoke);">Không tìm thấy truyện nào có tag "${filterValue}" 🐢</p>`;
         }
     });
 }

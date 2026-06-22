@@ -109,7 +109,7 @@ function loadGenresDropdown() {
 }
 
 /* ==========================================================================
-   5. BỘ LỌC ĐIỀU KIỆN (Xổ dữ liệu ra vùng Tìm kiếm chuyên sâu)
+   5. BỘ LỌC ĐIỀU KIỆN (Đã sửa để lọc được cả Object và String)
    ========================================================================== */
 function loadStoriesByCondition(field, value, titleText) {
     const searchSection = document.getElementById('searchResultsSection');
@@ -123,7 +123,6 @@ function loadStoriesByCondition(field, value, titleText) {
     resultsGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang lọc tác phẩm...</div>';
     searchSection.scrollIntoView({ behavior: 'smooth' });
 
-    // LẤY HẾT TRUYỆN VỀ ĐỂ LỌC
     const storiesRef = ref(db, 'stories');
     get(storiesRef).then((snapshot) => {
         resultsGrid.innerHTML = '';
@@ -140,12 +139,13 @@ function loadStoriesByCondition(field, value, titleText) {
 
             // KIỂM TRA ĐIỀU KIỆN LỌC
             if (field === 'genres') {
-                // Nếu lọc theo thể loại, kiểm tra mảng genres
-                if (story.genres && Array.isArray(story.genres) && story.genres.includes(value)) {
+                // SỬA Ở ĐÂY: Chuyển Object các tag về mảng để kiểm tra
+                const genresData = story.genres ? Object.values(story.genres) : [];
+                if (genresData.includes(value)) {
                     match = true;
                 }
             } else {
-                // Lọc theo các trường khác như status, author
+                // Lọc theo status, author (giá trị đơn)
                 if (story[field] === value) {
                     match = true;
                 }

@@ -60,6 +60,30 @@ window.deleteChapter = (chapNum) => {
     }
 };
 
-// --- Ghi chú cho phần Import hàng loạt ---
-// Phần import cần dùng thêm thư viện (như mammoth.js cho .docx)
-// Chị muốn em làm chi tiết phần "Import hàng loạt" này luôn không?
+
+// Xử lý Import hàng loạt (đơn giản cho .txt)
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        // Giả sử file của chị chia chương bằng từ "Chương"
+        const lines = text.split(/Chương \d+/i); 
+        const preview = document.getElementById('previewList');
+        preview.innerHTML = '<h3>Dữ liệu đã tách (rà soát lại trước khi đăng):</h3>';
+        
+        lines.forEach((content, index) => {
+            if(content.trim().length > 0) {
+                const item = document.createElement('div');
+                item.style.border = "1px solid #ddd";
+                item.style.padding = "10px";
+                item.style.marginBottom = "5px";
+                item.innerHTML = `<strong>Chương ${index + 1}</strong>: ${content.substring(0, 50)}...`;
+                preview.appendChild(item);
+            }
+        });
+    };
+    reader.readAsText(file);
+});

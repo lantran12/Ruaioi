@@ -88,27 +88,18 @@ function loadAdminStoryList() {
         item.id = `story-${id}`; 
         item.style = "padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; margin-bottom: 10px; border-radius: 12px;";
         
-        item.innerHTML = `
-            <div>
-                <h4 style="margin: 0; font-size: 16px;">${story.title}</h4>
-                <small style="color: #777;">ID: ${id}</small>
-            </div>
-            <div style="display: flex; gap: 5px;">
-                <button onclick="editStory('${id}')" 
-                        style="background: #fff3bf; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">
-                    Sửa
-                </button>
-                <button onclick="deleteStory('${id}')" 
-                        style="background: #ffdede; color: #d90429; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">
-                    Xóa
-                </button>
-                
-                <button onclick="window.location.href='post-chapter.html?id=${id}'" 
-                style="background: #e0f2f1; color: #00796b; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">
-                    Đăng chương
-                </button>
-            </div>
-        `;
+        // Thay đoạn hiển thị nút trong hàm loadAdminStoryList bằng cái này:
+item.innerHTML = `
+    <div>
+        <h4 style="margin: 0; font-size: 16px;">${story.title}</h4>
+        <small style="color: #777;">ID: ${id}</small>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button onclick="editStory('${id}')" style="background: #fff3bf; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer;">Sửa</button>
+        <button onclick="deleteStory('${id}')" style="background: #ffdede; color: #d90429; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer;">Xóa</button>
+        <a href="post-chapter.html?id=${id}" style="background: #e0f2f1; color: #00796b; padding: 6px 12px; border-radius: 20px; font-size: 12px; text-decoration: none; font-weight: bold;">Đăng chương</a>
+    </div>
+`;
         listContainer.appendChild(item);
     }); 
 }

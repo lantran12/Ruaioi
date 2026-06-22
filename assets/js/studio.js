@@ -68,13 +68,13 @@ function loadAdminStoryList() {
         const id = snapshot.key;
         
         const item = document.createElement('div');
-        item.style = "padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; margin-bottom: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);";
+        item.style = "padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; margin-bottom: 10px; border-radius: 12px;";
         item.innerHTML = `
             <div>
                 <h4 style="margin: 0; font-size: 16px;">${story.title}</h4>
-                <small style="color: #777;">Tác giả: ${story.author}</small>
+                <small style="color: #777;">ID: ${id}</small>
             </div>
-            <button onclick="window.location.href='edit-story.html?id=${id}'" 
+            <button onclick="editStory('${id}')" 
                     style="background: #ff4d6d; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; cursor: pointer;">
                 Sửa
             </button>
@@ -141,4 +141,30 @@ window.handleUploadContent = function() {
     // Chị có thể dùng FileReader để đọc nội dung file .txt
     console.log("Đang chuẩn bị đăng chương cho truyện ID:", storyId);
     alert("Đang xử lý file cho truyện: " + storyId + ". Chị đợi xíu nhé...");
+};
+
+window.editStory = function(id) {
+    const storyRef = ref(db, 'stories/' + id);
+    
+    get(storyRef).then((snapshot) => {
+        if (snapshot.exists()) {
+            const story = snapshot.val();
+            
+            // 1. Điền dữ liệu vào form
+            document.getElementById('idInput').value = id;
+            document.getElementById('idInput').readOnly = true; // Khóa ID không cho sửa
+            document.getElementById('titleInput').value = story.title || "";
+            document.getElementById('authorInput').value = story.author || "";
+            document.getElementById('coverInput').value = story.cover || "";
+            document.getElementById('descInput').value = story.description || "";
+            document.getElementById('statusSelect').value = story.status || "Đang cập nhật";
+            
+            // 2. Cuộn lên đầu trang để chị thấy form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // 3. Đổi nút "Đăng tải" thành "Cập nhật" (nếu cần)
+            // Hoặc đơn giản là dùng hàm handleCreateStory để cập nhật luôn
+            alert("Đã tải dữ liệu truyện: " + story.title + ". Chị có thể sửa rồi nhấn Đăng tải để cập nhật!");
+        }
+    });
 };

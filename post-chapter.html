@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng chương | Rùa Novel Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Quicksand', sans-serif; background: #fafafa; padding-top: 80px; margin: 0; }
+        .studio-container { max-width: 800px; margin: 0 auto 30px auto; padding: 0 20px; }
+        .form-section { padding: 25px; border: 1px solid #eee; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        .btn-action { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; background: #ff4d6d; color: white; transition: 0.3s; }
+        .btn-action:hover { background: #ff758f; }
+    </style>
+</head>
+<body>
+
+<main class="studio-container">
+    <div class="form-section">
+        <h2 style="margin-top: 0;">Đăng chương cho: <span id="currentStoryTitle" style="color: #ff4d6d;">...</span></h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Số chương</label>
+                <input type="number" id="chapNumber" class="form-control" placeholder="Ví dụ: 1">
+            </div>
+            <div class="form-group">
+                <label>Tên chương</label>
+                <input type="text" id="chapTitle" class="form-control" placeholder="Tên chương (không bắt buộc)">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Nội dung chương</label>
+            <textarea id="chapContent" class="form-control" rows="15" placeholder="Dán nội dung truyện vào đây..."></textarea>
+        </div>
+
+        <button id="submitBtn" onclick="uploadChapter()" class="btn-action">Đăng chương ngay</button>
+        <button onclick="window.history.back()" class="btn-action" style="background:#f3f4f6; color:#666; margin-top:10px;">Quay lại</button>
+    </div>
+</main>
+
+<script type="module">
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { db } from "./assets/js/firebase.js"; // Đảm bảo đường dẫn này đúng với file firebase.js của chị
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const storyId = urlParams.get('id');
+    const btn = document.getElementById('submitBtn');
+
+    // 1. Lấy tên truyện hiển thị lên tiêu đề
+    if (storyId) {
+        get(ref(db, 'stories/' + storyId)).then(snap => {
+            if (snap.exists()) {
+                document.getElementById('currentStoryTitle').innerText = snap.val().title;
+            }
+        });
+    }
+
+    // 2. Hàm đăng chương
+    window.uploadChapter = async () => {
+        const num = document.getElementById('chapNumber').value;
+        const title = document.getElementById('chapTitle').value;
+        const content = document.getElementById('chapContent').value;
+
+        if (!num || !content) { alert("Chị ơi, điền số chương và nội dung nhé!"); return; }
+
+        btn.innerText = "Đang đăng...";
+        btn.disabled = true;
+
+        try {
+            // Đẩy chương vào Firebase
+            await set(ref(db, `stories/${storyId}/chapters/chap_${num}`), {
+                title: title,
+                content: content,
+                updatedAt: Date.now()
+            });
+
+            // Cập nhật số chương mới nhất vào thông tin truyện để web hiển thị
+            await update(ref(db, `stories/${storyId}`), {
+                latestChapter: num,
+                updatedAt: new Date().toLocaleDateString()
+            });
+
+            alert("🎉 Đăng chương " + num + " thành công!");
+            window.location.href = "studio.html"; 
+        } catch (error) {
+            alert("Có lỗi xảy ra: " + error.message);
+            btn.innerText = "Đăng chương ngay";
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

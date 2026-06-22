@@ -179,20 +179,40 @@ window.editStory = function(id) {
         if (snapshot.exists()) {
             const story = snapshot.val();
             
-            // 1. Điền dữ liệu vào form
+            // 1. Điền các ô Text và Select
             document.getElementById('idInput').value = id;
-            document.getElementById('idInput').readOnly = true; // Khóa ID không cho sửa
+            document.getElementById('idInput').readOnly = true; // Khóa ID
             document.getElementById('titleInput').value = story.title || "";
             document.getElementById('authorInput').value = story.author || "";
             document.getElementById('coverInput').value = story.cover || "";
             document.getElementById('descInput').value = story.description || "";
             document.getElementById('statusSelect').value = story.status || "Đang cập nhật";
             
-            // 2. Cuộn lên đầu trang để chị thấy form
+            // Điền Note (Nếu chị có input id="editorNote")
+            if (document.getElementById('editorNote')) {
+                document.getElementById('editorNote').value = story.editorNote || "";
+            }
+            
+            // 2. XỬ LÝ CHECKBOX THỂ LOẠI
+            // Bỏ tích tất cả trước
+            document.querySelectorAll('#genreModalContainer input').forEach(cb => cb.checked = false);
+            
+            // Nếu truyện có lưu thể loại thì tích vào các ô tương ứng
+            if (story.genres && Array.isArray(story.genres)) {
+                story.genres.forEach(genreValue => {
+                    const cb = document.querySelector(`#genreModalContainer input[value="${genreValue}"]`);
+                    if (cb) cb.checked = true;
+                });
+                // Cập nhật text hiển thị (nếu chị có dùng nó)
+                const textDisplay = document.getElementById('selectedGenresText');
+                if (textDisplay) {
+                    textDisplay.innerText = "Đã chọn: " + story.genres.join(", ");
+                }
+            }
+            
+            // 3. Cuộn lên đầu trang
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            // 3. Đổi nút "Đăng tải" thành "Cập nhật" (nếu cần)
-            // Hoặc đơn giản là dùng hàm handleCreateStory để cập nhật luôn
             alert("Đã tải dữ liệu truyện: " + story.title + ". Chị có thể sửa rồi nhấn Đăng tải để cập nhật!");
         }
     });

@@ -209,7 +209,7 @@
         });
 
         // Hiển thị giao diện xem trước và nút bấm Lưu hàng loạt
-        document.getElementById('chapterCountBadge').innerText = `${parsedChaptersList.length} chương`;
+        console.log("Đã import xong số chương: " + parsedChaptersList.length);
         document.getElementById('previewSection').style.display = 'block';
         document.getElementById('btnConfirmImport').style.display = 'block';
     }
@@ -268,6 +268,62 @@
     parsedChaptersList = [];
     document.getElementById('btnConfirmImport').style.display = 'none';
 }
+    async function uploadSingle() {
+    const storyId = document.getElementById('selectedStoryId').value; // Chị nhớ đảm bảo trang có chọn truyện này nhé
+    const chapNum = document.getElementById('mChapNum').value;
+    const chapTitle = document.getElementById('mChapTitle').value;
+    const chapContent = document.getElementById('mChapContent').value;
+
+    if (!storyId || !chapNum || !chapTitle || !chapContent) {
+        return alert("Chị Trân ơi, điền đầy đủ thông tin rồi hãy đăng nha! 🐢");
+    }
+
+    try {
+        // Đẩy chương lên
+        await db.ref(`chapters/${storyId}/${chapNum}`).set({
+            title: chapTitle,
+            number: parseInt(chapNum),
+            content: chapContent,
+            status: "Công khai",
+            createdAt: Date.now(),
+            views: 0
+        });
+
+        // Cập nhật thông tin truyện (Số chương mới nhất và Ngày cập nhật)
+        updateStoryMetadata(storyId, chapNum);
+
+        alert("Đăng chương thành công rồi chị ơi! 🎉");
+        
+        // Xóa trắng form để đăng tiếp
+        document.getElementById('mChapNum').value = '';
+        document.getElementById('mChapTitle').value = '';
+        document.getElementById('mChapContent').value = '';
+        
+    } catch (err) {
+        alert("Có lỗi xảy ra: " + err.message);
+    }
+}
+    // Thêm đoạn này vào phần <script> của trang post-chapter.html
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const storyIdFromUrl = urlParams.get('id'); // ID này lấy từ ?id=... trong link
+
+    if (storyIdFromUrl) {
+        // Tìm ô chọn truyện trong trang Đăng chương (dựa theo code của chị là 'storySelect')
+        const selectElement = document.getElementById('storySelect');
+        
+        // Gọi hàm load danh sách truyện trước để có option, rồi mới set value
+        loadStoryListForSelect(); 
+        
+        // Đợi 1 chút cho list load xong rồi mới chọn ID
+        setTimeout(() => {
+            if (selectElement) {
+                selectElement.value = storyIdFromUrl;
+                // Nếu chị có hiển thị tên truyện đã chọn, có thể thêm logic ở đây
+            }
+        }, 500); 
+    }
+});
 </script>
 </body>
 </html>

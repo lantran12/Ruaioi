@@ -8,17 +8,30 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: 'Quicksand', sans-serif; background: #fafafa; padding: 20px; }
-        .wrapper { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .tab { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab button { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: #eee; }
-        .tab button.active { background: #ff4d6d; color: white; }
-        .section { display: none; }
-        .section.active { display: block; }
-        .form-control { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #ff4d6d; color: white; font-weight: 700; cursor: pointer; }
-    </style>
+    body { font-family: 'Quicksand', sans-serif; background: #fafafa; padding: 15px; margin: 0; }
+    .wrapper { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .tab { display: flex; gap: 5px; margin-bottom: 20px; }
+    .tab button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: #eee; font-size: 14px; }
+    .tab button.active { background: #ff4d6d; color: white; }
+    .form-control { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+    .btn-main { width: 100%; padding: 16px; border: none; border-radius: 8px; background: #ff4d6d; color: white; font-weight: 700; cursor: pointer; font-size: 16px; }
+    .section { display: none; }
+    .section.active { display: block; }
+    h2 { font-size: 18px; color: #333; margin-bottom: 20px; }
+    textarea { min-height: 200px; }
+</style>
 </head>
+    <header class="netflix-header">
+    <div class="header-left-zone">
+        <div class="logo">
+            <a href="index.html">Rùa<span>Novel</span></a>
+            <span style="font-size: 0.9rem; color: #666; margin-left: 10px;">| Studio</span>
+        </div>
+    </div>
+    <div class="header-right-zone">
+        <button class="btn-back" onclick="window.location.href='studio.html'" style="background:#ffe5ec;color:#ff4d6d;border:none;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;">Về Studio</button>
+    </div>
+</header>
 <body>
 
 <div class="wrapper">

@@ -2,96 +2,121 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng chương | Rùa Novel Studio</title>
+    <title>Rùa Novel Studio | Đăng Chương</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: 'Quicksand', sans-serif; background: #fafafa; padding-top: 80px; margin: 0; }
-        .post-chapter-container { max-width: 800px; margin: 0 auto 30px auto; padding: 0 20px; }
-        .form-section { padding: 25px; border: 1px solid #eee; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
-        .btn-action { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; background: #ff4d6d; color: white; transition: 0.3s; }
-        .btn-action:hover { background: #ff758f; }
+        body { font-family: 'Quicksand', sans-serif; background: #fafafa; padding: 20px; }
+        .wrapper { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .tab { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab button { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: #eee; }
+        .tab button.active { background: #ff4d6d; color: white; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .form-control { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #ff4d6d; color: white; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<main class="studio-container">
-    <div class="form-section">
-        <h2 style="margin-top: 0;">Đăng chương cho: <span id="currentStoryTitle" style="color: #ff4d6d;">...</span></h2>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div class="form-group">
-                <label>Số chương</label>
-                <input type="number" id="chapNumber" class="form-control" placeholder="Ví dụ: 1">
-            </div>
-            <div class="form-group">
-                <label>Tên chương</label>
-                <input type="text" id="chapTitle" class="form-control" placeholder="Tên chương (không bắt buộc)">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Nội dung chương</label>
-            <textarea id="chapContent" class="form-control" rows="15" placeholder="Dán nội dung truyện vào đây..."></textarea>
-        </div>
-
-        <button id="submitBtn" onclick="uploadChapter()" class="btn-action">Đăng chương ngay</button>
-        <button onclick="window.history.back()" class="btn-action" style="background:#f3f4f6; color:#666; margin-top:10px;">Quay lại</button>
+<div class="wrapper">
+    <h2 id="storyTitle">Đăng chương cho: ...</h2>
+    <div class="tab">
+        <button class="active" onclick="showTab('single', this)">Đăng lẻ</button>
+        <button onclick="showTab('bulk', this)">Import Hàng Loạt</button>
     </div>
-</main>
 
-<script type="module">
-    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-    import { db } from "./assets/js/firebase.js"; // Đảm bảo đường dẫn này đúng với file firebase.js của chị
+    <div id="single-section" class="section active">
+        <input type="number" id="chapNum" class="form-control" placeholder="Số chương">
+        <input type="text" id="chapTitle" class="form-control" placeholder="Tên chương">
+        <input type="text" id="chapPass" class="form-control" placeholder="Mật khẩu (nếu có)">
+        <textarea id="chapContent" class="form-control" rows="10" placeholder="Nội dung..."></textarea>
+        <button class="btn-main" onclick="uploadSingle()">Đăng chương ngay</button>
+    </div>
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const storyId = urlParams.get('id');
-    const btn = document.getElementById('submitBtn');
+    <div id="bulk-section" class="section">
+        <input type="file" id="fileInput" onchange="handleBulkImport(this)" accept=".txt,.docx" class="form-control">
+        <div id="previewTableBody"></div>
+        <button id="btnConfirmImport" class="btn-main" style="display:none;" onclick="saveAllChaptersToFirebase()">Xác Nhận Import Hàng Loạt</button>
+    </div>
+</div>
 
-    // 1. Lấy tên truyện hiển thị lên tiêu đề
-    if (storyId) {
-        get(ref(db, 'stories/' + storyId)).then(snap => {
-            if (snap.exists()) {
-                document.getElementById('currentStoryTitle').innerText = snap.val().title;
-            }
-        });
+<script>
+    // Cấu hình Firebase của chị
+    const firebaseConfig = {
+        apiKey: "AIzaSyBimiEGQcW9at2pOxfdUaJHjim2fmyjjcc",
+        authDomain: "dongchanrua.firebaseapp.com",
+        databaseURL: "https://dongchanrua-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "dongchanrua",
+        storageBucket: "dongchanrua.firebasestorage.app",
+        messagingSenderId: "640115424540",
+        appId: "1:640115424540:web:c9713b7921c09283150ed9"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    const storyId = new URLSearchParams(window.location.search).get('id');
+    let parsedChaptersList = [];
+
+    // Lấy tên truyện
+    db.ref('stories/' + storyId).once('value').then(s => { if(s.exists()) document.getElementById('storyTitle').innerText = "Đăng cho: " + s.val().title; });
+
+    function showTab(type, btn) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab button').forEach(b => b.classList.remove('active'));
+        document.getElementById(type + '-section').classList.add('active');
+        btn.classList.add('active');
     }
 
-    // 2. Hàm đăng chương
-    window.uploadChapter = async () => {
-        const num = document.getElementById('chapNumber').value;
-        const title = document.getElementById('chapTitle').value;
-        const content = document.getElementById('chapContent').value;
+    // Đăng lẻ
+    async function uploadSingle() {
+        const num = document.getElementById('chapNum').value;
+        await db.ref(`stories/${storyId}/chapters/chap_${num}`).set({
+            title: document.getElementById('chapTitle').value,
+            content: document.getElementById('chapContent').value,
+            password: document.getElementById('chapPass').value,
+            updatedAt: Date.now()
+        });
+        alert("Đăng thành công!");
+    }
 
-        if (!num || !content) { alert("Chị ơi, điền số chương và nội dung nhé!"); return; }
+    // Import (Hàm của chị)
+    function handleBulkImport(input) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) { 
+            const text = e.target.result;
+            // Thuật toán tách chương của chị
+            const lines = text.split(/\r?\n/);
+            const regex = /^\s*Chương\s+(\d+)\s*[:\-\s]\s*(.*)$/i;
+            let current = null;
+            parsedChaptersList = [];
 
-        btn.innerText = "Đang đăng...";
-        btn.disabled = true;
+            lines.forEach(line => {
+                const match = line.match(regex);
+                if(match) {
+                    if(current) parsedChaptersList.push(current);
+                    current = { number: match[1], title: line, content: "" };
+                } else if(current) current.content += line + "\n";
+            });
+            if(current) parsedChaptersList.push(current);
+            document.getElementById('btnConfirmImport').style.display = 'block';
+            alert("Đã bóc tách xong " + parsedChaptersList.length + " chương!");
+        };
+        reader.readAsText(file);
+    }
 
-        try {
-            // Đẩy chương vào Firebase
-            await set(ref(db, `stories/${storyId}/chapters/chap_${num}`), {
-                title: title,
-                content: content,
+    async function saveAllChaptersToFirebase() {
+        for(let ch of parsedChaptersList) {
+            await db.ref(`stories/${storyId}/chapters/chap_${ch.number}`).set({
+                title: ch.title,
+                content: ch.content,
                 updatedAt: Date.now()
             });
-
-            // Cập nhật số chương mới nhất vào thông tin truyện để web hiển thị
-            await update(ref(db, `stories/${storyId}`), {
-                latestChapter: num,
-                updatedAt: new Date().toLocaleDateString()
-            });
-
-            alert("🎉 Đăng chương " + num + " thành công!");
-            window.location.href = "studio.html"; 
-        } catch (error) {
-            alert("Có lỗi xảy ra: " + error.message);
-            btn.innerText = "Đăng chương ngay";
-            btn.disabled = false;
         }
+        alert("Import hoàn tất!");
     }
 </script>
 </body>

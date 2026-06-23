@@ -324,7 +324,7 @@ window.handleConfirmUpload = function() {
             const content = lines.slice(1).join('\n'); // Phần còn lại làm nội dung
             
             // Gọi hàm save cho từng chương
-            saveChapterToFirebase(storyId, num, title, content);
+         saveChapterToFirebase(storyId, num, title, content, true); 
         });
         
         alert("Đã bắt đầu đăng toàn bộ chương lên!");

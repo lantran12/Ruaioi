@@ -29,29 +29,54 @@
         </div>
     </header>
 
-    <div class="book-container">
-        <h2 id="storyTitle" style="font-family: 'Playfair Display', serif;">Đang tải tên truyện...</h2>
-        <div id="chapterList" class="chapter-list">
-            <p>Đang tải danh sách chương...</p>
+<div class="book-container">
+        <div class="book-header">
+            <img id="storyCover" src="" alt="Bìa">
+            <div class="info">
+                <h1 id="storyTitle">Đang tải...</h1>
+                <p><strong>✒️ Tác giả:</strong> <span id="storyAuthor"></span></p>
+                <p><strong>🚀 Editor:</strong> <span id="storyEditor"></span></p>
+                <div id="storyGenres"></div>
+                <p id="storyDesc"></p>
+            </div>
+        </div>
+        <div class="table-of-contents">
+            <h3>🗂️ MỤC LỤC</h3>
+            <div id="chapterList"></div>
         </div>
     </div>
-<div class="hero-section">
-    <img id="storyCover" src="" class="hero-img">
-    <div class="hero-info">
-        <h1 id="storyTitle">...</h1>
-        <p><strong>Tác giả:</strong> <span id="storyAuthor"></span></p>
-        <p><strong>Editor:</strong> <span id="storyEditor"></span></p>
-        <div id="genreTags" style="margin: 10px 0; display: flex; gap: 10px;"></div>
-        <p id="storyDesc" style="color: #a3a3a3;"></p>
-        <button id="btnLatest" class="btn-netflix" onclick="goToLatest()">Đọc chương mới nhất</button>
-    </div>
-</div>
 
-<div class="chapter-container">
-    <h3>Danh sách chương</h3>
-    <div id="chapterList" class="chapter-list"></div>
-    <div id="pagination" style="margin-top: 20px; text-align: center;"></div>
-</div>
-    <script type="module" src="book.js"></script>
+    <script type="module">
+        import { db } from "./firebase.js";
+        import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        const storyId = new URLSearchParams(window.location.search).get('id');
+        
+        async function loadBook() {
+            // Lấy info truyện
+            const sSnap = await get(ref(db, `stories/${storyId}`));
+            if (sSnap.exists()) {
+                const s = sSnap.val();
+                document.getElementById('storyTitle').innerText = s.title;
+                document.getElementById('storyAuthor').innerText = s.author;
+                document.getElementById('storyEditor').innerText = s.editor;
+                document.getElementById('storyDesc').innerText = s.description;
+                document.getElementById('storyCover').src = s.cover;
+                if(s.genres) document.getElementById('storyGenres').innerHTML = s.genres.map(g => `<span class="tag-item">${g}</span>`).join('');
+            }
+
+            // Lấy danh sách chương
+            const cSnap = await get(ref(db, `chapters/${storyId}`));
+            const listDiv = document.getElementById('chapterList');
+            if (cSnap.exists()) {
+                const chapters = Object.entries(cSnap.val()).map(([id, val]) => ({id, ...val}))
+                                     .sort((a,b) => a.createdAt - b.createdAt);
+                listDiv.innerHTML = chapters.map(ch => 
+                    `<a href="read.html?truyen=${storyId}&id=${ch.id}" class="chapter-item">${ch.title}</a>`
+                ).join('');
+            }
+        }
+        loadBook();
+    </script>
 </body>
 </html>

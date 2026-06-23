@@ -290,16 +290,23 @@ window.handleConfirmUpload = function() {
     const storyId = document.getElementById('modalStoryId').value;
     
     if (isSingle) {
-        // Tab Đăng lẻ
-        const title = document.getElementById('singleChapterName').value;
+        const num = document.getElementById('singleChapterNumber').value;
+        const name = document.getElementById('singleChapterTitle').value;
         const content = document.getElementById('singleContent').value;
-        if (!title || !content) return alert("Chị điền đủ tên và nội dung nhé!");
-        saveChapterToFirebase(storyId, title, content);
+        
+        if (!num || !name || !content) return alert("Chị điền đủ các ô nhé!");
+        
+        saveChapterToFirebase(storyId, `Chương ${num}: ${name}`, content);
     } else {
-        // Tab Import hàng loạt (Chưa code thuật toán tách chương)
-        const fileInput = document.getElementById('bulkFileInput');
-        if (fileInput.files.length === 0) return alert("Chị chưa chọn file kìa!");
-        alert("Đang xử lý import hàng loạt... (Đang hoàn thiện)");
+        // Đăng hàng loạt đã tách sẵn trong window.bulkData
+        if (!window.bulkData) return alert("Chị chưa chọn file hoặc file trống!");
+        
+        window.bulkData.forEach(chapter => {
+            const lines = chapter.split('\n');
+            saveChapterToFirebase(storyId, lines[0], lines.slice(1).join('\n'));
+        });
+        alert("Đã đăng toàn bộ chương lên!");
+        closePostModal();
     }
 };
 
@@ -326,32 +333,34 @@ window.processBulkFile = function() {
     const fileInput = document.getElementById('bulkFileInput');
     const previewContainer = document.getElementById('bulkPreview');
     const file = fileInput.files[0];
-    
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(e) {
-        const text = e.target.result;
+    reader.onload = function(loadEvent) {
+        const arrayBuffer = loadEvent.target.result;
         
-        // Regex này sẽ tách nội dung mỗi khi gặp từ "Chương" và một số theo sau
-        // Ví dụ: Chương 1, Chương 01, Chương 123
-        const chapters = text.split(/(?=Chương\s+\d+)/i);
-        
-        previewContainer.innerHTML = ""; // Xóa dữ liệu cũ
-        chapters.forEach((content, index) => {
-            if (content.trim().length > 0) {
-                const div = document.createElement('div');
-                div.style = "padding: 10px; border-bottom: 1px solid #eee; font-size: 13px;";
-                div.innerHTML = `<strong>${content.substring(0, 30)}...</strong> (Độ dài: ${content.length})`;
-                previewContainer.appendChild(div);
-            }
-        });
-        
-        window.bulkData = chapters; // Lưu tạm vào biến toàn cục để xác nhận đăng
-        alert("Đã tách xong " + chapters.length + " chương. Chị kiểm tra xem đúng chưa nhé!");
+        // Dùng Mammoth để đọc .docx sạch đẹp
+        mammoth.extractRawText({arrayBuffer: arrayBuffer})
+            .then(result => {
+                const text = result.value;
+                // Regex: Tìm các dòng bắt đầu bằng "Chương" và số
+                // Dấu (?=...) là để giữ lại tiêu đề khi split
+                const chapters = text.split(/(?=Chương\s+\d+[:\s])/i);
+                
+                previewContainer.innerHTML = "";
+                chapters.forEach((content, index) => {
+                    if (content.trim().length > 0) {
+                        const div = document.createElement('div');
+                        div.style = "padding: 8px; border-bottom: 1px solid #eee; font-size: 13px;";
+                        // Lấy dòng đầu làm tên chương
+                        const title = content.split('\n')[0]; 
+                        div.innerHTML = `✅ <b>${title}</b>`;
+                        previewContainer.appendChild(div);
+                    }
+                });
+                window.bulkData = chapters;
+            })
+            .catch(err => alert("Lỗi đọc file: " + err));
     };
-    reader.readAsText(file, "UTF-8");
+    reader.readAsArrayBuffer(file);
 };
-
-// --- 2. Kết nối sự kiện chọn file vào hàm trên ---
-document.getElementById('bulkFileInput').addEventListener('change', processBulkFile);

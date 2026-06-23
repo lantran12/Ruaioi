@@ -35,7 +35,23 @@
             <p>Đang tải danh sách chương...</p>
         </div>
     </div>
+<div class="hero-section">
+    <img id="storyCover" src="" class="hero-img">
+    <div class="hero-info">
+        <h1 id="storyTitle">...</h1>
+        <p><strong>Tác giả:</strong> <span id="storyAuthor"></span></p>
+        <p><strong>Editor:</strong> <span id="storyEditor"></span></p>
+        <div id="genreTags" style="margin: 10px 0; display: flex; gap: 10px;"></div>
+        <p id="storyDesc" style="color: #a3a3a3;"></p>
+        <button id="btnLatest" class="btn-netflix" onclick="goToLatest()">Đọc chương mới nhất</button>
+    </div>
+</div>
 
+<div class="chapter-container">
+    <h3>Danh sách chương</h3>
+    <div id="chapterList" class="chapter-list"></div>
+    <div id="pagination" style="margin-top: 20px; text-align: center;"></div>
+</div>
     <script type="module" src="book.js"></script>
 </body>
 </html>

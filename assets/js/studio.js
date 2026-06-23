@@ -300,7 +300,6 @@ window.switchModalTab = function(type) {
 
 
 
-// Hàm xử lý khi bấm xác nhận đăng
 window.handleConfirmUpload = function() {
     const isSingle = document.getElementById('tab-single').style.display !== 'none';
     const storyId = document.getElementById('modalStoryId').value;
@@ -312,36 +311,52 @@ window.handleConfirmUpload = function() {
         
         if (!num || !name || !content) return alert("Chị điền đủ các ô nhé!");
         
-        saveChapterToFirebase(storyId, `Chương ${num}: ${name}`, content);
+        // Gọi hàm save mới với tham số số chương (num)
+        saveChapterToFirebase(storyId, num, `Chương ${num}: ${name}`, content);
     } else {
-        // Đăng hàng loạt đã tách sẵn trong window.bulkData
-        if (!window.bulkData) return alert("Chị chưa chọn file hoặc file trống!");
+        // Đăng hàng loạt
+        if (!window.bulkData || window.bulkData.length === 0) return alert("Chị chưa chọn file hoặc file trống!");
         
-        window.bulkData.forEach(chapter => {
-            const lines = chapter.split('\n');
-            saveChapterToFirebase(storyId, lines[0], lines.slice(1).join('\n'));
+        window.bulkData.forEach((chapter, index) => {
+            const num = index + 1; // Số thứ tự chương tăng dần
+            const lines = chapter.trim().split('\n');
+            const title = lines[0]; // Dòng đầu làm tiêu đề
+            const content = lines.slice(1).join('\n'); // Phần còn lại làm nội dung
+            
+            // Gọi hàm save cho từng chương
+            saveChapterToFirebase(storyId, num, title, content);
         });
-        alert("Đã đăng toàn bộ chương lên!");
+        
+        alert("Đã bắt đầu đăng toàn bộ chương lên!");
         closePostModal();
     }
 };
 
-
-function saveChapterToFirebase(storyId, title, content) {
-    // Đẩy lên Firebase
-    push(ref(db, 'chapters/' + storyId), {
+// Thêm tham số 'chapterNumber' vào hàm
+// Thêm tham số 'isBulk' (mặc định là false)
+function saveChapterToFirebase(storyId, chapterNumber, title, content, isBulk = false) {
+    const formattedNum = String(chapterNumber).padStart(3, '0');
+    const chapterKey = `chuong_${formattedNum}`; 
+    
+    const chapterRef = ref(db, `chapters/${storyId}/${chapterKey}`);
+    
+    set(chapterRef, {
         title: title,
         content: content,
         createdAt: Date.now(),
-        updatedAt: Date.now() // Thêm thời gian cập nhật
+        updatedAt: Date.now()
     }).then(() => {
-        alert("Đăng chương thành công!");
-        closePostModal();
-        // Xóa trắng form sau khi đăng
-        document.getElementById('singleChapterName').value = "";
-        document.getElementById('singleContent').value = "";
+        // Chỉ hiện thông báo và đóng modal nếu KHÔNG phải đăng hàng loạt
+        if (!isBulk) {
+            alert("Đã đăng xong: " + chapterKey);
+            closePostModal();
+            // Reset form
+            document.getElementById('singleChapterNumber').value = "";
+            document.getElementById('singleChapterTitle').value = "";
+            document.getElementById('singleContent').value = "";
+        }
     }).catch(error => {
-        alert("Có lỗi xảy ra: " + error.message);
+        alert("Lỗi rồi chị ơi: " + error.message);
     });
 }
 window.processBulkFile = function() {

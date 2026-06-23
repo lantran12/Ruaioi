@@ -290,23 +290,33 @@ window.handleConfirmUpload = function() {
     const storyId = document.getElementById('modalStoryId').value;
     
     if (isSingle) {
+        // Tab Đăng lẻ
         const title = document.getElementById('singleChapterName').value;
         const content = document.getElementById('singleContent').value;
-        if (!title || !content) return alert("Chị điền đủ thông tin nhé!");
+        if (!title || !content) return alert("Chị điền đủ tên và nội dung nhé!");
         saveChapterToFirebase(storyId, title, content);
     } else {
-        // Logic cho hàng loạt: Duyệt qua các item trong bulkPreview và push từng cái
-        alert("Đang xử lý import hàng loạt...");
+        // Tab Import hàng loạt (Chưa code thuật toán tách chương)
+        const fileInput = document.getElementById('bulkFileInput');
+        if (fileInput.files.length === 0) return alert("Chị chưa chọn file kìa!");
+        alert("Đang xử lý import hàng loạt... (Đang hoàn thiện)");
     }
 };
 
 function saveChapterToFirebase(storyId, title, content) {
+    // Đẩy lên Firebase
     push(ref(db, 'chapters/' + storyId), {
         title: title,
         content: content,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        updatedAt: Date.now() // Thêm thời gian cập nhật
     }).then(() => {
-        alert("Đăng thành công!");
+        alert("Đăng chương thành công!");
         closePostModal();
+        // Xóa trắng form sau khi đăng
+        document.getElementById('singleChapterName').value = "";
+        document.getElementById('singleContent').value = "";
+    }).catch(error => {
+        alert("Có lỗi xảy ra: " + error.message);
     });
 }

@@ -92,14 +92,28 @@
 </section>
 
 <div id="postChapterModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px;">
-        <h3>Đăng chương mới</h3>
-        <p id="modalStoryTitle" style="font-weight: bold; color: #ff4d6d;"></p>
-        <input type="hidden" id="modalStoryId">
-        <input type="file" id="chapterFileInput" class="form-control" accept=".txt,.docx" style="margin-bottom: 15px;">
-        <div style="display: flex; gap: 10px;">
+    <div style="background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+        <h3 id="modalStoryTitle">Đăng chương</h3>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button onclick="switchModalTab('single')" class="btn-action btn-primary" id="btn-single">Đăng lẻ</button>
+            <button onclick="switchModalTab('bulk')" class="btn-action btn-reset" id="btn-bulk">Import hàng loạt</button>
+        </div>
+
+        <div id="tab-single">
+            <input type="text" id="singleChapterName" class="form-control" placeholder="Tên chương: Chương 1: Tên chương">
+            <textarea id="singleContent" class="form-control" rows="10" placeholder="Dán nội dung chương vào đây..."></textarea>
+        </div>
+
+        <div id="tab-bulk" style="display: none;">
+            <input type="file" id="bulkFileInput" class="form-control" accept=".txt,.docx">
+            <div id="bulkPreview" style="margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+                </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button onclick="closePostModal()" class="btn-action btn-reset">Đóng</button>
-            <button onclick="handleUploadContent()" class="btn-action btn-primary">Xác nhận đăng</button>
+            <button onclick="handleConfirmUpload()" class="btn-action btn-primary">Xác nhận đăng</button>
         </div>
     </div>
 </div>

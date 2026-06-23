@@ -176,7 +176,7 @@ window.editStory = function(id) {
             if (document.getElementById('editorNote')) {
                 document.getElementById('editorNote').value = story.editorNote || "";
             }
-
+openManageChapterModal(id, story.title);
             
             // 2. XỬ LÝ CHECKBOX THỂ LOẠI
             // Bỏ tích tất cả trước
@@ -393,4 +393,49 @@ window.processBulkFile = function() {
             .catch(err => alert("Lỗi đọc file: " + err));
     };
     reader.readAsArrayBuffer(file);
+};
+// 1. Hàm mở Modal Quản lý chương (Gọi khi bấm "Sửa" hoặc thêm một nút riêng)
+window.openManageChapterModal = function(storyId, storyTitle) {
+    const modal = document.getElementById('manageChapterModal');
+    const listContainer = document.getElementById('listChapterContainer');
+    document.getElementById('modalManageTitle').innerText = "Quản lý chương: " + storyTitle;
+    
+    listContainer.innerHTML = "Đang tải chương...";
+    modal.style.display = 'flex';
+
+    // Lấy danh sách chương từ Firebase
+    const chaptersRef = ref(db, `chapters/${storyId}`);
+    get(chaptersRef).then((snapshot) => {
+        listContainer.innerHTML = ""; // Xóa loading
+        if (!snapshot.exists()) {
+            listContainer.innerHTML = "Truyện này chưa có chương nào.";
+            return;
+        }
+
+        snapshot.forEach((child) => {
+            const chapter = child.val();
+            const chapterId = child.key;
+            
+            const div = document.createElement('div');
+            div.style = "display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;";
+            div.innerHTML = `
+                <span>${chapter.title}</span>
+                <div>
+                    <button onclick="editChapter('${storyId}', '${chapterId}')" style="background:#fff3bf; border:none; padding:5px 10px; border-radius:10px; cursor:pointer;">Sửa</button>
+                    <button onclick="deleteChapter('${storyId}', '${chapterId}')" style="background:#ffdede; color:red; border:none; padding:5px 10px; border-radius:10px; cursor:pointer;">Xóa</button>
+                </div>
+            `;
+            listContainer.appendChild(div);
+        });
+    });
+};
+
+// 2. Hàm xóa chương
+window.deleteChapter = function(storyId, chapterId) {
+    if(confirm("Chị có chắc muốn xóa chương này không?")) {
+        remove(ref(db, `chapters/${storyId}/${chapterId}`)).then(() => {
+            alert("Đã xóa!");
+            openManageChapterModal(storyId, "Đang tải lại..."); // Refresh danh sách
+        });
+    }
 };

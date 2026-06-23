@@ -79,7 +79,7 @@ function handleFeaturedRandomBook(storiesData) {
 
     if (storyImg && featuredBookSection) {
         // Ảnh rõ nét hơn với độ mờ 0.2
-        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.2) 100%), url('${storyImg}')`, 'important');
+        featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 100%), url('${storyImg}')`, 'important');
         featuredBookSection.style.setProperty('background-size', 'cover', 'important');
         featuredBookSection.style.setProperty('background-position', 'center', 'important');
     }

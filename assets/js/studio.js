@@ -571,53 +571,81 @@ window.switchModalTab = function(type) {
 
 
 // Hàm xử lý khi bấm xác nhận đăng
-
 window.handleConfirmUpload = function() {
-
     const isSingle = document.getElementById('tab-single').style.display !== 'none';
-
     const storyId = document.getElementById('modalStoryId').value;
-
     
-
     if (isSingle) {
-
-        const title = document.getElementById('singleChapterName').value;
-
+        const num = document.getElementById('singleChapterNumber').value;
+        const name = document.getElementById('singleChapterTitle').value;
         const content = document.getElementById('singleContent').value;
-
-        if (!title || !content) return alert("Chị điền đủ thông tin nhé!");
-
-        saveChapterToFirebase(storyId, title, content);
-
+        
+        if (!num || !name || !content) return alert("Chị điền đủ các ô nhé!");
+        
+        saveChapterToFirebase(storyId, `Chương ${num}: ${name}`, content);
     } else {
-
-        // Logic cho hàng loạt: Duyệt qua các item trong bulkPreview và push từng cái
-
-        alert("Đang xử lý import hàng loạt...");
-
+        // Đăng hàng loạt đã tách sẵn trong window.bulkData
+        if (!window.bulkData) return alert("Chị chưa chọn file hoặc file trống!");
+        
+        window.bulkData.forEach(chapter => {
+            const lines = chapter.split('\n');
+            saveChapterToFirebase(storyId, lines[0], lines.slice(1).join('\n'));
+        });
+        alert("Đã đăng toàn bộ chương lên!");
+        closePostModal();
     }
-
 };
 
 
-
 function saveChapterToFirebase(storyId, title, content) {
-
+    // Đẩy lên Firebase
     push(ref(db, 'chapters/' + storyId), {
-
         title: title,
-
         content: content,
-
-        createdAt: Date.now()
-
+        createdAt: Date.now(),
+        updatedAt: Date.now() // Thêm thời gian cập nhật
     }).then(() => {
-
-        alert("Đăng thành công!");
-
+        alert("Đăng chương thành công!");
         closePostModal();
-
+        // Xóa trắng form sau khi đăng
+        document.getElementById('singleChapterName').value = "";
+        document.getElementById('singleContent').value = "";
+    }).catch(error => {
+        alert("Có lỗi xảy ra: " + error.message);
     });
-
 }
+window.processBulkFile = function() {
+    const fileInput = document.getElementById('bulkFileInput');
+    const previewContainer = document.getElementById('bulkPreview');
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(loadEvent) {
+        const arrayBuffer = loadEvent.target.result;
+        
+        // Dùng Mammoth để đọc .docx sạch đẹp
+        mammoth.extractRawText({arrayBuffer: arrayBuffer})
+            .then(result => {
+                const text = result.value;
+                // Regex: Tìm các dòng bắt đầu bằng "Chương" và số
+                // Dấu (?=...) là để giữ lại tiêu đề khi split
+                const chapters = text.split(/(?=Chương\s+\d+[:\s])/i);
+                
+                previewContainer.innerHTML = "";
+                chapters.forEach((content, index) => {
+                    if (content.trim().length > 0) {
+                        const div = document.createElement('div');
+                        div.style = "padding: 8px; border-bottom: 1px solid #eee; font-size: 13px;";
+                        // Lấy dòng đầu làm tên chương
+                        const title = content.split('\n')[0]; 
+                        div.innerHTML = `✅ <b>${title}</b>`;
+                        previewContainer.appendChild(div);
+                    }
+                });
+                window.bulkData = chapters;
+            })
+            .catch(err => alert("Lỗi đọc file: " + err));
+    };
+    reader.readAsArrayBuffer(file);
+};

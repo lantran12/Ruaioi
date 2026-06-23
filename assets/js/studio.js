@@ -16,6 +16,7 @@ async function handleCreateStory() {
     const customId = document.getElementById('idInput').value.trim().toLowerCase(); 
     const title = document.getElementById('titleInput').value;
     const author = document.getElementById('authorInput').value;
+    const editor = document.getElementById('editorInput').value; // Lấy giá trị mới
     const status = document.getElementById('statusSelect').value;
     const cover = document.getElementById('coverInput').value;
     const description = document.getElementById('descInput').value;
@@ -39,6 +40,7 @@ async function handleCreateStory() {
     const storyData = {
         title, 
         author, 
+        editor, 
         status, 
         cover, 
         description,
@@ -119,6 +121,7 @@ function resetForm() {
     document.getElementById('idInput').value = "";
     document.getElementById('titleInput').value = "";
     document.getElementById('authorInput').value = "";
+    document.getElementById('editorInput').value = ""; // Thêm dòng này
     document.getElementById('coverInput').value = "";
     document.getElementById('descInput').value = "";
     document.getElementById('editorNote').value = "";
@@ -167,6 +170,7 @@ window.editStory = function(id) {
             document.getElementById('idInput').readOnly = true; // Khóa ID
             document.getElementById('titleInput').value = story.title || "";
             document.getElementById('authorInput').value = story.author || "";
+            document.getElementById('editorInput').value = story.editor || ""; 
             document.getElementById('coverInput').value = story.cover || "";
             document.getElementById('descInput').value = story.description || "";
             document.getElementById('statusSelect').value = story.status || "Đang cập nhật";

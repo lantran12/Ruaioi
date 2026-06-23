@@ -6,38 +6,28 @@
     <title>Rùa Novel | Mục lục</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Giao diện */
         body { font-family: 'Quicksand', sans-serif; background: #fafafa; margin: 0; padding-top: 80px; }
-        
-        /* Header style */
         .netflix-header { position: fixed; top: 0; width: 100%; height: 70px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 5%; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000; }
         .logo a { font-size: 24px; font-weight: 700; color: #ff4d6d; text-decoration: none; }
         .logo span { color: #333; }
         .btn-back { background:#ffe5ec; color:#ff4d6d; border:none; padding:8px 14px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; }
 
-        /* Nội dung trang */
-        .book-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+        .book-container { max-width: 900px; margin: 10px auto; padding: 20px; } /* Giảm margin ở đây */
         .book-header-card { display: flex; gap: 30px; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         #storyCover { width: 200px; height: 280px; object-fit: cover; border-radius: 8px; background: #eee; }
-        .btn-latest { background: #ff4d6d; color: white; border: none; padding: 12px 25px; border-radius: 20px; cursor: pointer; font-weight: 600; margin-top: 20px; display: inline-block; }
+        
         .chapter-list-section { background: #fff; padding: 25px; border-radius: 15px; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-latest { background: #ff4d6d; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: 600; }
         .chapter-item { display: block; padding: 15px; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: #333; transition: 0.3s; }
         .chapter-item:hover { background: #fff5f7; color: #ff4d6d; }
     </style>
 </head>
 <body>
 
-    <!-- Header tích hợp sẵn -->
     <header class="netflix-header">
-        <div class="header-left-zone">
-            <div class="logo">
-                <a href="index.html">Rùa<span>Novel</span></a>
-                <span style="font-size: 0.9rem; color: #666; margin-left: 10px;">| Studio</span>
-            </div>
-        </div>
-        <div class="header-right-zone">
-            <button class="btn-back" onclick="window.location.href='index.html'">Về Trang Chủ</button>
-        </div>
+        <div class="logo"><a href="index.html">Rùa<span>Novel</span></a></div>
+        <button class="btn-back" onclick="window.location.href='index.html'">Về Trang Chủ</button>
     </header>
 
     <div class="book-container">
@@ -47,12 +37,14 @@
                 <h1 id="storyTitle">Đang tải...</h1>
                 <p><strong>✒️ Tác giả:</strong> <span id="storyAuthor"></span></p>
                 <p><strong>🚀 Editor:</strong> <span id="storyEditor"></span></p>
-                <button id="latestChapterBtn" class="btn-latest">Đọc chương mới nhất 📖</button>
             </div>
         </div>
 
         <div class="chapter-list-section">
-            <h3>DANH SÁCH CHƯƠNG</h3>
+            <div class="list-header">
+                <h3>DANH SÁCH CHƯƠNG</h3>
+                <button id="latestChapterBtn" class="btn-latest">Chương mới nhất 📖</button>
+            </div>
             <div id="chapterList">Đang tải dữ liệu...</div>
         </div>
     </div>
@@ -61,14 +53,10 @@
         import { db } from "./firebase.js";
         import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        // Tự động lấy ID truyện từ URL, ví dụ: book.html?id=o-goa
         const storyId = new URLSearchParams(window.location.search).get('id');
 
         async function init() {
-            if (!storyId) {
-                document.body.innerHTML = "<h2 style='text-align:center; margin-top:100px;'>Chưa chọn truyện nào cả!</h2>";
-                return;
-            }
+            if (!storyId) return;
 
             // 1. Lấy thông tin truyện
             const sSnap = await get(ref(db, `stories/${storyId}`));
@@ -89,8 +77,10 @@
                 const chapters = cSnap.val();
                 const keys = Object.keys(chapters);
                 
-                // Hiện danh sách
-                keys.forEach(key => {
+                // Đảo ngược danh sách (mới nhất lên đầu)
+                const reversedKeys = [...keys].reverse();
+                
+                reversedKeys.forEach(key => {
                     const a = document.createElement('a');
                     a.className = "chapter-item";
                     a.href = `read.html?truyen=${storyId}&id=${key}`;
@@ -98,9 +88,9 @@
                     listDiv.appendChild(a);
                 });
 
-                // 3. Nút đọc chương mới nhất
+                // 3. Nút đọc chương mới nhất (dùng key đầu tiên của mảng đã đảo ngược)
                 document.getElementById('latestChapterBtn').onclick = () => {
-                    window.location.href = `read.html?truyen=${storyId}&id=${keys[keys.length - 1]}`;
+                    window.location.href = `read.html?truyen=${storyId}&id=${reversedKeys[0]}`;
                 };
             } else {
                 listDiv.innerHTML = "Chưa có chương nào.";

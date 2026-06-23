@@ -276,3 +276,37 @@ function saveToFirebase(storyId, content) {
         closePostModal();
     });
 }
+window.switchModalTab = function(type) {
+    document.getElementById('tab-single').style.display = (type === 'single') ? 'block' : 'none';
+    document.getElementById('tab-bulk').style.display = (type === 'bulk') ? 'block' : 'none';
+    
+    document.getElementById('btn-single').className = (type === 'single') ? 'btn-action btn-primary' : 'btn-action btn-reset';
+    document.getElementById('btn-bulk').className = (type === 'bulk') ? 'btn-action btn-primary' : 'btn-action btn-reset';
+};
+
+// Hàm xử lý khi bấm xác nhận đăng
+window.handleConfirmUpload = function() {
+    const isSingle = document.getElementById('tab-single').style.display !== 'none';
+    const storyId = document.getElementById('modalStoryId').value;
+    
+    if (isSingle) {
+        const title = document.getElementById('singleChapterName').value;
+        const content = document.getElementById('singleContent').value;
+        if (!title || !content) return alert("Chị điền đủ thông tin nhé!");
+        saveChapterToFirebase(storyId, title, content);
+    } else {
+        // Logic cho hàng loạt: Duyệt qua các item trong bulkPreview và push từng cái
+        alert("Đang xử lý import hàng loạt...");
+    }
+};
+
+function saveChapterToFirebase(storyId, title, content) {
+    push(ref(db, 'chapters/' + storyId), {
+        title: title,
+        content: content,
+        createdAt: Date.now()
+    }).then(() => {
+        alert("Đăng thành công!");
+        closePostModal();
+    });
+}

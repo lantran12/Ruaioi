@@ -234,6 +234,11 @@ window.openPostModal = function(id, title) {
 // 2. Hàm đóng Popup
 window.closePostModal = function() {
     document.getElementById('postChapterModal').style.display = 'none';
+    delete document.getElementById('modalStoryId').dataset.editingChapter; // Xóa trạng thái sửa
+    // Reset form nếu cần
+    document.getElementById('singleChapterNumber').value = "";
+    document.getElementById('singleChapterTitle').value = "";
+    document.getElementById('singleContent').value = "";
 };
 
 
@@ -304,6 +309,9 @@ window.handleConfirmUpload = function() {
     const isSingle = document.getElementById('tab-single').style.display !== 'none';
     const storyId = document.getElementById('modalStoryId').value;
     
+    // Kiểm tra xem có đang sửa chương cũ không (dựa vào dataset em đã bảo chị thêm)
+    const editingChapterId = document.getElementById('modalStoryId').dataset.editingChapter;
+    
     if (isSingle) {
         const num = document.getElementById('singleChapterNumber').value;
         const name = document.getElementById('singleChapterTitle').value;
@@ -311,20 +319,36 @@ window.handleConfirmUpload = function() {
         
         if (!num || !name || !content) return alert("Chị điền đủ các ô nhé!");
         
-        // Gọi hàm save mới với tham số số chương (num)
-        saveChapterToFirebase(storyId, num, `Chương ${num}: ${name}`, content);
+        // Nếu ĐANG SỬA CHƯƠNG CŨ
+        if (editingChapterId) {
+            const formattedNum = String(num).padStart(3, '0');
+            const chapterKey = `chuong_${formattedNum}`;
+            const chapterRef = ref(db, `chapters/${storyId}/${chapterKey}`);
+            
+            update(chapterRef, {
+                title: `Chương ${num}: ${name}`,
+                content: content,
+                updatedAt: Date.now()
+            }).then(() => {
+                alert("✅ Đã cập nhật chương thành công!");
+                closePostModal();
+            });
+        } 
+        // Nếu ĐĂNG MỚI
+        else {
+            saveChapterToFirebase(storyId, num, `Chương ${num}: ${name}`, content);
+        }
     } else {
-        // Đăng hàng loạt
+        // Đăng hàng loạt (vẫn giữ nguyên như cũ)
         if (!window.bulkData || window.bulkData.length === 0) return alert("Chị chưa chọn file hoặc file trống!");
         
         window.bulkData.forEach((chapter, index) => {
-            const num = index + 1; // Số thứ tự chương tăng dần
+            const num = index + 1;
             const lines = chapter.trim().split('\n');
-            const title = lines[0]; // Dòng đầu làm tiêu đề
-            const content = lines.slice(1).join('\n'); // Phần còn lại làm nội dung
+            const title = lines[0];
+            const content = lines.slice(1).join('\n');
             
-            // Gọi hàm save cho từng chương
-         saveChapterToFirebase(storyId, num, title, content, true); 
+            saveChapterToFirebase(storyId, num, title, content, true); 
         });
         
         alert("Đã bắt đầu đăng toàn bộ chương lên!");
@@ -438,4 +462,24 @@ window.deleteChapter = function(storyId, chapterId) {
             openManageChapterModal(storyId, "Đang tải lại..."); // Refresh danh sách
         });
     }
+};
+window.editChapter = function(storyId, chapterId) {
+    // 1. Lấy dữ liệu chương từ Firebase
+    const chapterRef = ref(db, `chapters/${storyId}/${chapterId}`);
+    get(chapterRef).then((snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            
+            // 2. Mở Modal Đăng chương
+            openPostModal(storyId, "Đang sửa: " + data.title);
+            
+            // 3. Đổ dữ liệu vào Modal
+            document.getElementById('singleChapterTitle').value = data.title.replace(/Chương \d+: /, "");
+            document.getElementById('singleContent').value = data.content;
+            
+            // 4. Đánh dấu đây là chế độ Sửa (để khi bấm nút xác nhận biết đường mà update)
+            // Lưu lại ID chương vào một biến tạm trên modal
+            document.getElementById('modalStoryId').dataset.editingChapter = chapterId;
+        }
+    });
 };

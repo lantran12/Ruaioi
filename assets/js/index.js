@@ -288,8 +288,8 @@ function createNetflixCard(id, story) {
     
     // --- XỬ LÝ THỜI GIAN ---
 let timeDisplay = "";
-if (story.latestChapterAt) {
-    const date = new Date(story.latestChapterAt);
+if (story.updatedAt) {
+    const date = new Date(story.updatedAt);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear().toString().slice(-2);

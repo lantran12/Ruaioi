@@ -45,6 +45,9 @@
             <p><strong>Editor:</strong> <span id="storyEditor"></span></p>
         </div>
     </div>
+    <button id="latestChapterBtn" style="background: #ff4d6d; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+    Đọc chương mới nhất 📖
+</button>
 
     <!-- Khung danh sách chương -->
     <div class="chapter-list-section">
@@ -54,36 +57,37 @@
 </div>
 
     <script type="module">
-        import { db } from "./firebase.js";
-        import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { db } from "./firebase.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        const storyId = new URLSearchParams(window.location.search).get('id');
+async function loadStoryData(storyId) {
+    // 1. Lấy thông tin truyện từ nhánh 'stories'
+    const storySnap = await get(ref(db, 'stories/' + storyId));
+    if (storySnap.exists()) {
+        const story = storySnap.val();
+        document.getElementById('storyTitle').innerText = story.title;
+        document.getElementById('storyAuthor').innerText = story.author;
+        document.getElementById('storyEditor').innerText = story.editor;
+        document.getElementById('storyCover').src = story.cover; // Đảm bảo URL ảnh đúng
+    }
+
+    // 2. Lấy danh sách chương từ nhánh 'chapters/test_id'
+    const chapSnap = await get(ref(db, 'chapters/' + storyId));
+    if (chapSnap.exists()) {
+        const chapters = chapSnap.val();
+        const chapList = Object.keys(chapters);
+        const latestChapKey = chapList[chapList.length - 1]; // Chương cuối cùng
         
-        async function loadBook() {
-            // Lấy info truyện
-            const sSnap = await get(ref(db, `stories/${storyId}`));
-            if (sSnap.exists()) {
-                const s = sSnap.val();
-                document.getElementById('storyTitle').innerText = s.title;
-                document.getElementById('storyAuthor').innerText = s.author;
-                document.getElementById('storyEditor').innerText = s.editor;
-                document.getElementById('storyDesc').innerText = s.description;
-                document.getElementById('storyCover').src = s.cover;
-                if(s.genres) document.getElementById('storyGenres').innerHTML = s.genres.map(g => `<span class="tag-item">${g}</span>`).join('');
-            }
-
-            // Lấy danh sách chương
-            const cSnap = await get(ref(db, `chapters/${storyId}`));
-            const listDiv = document.getElementById('chapterList');
-            if (cSnap.exists()) {
-                const chapters = Object.entries(cSnap.val()).map(([id, val]) => ({id, ...val}))
-                                     .sort((a,b) => a.createdAt - b.createdAt);
-                listDiv.innerHTML = chapters.map(ch => 
-                    `<a href="read.html?truyen=${storyId}&id=${ch.id}" class="chapter-item">${ch.title}</a>`
-                ).join('');
-            }
-        }
-        loadBook();
+        // Hiện danh sách chương (chị dùng vòng lặp forEach để đổ ra HTML)
+        
+        // 3. Nút Đọc chương mới nhất
+        const btn = document.getElementById('latestChapterBtn');
+        btn.onclick = () => {
+            window.location.href = `read.html?truyen=${storyId}&id=${latestChapKey}`;
+        };
+    }
+}
+loadStoryData('test_id'); // Thay 'test_id' bằng biến ID động nếu có
     </script>
 </body>
 </html>

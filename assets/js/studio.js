@@ -343,24 +343,33 @@ window.handleConfirmUpload = function() {
         else {
             saveChapterToFirebase(storyId, num, `Chương ${num}: ${name}`, content);
         }
-    } else {
-        // Đăng hàng loạt (vẫn giữ nguyên như cũ)
-        if (!window.bulkData || window.bulkData.length === 0) return alert("Chị chưa chọn file hoặc file trống!");
+  } else {
+    if (!window.bulkData || window.bulkData.length === 0) return alert("Chị chưa chọn file hoặc file trống!");
+    
+    // 1. Thông báo cho chị biết là đang chạy, đừng tắt vội
+    alert("Đang đăng, chị đợi một chút nhé...");
+    
+    // 2. Chuyển thành async để dùng được await (nhớ thêm async vào khai báo hàm mẹ nếu cần)
+    // Hoặc dùng Promise.all để đợi tất cả các chương đẩy lên xong mới làm gì tiếp theo
+    const uploadPromises = window.bulkData.map((chapter, index) => {
+        const num = index + 1;
+        const lines = chapter.trim().split('\n');
+        const title = lines[0];
+        const content = lines.slice(1).join('\n');
         
-        window.bulkData.forEach((chapter, index) => {
-            const num = index + 1;
-            const lines = chapter.trim().split('\n');
-            const title = lines[0];
-            const content = lines.slice(1).join('\n');
-            
-            saveChapterToFirebase(storyId, num, title, content, true); 
-        });
-        
-        alert("Đã bắt đầu đăng toàn bộ chương lên!");
-        closePostModal();
-    }
-};
+        // Gọi hàm lưu (em giả định saveChapterToFirebase trả về một Promise)
+        return saveChapterToFirebase(storyId, num, title, content, true);
+    });
 
+    await Promise.all(uploadPromises);
+
+    // 3. Xong hết mới đóng modal và báo thành công
+    alert("🎉 Đã import xong toàn bộ chương!");
+    closePostModal();
+    
+    // 4. Mở lại ngay Modal Quản lý để chị kiểm tra thành quả
+    openManageChapterModal(storyId, "Quản lý chương");
+}
 // Thêm tham số 'chapterNumber' vào hàm
 // Thêm tham số 'isBulk' (mặc định là false)
 // --- HÀM CẬP NHẬT: THÊM PHẦN ĐỒNG BỘ VỚI TRANG CHỦ ---

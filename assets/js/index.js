@@ -181,14 +181,14 @@ function loadMainStories() {
 
     bookGrid.innerHTML = '<div style="grid-column: 1/-1; color: var(--smoke);">Đang liên kết Động Chăn Rùa...</div>';
 
-    db.ref('stories').orderByChild('updatedAt').once('value')
-    .then((snapshot) => {
-        bookGrid.innerHTML = '';
+    // 1. Đổi .once('value') thành .on('value')
+    db.ref('stories').orderByChild('updatedAt').on('value', (snapshot) => {
+        bookGrid.innerHTML = ''; 
         if (!snapshot.exists()) return;
 
         const storiesData = snapshot.val();
         
-        // Gọi hàm Random Banner Hero ngay tại đây
+        // Gọi hàm Random Banner Hero
         handleFeaturedRandomBook(storiesData);
 
         const storiesArray = [];
@@ -196,12 +196,13 @@ function loadMainStories() {
             storiesArray.push({ id: childSnapshot.key, ...childSnapshot.val() });
         });
 
+        // 2. Vì đã dùng on('value'), mỗi khi dữ liệu thay đổi nó sẽ tự render lại từ đầu
         storiesArray.reverse().forEach((story) => {
             bookGrid.appendChild(createNetflixCard(story.id, story));
         });
-    })
-    .catch((err) => {
-        console.error("Lỗi tải truyện chính:", err);
+    }, (err) => {
+        // 3. Xử lý lỗi cho .on()
+        console.error("Lỗi kết nối Firebase:", err);
         bookGrid.innerHTML = '<p style="grid-column: 1/-1;">Lỗi kết nối thư viện chính.</p>';
     });
 }
@@ -213,29 +214,30 @@ function loadTopViews() {
     const nominationContainer = document.getElementById('nominationListContainer');
     if (!nominationContainer) return;
 
-    // 1. Lấy dữ liệu truyện (stories)
-    db.ref('stories').once('value').then((snapshot) => {
-        const allStories = snapshot.val();
-        if (!allStories) return;
-
-        // 2. Lấy dữ liệu lượt xem (views)
-        db.ref('views').once('value').then((viewsSnapshot) => {
-            const viewsData = viewsSnapshot.val();
+    // Lắng nghe cả 2 nhánh dữ liệu cùng lúc
+    db.ref('stories').on('value', (storiesSnapshot) => {
+        db.ref('views').on('value', (viewsSnapshot) => {
             
-            // 3. Kết hợp 2 dữ liệu
+            const allStories = storiesSnapshot.val();
+            const viewsData = viewsSnapshot.val() || {}; // Phòng trường hợp chưa có dữ liệu views
+            
+            if (!allStories) return;
+
+            // Kết hợp dữ liệu
             const storiesWithViews = Object.keys(allStories).map(id => {
                 return {
                     id: id,
                     ...allStories[id],
-                    views: viewsData[id] || 0 // Lấy view từ nhánh 'views' dựa theo ID truyện
+                    views: viewsData[id] || 0
                 };
             });
 
-            // 4. Sắp xếp theo view giảm dần và lấy top 5
+            // Sắp xếp và lấy top 5
             const topStories = storiesWithViews
                 .sort((a, b) => b.views - a.views)
                 .slice(0, 5);
 
+            // Render lại danh sách
             nominationContainer.innerHTML = '';
             topStories.forEach((story, index) => {
                 const card = document.createElement('div');
@@ -248,7 +250,9 @@ function loadTopViews() {
                     <img src="${currentImg}" alt="${story.title}">
                     <div style="flex: 1; min-width: 0;">
                         <h4 style="margin-top:0; font-size:0.95rem; font-weight:700;">TOP ${index + 1} . ${story.title}</h4>
-                        <p style="margin-bottom:0; font-size:0.8rem; color: var(--netflix-red); font-weight:600;"><i class="fa-regular fa-eye"></i> ${story.views} lượt xem</p>
+                        <p style="margin-bottom:0; font-size:0.8rem; color: var(--netflix-red); font-weight:600;">
+                            <i class="fa-regular fa-eye"></i> ${story.views} lượt xem
+                        </p>
                     </div>
                 `;
                 nominationContainer.appendChild(card);
@@ -283,11 +287,12 @@ function createNetflixCard(id, story) {
     // Tự động dùng 'img' chị tạo, hoặc các trường cũ dự phòng
     const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
     
+    // Gợi ý nhỏ cho card truyện đẹp hơn
     div.innerHTML = `
-        <img src="${currentImg}" alt="${story.title}">
-        <h4>${story.title}</h4>
-        <p>${story.author || 'Động Chăn Rùa'}</p>
-    `;
+    <img src="${currentImg}" alt="${story.title}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
+    <h4 style="margin: 10px 0 5px 0; font-size: 14px;">${story.title}</h4>
+    <p style="margin: 0; font-size: 12px; color: #888;">${story.author || 'Động Chăn Rùa'}</p>
+`;
     return div;
 }
 
@@ -633,62 +638,57 @@ function applyGenreFilter() {
 
     closeGenreModal();
 }
-function loadStoriesByGenres(ids) {
+// Biến này để lưu lại "người nghe" của bộ lọc
+let genreListenerRef = null; 
 
+function loadStoriesByGenres(ids) {
     const resultsGrid = document.getElementById("resultsGrid");
     const section = document.getElementById("searchResultsSection");
     const rowTitle = section.querySelector(".row-title");
 
     section.style.display = "block";
-    resultsGrid.innerHTML = "";
+    resultsGrid.innerHTML = "Đang kết nối...";
 
     if (rowTitle) {
         rowTitle.innerText = "📜 Kết quả theo thể loại";
     }
 
-    db.ref("stories").once("value").then(snapshot => {
+    // 1. Nếu trước đó đã có bộ lọc đang chạy, phải tắt nó đi để không bị chồng chéo
+    if (genreListenerRef) {
+        genreListenerRef.off();
+    }
 
+    // 2. Gán ref vào biến để quản lý
+    genreListenerRef = db.ref("stories");
+
+    // 3. Sử dụng .on('value') để lắng nghe realtime
+    genreListenerRef.on("value", (snapshot) => {
+        resultsGrid.innerHTML = "";
         let found = false;
 
-        // đổi id -> tên thể loại
         const selectedNames = ids
             .map(id => GENDERS.find(g => g.id == id)?.name)
             .filter(Boolean)
             .map(name => name.trim().toLowerCase());
 
         snapshot.forEach(child => {
-
             const story = child.val();
-
             const genres = story.genres
                 ? Object.values(story.genres).map(g => String(g).trim().toLowerCase())
                 : [];
 
-            // Chỉ cần trùng 1 tag là hiện
-            console.log("IDs:", ids);
-            console.log("Selected:", selectedNames);
-            console.log("Story:", story.title);
-            console.log("Genres:", genres);
             const ok = selectedNames.some(name => genres.includes(name));
 
             if (ok) {
                 resultsGrid.appendChild(createNetflixCard(child.key, story));
                 found = true;
             }
-
         });
 
         if (!found) {
-            resultsGrid.innerHTML = `
-                <p style="grid-column:1/-1;text-align:center">
-                    Không có truyện phù hợp 🐢
-                </p>`;
+            resultsGrid.innerHTML = `<p style="grid-column:1/-1;text-align:center">Không có truyện phù hợp 🐢</p>`;
         }
-
-        section.scrollIntoView({
-            behavior: "smooth"
-        });
-
     });
 
+    section.scrollIntoView({ behavior: "smooth" });
 }

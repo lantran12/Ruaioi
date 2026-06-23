@@ -514,10 +514,15 @@ function updateUserProfileData() {
 }
 
 function buildBookshelfHTML(data, container) {
+    if (!data) {
+        container.innerHTML = `<div style="text-align: center; color: #aaa; padding: 20px;">Tủ sách trống trơn! Chị hãy thêm vào ngay đi ạ! 🐾</div>`;
+        return;
+    }
+
     container.innerHTML = Object.keys(data).map(key => {
         const b = data[key];
         
-        // Thêm onclick vào div cha và cursor: pointer để báo cho người dùng biết là bấm được
+        // Dùng template string để tạo giao diện, thêm sự kiện click trực tiếp vào div
         return `
         <div class="bookshelf-item" 
              onclick="window.location.href='book.html?id=${key}'" 

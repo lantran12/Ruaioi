@@ -29,7 +29,12 @@
     .tag { background: #ffe5ec; color: #ff4d6d; padding: 5px 12px; border-radius: 15px; font-size: 12px; margin-right: 5px; display: inline-block; }
     .desc-box { background: #f9f9f9; padding: 20px; border-radius: 15px; white-space: pre-wrap; line-height: 1.6; color: #555; }
     .btn-nav { padding: 5px 15px; border-radius: 10px; border: none; background: #ffe5ec; color: #ff4d6d; cursor: pointer; }
-
+    .netflix-header { position: fixed; top: 0; left: 0; width: 100%; height: 70px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 5%; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000;}
+    .logo a { font-size: 24px; font-weight: 700; color: #ff4d6d; text-decoration: none; font-family: 'Playfair Display', serif; }
+    .logo span { color: #333; }
+    .header-left-zone { display: flex; align-items: center; }
+body { padding-top: 80px; }
+.book-container { max-width: 800px; margin: 0 auto; padding: 20px; }
     /* Thêm media query để trên điện thoại giao diện tự co giãn cho đẹp */
     @media (max-width: 600px) {
         .form-grid { grid-template-columns: 1fr; }
@@ -39,16 +44,16 @@
 <body>
 
     <header class="netflix-header">
-        <div class="header-left-zone">
-            <div class="logo">
-                <a href="index.html">Rùa<span>Novel</span></a>
-                <span style="font-size: 0.9rem; color: #666; margin-left: 10px;">| Studio</span>
-            </div>
+    <div class="header-left-zone">
+        <div class="logo">
+            <a href="index.html">Rùa<span>Novel</span></a>
+            <span style="font-size: 0.9rem; color: #666; margin-left: 10px;">| Profile</span>
         </div>
-        <div class="header-right-zone">
-            <button class="btn-back" onclick="window.location.href='index.html'" style="background:#ffe5ec;color:#ff4d6d;border:none;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;">Về Trang Chủ</button>
-        </div>
-    </header>
+    </div>
+    <div class="header-right-zone">
+        <button class="btn-back" onclick="window.location.href='index.html'" style="background:#ffe5ec;color:#ff4d6d;border:none;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;">Về Trang Chủ</button>
+    </div>
+</header>
     
     <div class="book-container">
     <div class="profile-card">

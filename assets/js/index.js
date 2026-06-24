@@ -54,6 +54,9 @@ function initSubBarFilters() {
 /* ==========================================================================
    3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đã giới hạn ký tự)
    ========================================================================== */
+/* ==========================================================================
+   3. TRUYỆN ĐỀ CỬ NGẪU NHIÊN (Đã sửa link)
+   ========================================================================== */
 function handleFeaturedRandomBook(storiesData) {
     const keys = Object.keys(storiesData);
     if (keys.length === 0) return;
@@ -63,22 +66,25 @@ function handleFeaturedRandomBook(storiesData) {
 
     const heroTitle = document.getElementById('heroTitle');
     const heroSynopsis = document.getElementById('heroSynopsis');
+    const heroLink = document.getElementById('heroLink'); // Thêm dòng này
     const featuredBookSection = document.getElementById('featuredBook');
 
     if (heroTitle) heroTitle.innerText = story.title || "Tác phẩm độc quyền";
     
-    // Giới hạn ký tự: 100 ký tự đổ lại
+    // Gán link cho nút Đọc Ngay
+    if (heroLink) {
+        heroLink.href = `book.html?id=${randomKey}`;
+    }
+    
     let rawSynopsis = story.description || story.synopsis || "Bấm vào để khám phá thế giới nội tâm đầy cảm xúc của tác phẩm này...";
     if (rawSynopsis.length > 100) {
         rawSynopsis = rawSynopsis.substring(0, 100) + "...";
     }
     if (heroSynopsis) heroSynopsis.innerText = rawSynopsis;
 
-    const storyReadUrl = `book.html?id=${randomKey}`;
     const storyImg = story.img || story.cover || story.image;
 
     if (storyImg && featuredBookSection) {
-        // Ảnh rõ nét hơn với độ mờ 0.2
         featuredBookSection.style.setProperty('background', `linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 100%), url('${storyImg}')`, 'important');
         featuredBookSection.style.setProperty('background-size', 'cover', 'important');
         featuredBookSection.style.setProperty('background-position', 'center', 'important');

@@ -214,50 +214,48 @@ function loadTopViews() {
     const nominationContainer = document.getElementById('nominationListContainer');
     if (!nominationContainer) return;
 
-    // Lắng nghe cả 2 nhánh dữ liệu cùng lúc
-    db.ref('stories').on('value', (storiesSnapshot) => {
-        db.ref('views').on('value', (viewsSnapshot) => {
-            
-            const allStories = storiesSnapshot.val();
-            const viewsData = viewsSnapshot.val() || {}; // Phòng trường hợp chưa có dữ liệu views
-            
-            if (!allStories) return;
+    // Sử dụng Promise.all để lấy dữ liệu đồng thời, tránh lồng callback (nested)
+    Promise.all([
+        db.ref('stories').once('value'),
+        db.ref('views').once('value')
+    ]).then(([storiesSnapshot, viewsSnapshot]) => {
+        const allStories = storiesSnapshot.val();
+        const viewsData = viewsSnapshot.val() || {};
+        
+        if (!allStories) return;
 
-            // Kết hợp dữ liệu
-            const storiesWithViews = Object.keys(allStories).map(id => {
-                return {
-                    id: id,
-                    ...allStories[id],
-                    views: viewsData[id] || 0
-                };
-            });
+        const storiesWithViews = Object.keys(allStories).map(id => ({
+            id: id,
+            ...allStories[id],
+            views: viewsData[id] || 0
+        }));
 
-            // Sắp xếp và lấy top 5
-            const topStories = storiesWithViews
-                .sort((a, b) => b.views - a.views)
-                .slice(0, 5);
+        const topStories = storiesWithViews
+            .sort((a, b) => b.views - a.views)
+            .slice(0, 5);
 
-            // Render lại danh sách
-            nominationContainer.innerHTML = '';
-            topStories.forEach((story, index) => {
-                const card = document.createElement('div');
-                card.className = 'story-card';
-                card.onclick = () => window.location.href = `book.html?id=${story.id}`;
-                
-                const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
-                
-                card.innerHTML = `
-                    <img src="${currentImg}" alt="${story.title}">
+        // Render danh sách
+        nominationContainer.innerHTML = '';
+        
+        // Tạo chuỗi HTML để đổ vào 1 lần duy nhất cho nhanh
+        let htmlContent = '';
+        topStories.forEach((story, index) => {
+            const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
+            htmlContent += `
+                <div class="story-card" style="min-width: 200px; cursor: pointer;" onclick="window.location.href='book.html?id=${story.id}'">
+                    <img src="${currentImg}" alt="${story.title}" style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px;">
                     <div style="flex: 1; min-width: 0;">
-                        <h4 style="margin-top:0; font-size:0.95rem; font-weight:700;">TOP ${index + 1} . ${story.title}</h4>
-                        <p style="margin-bottom:0; font-size:0.8rem; color: var(--netflix-red); font-weight:600;">
+                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">TOP ${index + 1}: ${story.title}</h4>
+                        <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #ff4d6d; font-weight: 600;">
                             <i class="fa-regular fa-eye"></i> ${story.views} lượt xem
                         </p>
                     </div>
-                `;
-                nominationContainer.appendChild(card);
-            });
+                </div>
+            `;
         });
+
+        // Nhân đôi nội dung để hiệu ứng chạy ngang (marquee) không bị trống
+        nominationContainer.innerHTML = htmlContent + htmlContent;
     });
 }
 /* ==========================================================================

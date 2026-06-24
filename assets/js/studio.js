@@ -480,29 +480,39 @@ window.editChapter = function(storyId, chapterId) {
         if (snapshot.exists()) {
             const data = snapshot.val();
             
-            // 1. Chuyển sang tab đơn lẻ để chắc chắn ô nhập liệu đang hiện ra
+            // 1. Chuyển sang tab đơn lẻ
             window.switchModalTab('single');
             
             // 2. Mở Modal
-            openPostModal(storyId, "Đang sửa: " + (data.title || ""));
+            openPostModal(storyId, "Đang sửa: " + (data.title || "Chương mới"));
             
-            // 3. THÊM DÒNG NÀY: Đợi 100ms để Modal hiển thị xong rồi mới điền dữ liệu
             setTimeout(() => {
                 // Bóc tách dữ liệu
-                const numMatch = data.title ? data.title.match(/Chương\s*(\d+)/i) : null;
-                const chapterNum = numMatch ? numMatch[1] : ""; 
-                
-                // Cách cắt tên an toàn hơn
-                const chapterTitle = data.title ? data.title.replace(/Chương\s*\d+[:\s]*/i, "").trim() : "";
+                let chapterNum = "";
+                let chapterTitle = data.title || "";
 
-                // Đổ dữ liệu
+                // Tách số chương: tìm số ngay sau chữ "Chương"
+                const numMatch = chapterTitle.match(/Chương\s*(\d+)/i);
+                if (numMatch) {
+                    chapterNum = numMatch[1];
+                }
+
+                // Tách tên chương: lấy phần sau dấu ":" đầu tiên
+                const colonIndex = chapterTitle.indexOf(":");
+                if (colonIndex !== -1) {
+                    chapterTitle = chapterTitle.substring(colonIndex + 1).trim();
+                }
+
+                // Đổ dữ liệu vào input
                 document.getElementById('singleChapterNumber').value = chapterNum;
                 document.getElementById('singleChapterTitle').value = chapterTitle;
                 document.getElementById('singleContent').value = data.content || "";
                 
-                // 4. Đánh dấu chế độ Sửa
+                // 3. Đánh dấu để biết là đang sửa chương cũ
                 document.getElementById('modalStoryId').dataset.editingChapter = chapterId;
-            }, 100); 
+            }, 100);
+        } else {
+            alert("Lỗi: Không tìm thấy dữ liệu chương!");
         }
     });
 };

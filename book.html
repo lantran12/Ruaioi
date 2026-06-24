@@ -18,9 +18,10 @@
         .chapter-section { background: #fff; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .btn-nav { padding: 5px 15px; border-radius: 10px; border: none; background: #ffe5ec; color: #ff4d6d; cursor: pointer; font-weight: 600; }
     .profile-card { background: #fff; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-    #storyCover { width: 180px; height: 240px; object-fit: cover; border-radius: 20px; margin-bottom: 15px; }
-    .chapter-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #eee; text-decoration: none; color: #333; }
+     #storyCover { width: 220px; height: 300px; object-fit: cover; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Thêm bóng cho ảnh nổi bật */ }    .chapter-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #eee; text-decoration: none; color: #333; }
     .chapter-date { font-size: 0.8rem; color: #999; }
+        .author-info { margin: 10px 0; line-height: 1.6; color: #444; font-weight: 600; }
+        .author-info div { margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -32,12 +33,17 @@
 
 <div class="book-container">
     <div class="profile-card">
-        <img id="storyCover" src="" alt="Bìa">
-        <h1 id="storyTitle">Đang tải...</h1>
-        <p>✒️ <span id="storyAuthor"></span> | 🚀 Editor: <span id="storyEditor"></span></p>
-        <div id="storyDesc" class="desc-box">Đang tải mô tả...</div>
-        <span id="toggleDesc" class="btn-toggle" onclick="toggleDesc()">Xem thêm</span>
+    <img id="storyCover" src="" alt="Bìa">
+    <h1 id="storyTitle" style="font-size: 26px; margin-bottom: 10px;">Đang tải...</h1>
+    
+    <div class="author-info">
+        <div>✒️ Tác giả: <span id="storyAuthor">...</span></div>
+        <div>🚀 Editor: <span id="storyEditor">...</span></div>
     </div>
+    
+    <div id="storyDesc" class="desc-box">Đang tải mô tả...</div>
+    <span id="toggleDesc" class="btn-toggle" onclick="toggleDesc()">Xem thêm</span>
+</div>
 
     <div class="chapter-section">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
@@ -148,6 +154,35 @@
             btn.innerText = 'Rút gọn';
         }
     }
+    // Hàm hỗ trợ chuyển đổi timestamp thành ngày tháng
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('vi-VN'); // Định dạng ngày/tháng/năm kiểu Việt Nam
+}
+
+function renderChapters() {
+    let sorted = isAscending ? [...allChapters] : [...allChapters].reverse();
+    const start = (currentPage - 1) * 50;
+    const pageChapters = sorted.slice(start, start + 50);
+    
+    const list = document.getElementById('chapterList');
+    list.innerHTML = pageChapters.map(([id, data]) => {
+        // Dùng data.createdAt để lấy thời gian từ Firebase của Chị
+        const timeDisplay = data.createdAt ? formatDate(data.createdAt) : "...";
+        
+        return `
+            <a href="read.html?truyen=${storyId}&id=${id}" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; text-decoration:none; color:#333;">
+                <span style="font-weight: 500;">${data.title}</span>
+                <span style="font-size: 0.85rem; color: #999;">${timeDisplay}</span>
+            </a>
+        `;
+    }).join('');
+
+    const pages = Math.ceil(allChapters.length / 50);
+    document.getElementById('pagination').innerHTML = Array.from({length: pages}, (_, i) => 
+        `<button class="btn-nav" style="margin:2px" onclick="changePage(${i+1})">${i+1}</button>`
+    ).join('');
+}
     init();
 </script>
 </body>

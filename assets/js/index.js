@@ -754,20 +754,23 @@ function loadStoriesByGenres(ids) {
     section.scrollIntoView({ behavior: "smooth" });
 }
 // Logic ẩn hiện nút và trượt trang
-const scrollBtn = document.getElementById("scrollToTopBtn");
+document.addEventListener("DOMContentLoaded", () => {
+    const scrollBtn = document.getElementById("scrollToTopBtn");
 
-window.addEventListener("scroll", () => {
-    // Chỉ hiện nút khi trượt xuống quá 300px
-    if (window.scrollY > 300) {
-        scrollBtn.style.display = "block";
-    } else {
-        scrollBtn.style.display = "none";
+    if (scrollBtn) { // Kiểm tra xem nút có tồn tại không rồi mới chạy
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 300) {
+                scrollBtn.style.display = "flex";
+            } else {
+                scrollBtn.style.display = "none";
+            }
+        });
+
+        scrollBtn.addEventListener("click", () => {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
     }
-});
-
-scrollBtn.addEventListener("click", () => {
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth" // Trượt mượt mà
-    });
 });

@@ -67,32 +67,7 @@ body {
     background: var(--p-pink); border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center; color: #fff;
 }
-#scrollToTopBtn {
-    position: fixed;
-    bottom: 20px; 
-    right: 20px;
-    display: none; 
-    width: 32px;  /* Đã giảm từ 40px xuống 32px */
-    height: 32px; /* Luôn giữ bằng width */
-    background: #ff4d6d;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 14px; /* Giảm font-size để icon nhỏ lại tương ứng */
-    box-shadow: 0 3px 6px rgba(255, 77, 109, 0.3);
-    z-index: 1000;
-    transition: opacity 0.3s, transform 0.3s;
-    display: flex; 
-    align-items: center;
-    justify-content: center;
-    opacity: 0.8; /* Thêm chút độ trong suốt cho thanh thoát */
-}
-
-/* Chỉnh icon con rùa hoặc mũi tên bên trong nhỏ hơn nữa nếu cần */
-#scrollToTopBtn i {
-    font-size: 14px; 
-#scrollToTopBtn:hover { transform: scale(1.1); }
+#scrollToTopBtn { position: fixed; bottom: 25px; /* Giảm khoảng cách từ đáy lên một chút */ right: 25px;  /* Giảm khoảng cách từ mép phải vào */ display: none; width: 40px;  /* Thay vì 50px, mình để 40px cho gọn */ height: 40px; /* Thay vì 50px, mình để 40px cho gọn */ background: #ff4d6d; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; /* Giảm size chữ/icon cho cân đối với nút 40px */ box-shadow: 0 4px 8px rgba(255, 77, 109, 0.3); z-index: 1000; transition: opacity 0.3s, transform 0.3s; /* Giữ nguyên flex để icon nằm giữa */ display: flex; align-items: center; justify-content: center; }#scrollToTopBtn:hover { transform: scale(1.1); }
 /* HERO BANNER CỰC ĐẠI */
 .netflix-hero {
     position: relative;

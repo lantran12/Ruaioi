@@ -11,8 +11,8 @@
         .logo a { font-size: 24px; font-weight: 700; color: #ff4d6d; text-decoration: none; }
         .logo span { color: #333; }
         .btn-back { background:#ffe5ec; color:#ff4d6d; border:none; padding:8px 14px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; }
-
-        .book-container { max-width: 900px; margin: 10px auto; padding: 20px; } /* Giảm margin ở đây */
+        
+        .book-container { max-width: 900px; margin: 10px auto; padding: 20px; }
         .book-header-card { display: flex; gap: 30px; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         #storyCover { width: 200px; height: 280px; object-fit: cover; border-radius: 8px; background: #eee; }
         
@@ -45,7 +45,7 @@
                 <h3>DANH SÁCH CHƯƠNG</h3>
                 <button id="latestChapterBtn" class="btn-latest">Chương mới nhất 📖</button>
             </div>
-            <div id="chapterList">Đang tải dữ liệu...</div>
+            <div id="chapterList">Đang tải danh sách chương...</div>
         </div>
     </div>
 
@@ -53,86 +53,55 @@
         import { db } from "./firebase.js";
         import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        const storyId = new URLSearchParams(window.location.search).get('id');
-
         async function init() {
-            if (!storyId) return;
-
-            // 1. Lấy thông tin truyện
-            const sSnap = await get(ref(db, `stories/${storyId}`));
-            if (sSnap.exists()) {
-                const s = sSnap.val();
-                document.getElementById('storyTitle').innerText = s.title;
-                document.getElementById('storyAuthor').innerText = s.author || "Đang cập nhật";
-                document.getElementById('storyEditor').innerText = s.editor || "Chưa có";
-                document.getElementById('storyCover').src = s.cover || "placeholder.jpg";
+            const storyId = new URLSearchParams(window.location.search).get('id');
+            if (!storyId) {
+                alert("Truyện không tồn tại!");
+                return;
             }
 
-            // 2. Lấy danh sách chương
-            const cSnap = await get(ref(db, `chapters/${storyId}`));
-            const listDiv = document.getElementById('chapterList');
-            listDiv.innerHTML = ""; 
+            try {
+                // 1. Lấy thông tin truyện
+                const sSnap = await get(ref(db, `stories/${storyId}`));
+                if (sSnap.exists()) {
+                    const s = sSnap.val();
+                    document.getElementById('storyTitle').innerText = s.title || "Không tên";
+                    document.getElementById('storyAuthor').innerText = s.author || "Đang cập nhật";
+                    document.getElementById('storyEditor').innerText = s.editor || "Chưa có";
+                    document.getElementById('storyCover').src = s.cover || "placeholder.jpg";
+                }
 
-            if (cSnap.exists()) {
-                const chapters = cSnap.val();
-                const keys = Object.keys(chapters);
-                
-                // Đảo ngược danh sách (mới nhất lên đầu)
-                const reversedKeys = [...keys].reverse();
-                
-                reversedKeys.forEach(key => {
-                    const a = document.createElement('a');
-                    a.className = "chapter-item";
-                    a.href = `read.html?truyen=${storyId}&id=${key}`;
-                    a.innerText = chapters[key].title;
-                    listDiv.appendChild(a);
-                });
+                // 2. Lấy danh sách chương
+                const cSnap = await get(ref(db, `chapters/${storyId}`));
+                const listDiv = document.getElementById('chapterList');
+                listDiv.innerHTML = ""; 
 
-                // 3. Nút đọc chương mới nhất (dùng key đầu tiên của mảng đã đảo ngược)
-                document.getElementById('latestChapterBtn').onclick = () => {
-                    window.location.href = `read.html?truyen=${storyId}&id=${reversedKeys[0]}`;
-                };
-            } else {
-                listDiv.innerHTML = "Chưa có chương nào.";
+                if (cSnap.exists()) {
+                    const chapters = cSnap.val();
+                    // Đảo ngược để chương mới nhất lên đầu
+                    const entries = Object.entries(chapters).reverse();
+                    
+                    entries.forEach(([key, chapter]) => {
+                        const a = document.createElement('a');
+                        a.className = "chapter-item";
+                        a.href = `read.html?truyen=${storyId}&id=${key}`;
+                        a.innerText = chapter.title || "Chương không tên";
+                        listDiv.appendChild(a);
+                    });
+
+                    // 3. Nút chương mới nhất
+                    document.getElementById('latestChapterBtn').onclick = () => {
+                        window.location.href = `read.html?truyen=${storyId}&id=${entries[0][0]}`;
+                    };
+                } else {
+                    listDiv.innerHTML = "<p style='padding:15px; color:#888;'>Chưa có chương nào được đăng.</p>";
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
             }
         }
-        // Đoạn này trong book.html của chị
-async function init() {
-    const storyId = new URLSearchParams(window.location.search).get('id');
-    if (!storyId) {
-        console.error("Không tìm thấy ID truyện trên URL!");
-        return;
-    }
 
-    try {
-        // Lấy dữ liệu truyện
-        const sSnap = await get(ref(db, `stories/${storyId}`));
-        
-        if (sSnap.exists()) {
-            const s = sSnap.val();
-            
-            // Dùng hàm kiểm tra để không bị lỗi nếu chị quên chưa tạo thẻ HTML đó
-            const setVal = (id, val) => {
-                const el = document.getElementById(id);
-                if (el) el.innerText = val || "Đang cập nhật";
-            };
-
-            setVal('storyTitle', s.title);
-            setVal('storyAuthor', s.author);
-            setVal('storyEditor', s.editor);
-
-            // Xử lý ảnh bìa riêng
-            const coverEl = document.getElementById('storyCover');
-            if (coverEl) {
-                coverEl.src = s.cover || "placeholder.jpg";
-            }
-        } else {
-            alert("Truyện này không tồn tại trong hệ thống!");
-        }
-    } catch (error) {
-        console.error("Lỗi khi tải dữ liệu truyện:", error);
-    }
-}
+        init(); // Chạy hàm
     </script>
 </body>
 </html>

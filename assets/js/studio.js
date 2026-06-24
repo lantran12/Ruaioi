@@ -65,7 +65,7 @@ async function handleCreateStory() {
     }
 
     // Tải lại danh sách để cập nhật giao diện
-    ();
+    loadAdminStoryList();
 
     // Xóa trắng các ô nhập sau khi hoàn tất
     document.getElementById('idInput').value = "";
@@ -91,26 +91,26 @@ function loadAdminStoryList() {
         item.id = `story-${id}`; 
         item.style = "padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; margin-bottom: 10px; border-radius: 12px;";
         item.innerHTML = `
-    <div style="flex: 1; min-width: 0; margin-right: 15px;">
-        <h4 style="margin: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333;">${story.title}</h4>
-        <small style="color: #999; font-size: 11px;">ID: ${id}</small>
-    </div>
+            <div>
+                <h4 style="margin: 0; font-size: 16px;">${story.title}</h4>
+                <small style="color: #777;">ID: ${id}</small>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <button onclick="editStory('${id}')" 
+                        style="background: #fff3bf; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">
+                    Sửa
+                </button>
+                <button onclick="deleteStory('${id}')" 
+                        style="background: #ffdede; color: #d90429; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">
+                    Xóa
+                </button>
 
-    <div style="display: flex; flex-direction: column; gap: 6px; min-width: 85px;">
-        <button onclick="editStory('${id}')" 
-                style="background: #fff3bf; border: none; padding: 6px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600;">
-            Sửa
-        </button>
-        <button onclick="deleteStory('${id}')" 
-                style="background: #ffdede; color: #d90429; border: none; padding: 6px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600;">
-            Xóa
-        </button>
-        <button onclick="openPostModal('${id}', '${story.title}')" 
-                style="background: #e0f2f1; color: #00796b; border: none; padding: 6px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600;">
-            Đăng chương
-        </button>
-    </div>
-`;
+                <button onclick="openPostModal('${id}', '${story.title}')" 
+                 style="background: #e0f2f1; color: #00796b; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">
+             Đăng chương
+         </button>
+            </div>
+        `;
         listContainer.appendChild(item);
     }); 
 }

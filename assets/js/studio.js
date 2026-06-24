@@ -307,13 +307,9 @@ window.switchModalTab = function(type) {
     document.getElementById('btn-bulk').className = (type === 'bulk') ? 'btn-action btn-primary' : 'btn-action btn-reset';
 };
 
-
-
 window.handleConfirmUpload = function() {
     const isSingle = document.getElementById('tab-single').style.display !== 'none';
     const storyId = document.getElementById('modalStoryId').value;
-    
-    // Kiểm tra xem có đang sửa chương cũ không (dựa vào dataset em đã bảo chị thêm)
     const editingChapterId = document.getElementById('modalStoryId').dataset.editingChapter;
     
     if (isSingle) {
@@ -323,7 +319,6 @@ window.handleConfirmUpload = function() {
         
         if (!num || !name || !content) return alert("Chị điền đủ các ô nhé!");
         
-        // Nếu ĐANG SỬA CHƯƠNG CŨ
         if (editingChapterId) {
             const formattedNum = String(num).padStart(3, '0');
             const chapterKey = `chuong_${formattedNum}`;
@@ -337,25 +332,26 @@ window.handleConfirmUpload = function() {
                 alert("✅ Đã cập nhật chương thành công!");
                 closePostModal();
             });
-        } 
-        // Nếu ĐĂNG MỚI
-        else {
+        } else {
             saveChapterToFirebase(storyId, num, `Chương ${num}: ${name}`, content);
         }
     } else {
-        // Đăng hàng loạt (vẫn giữ nguyên như cũ)
+        // --- ĐÂY LÀ PHẦN ĐÃ SỬA CHO BULK ---
         if (!window.bulkData || window.bulkData.length === 0) return alert("Chị chưa chọn file hoặc file trống!");
         
         window.bulkData.forEach((chapter, index) => {
             const num = index + 1;
             const lines = chapter.trim().split('\n');
-            const title = lines[0];
+            const rawTitle = lines[0]; // Tiêu đề từ file
             const content = lines.slice(1).join('\n');
             
-            saveChapterToFirebase(storyId, num, title, content, true); 
+            // Ép buộc title phải theo định dạng "Chương X: ..." để hàm sửa sau này bóc tách được
+            const finalTitle = rawTitle.toLowerCase().startsWith("chương") ? rawTitle : `Chương ${num}: ${rawTitle}`;
+            
+            saveChapterToFirebase(storyId, num, finalTitle, content, true); 
         });
         
-        alert("Đã bắt đầu đăng toàn bộ chương lên!");
+        alert("Đã đăng xong toàn bộ chương lên rồi chị nhé!");
         closePostModal();
     }
 };

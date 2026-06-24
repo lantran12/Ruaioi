@@ -420,3 +420,22 @@ body {
     accent-color: #ff4d6d; /* Màu hồng chủ đạo của RùaNovel */
     transform: scale(1.2);
 }
+.chapter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.chapter-title-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%; /* Giới hạn độ dài tiêu đề */
+}
+.chapter-date-text {
+    color: #999;
+    font-size: 12px;
+    flex-shrink: 0; /* Không cho ngày bị co lại */
+}

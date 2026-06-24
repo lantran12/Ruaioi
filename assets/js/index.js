@@ -241,14 +241,18 @@ function loadTopViews() {
 topStories.forEach((story, index) => {
     const currentImg = story.img || story.cover || story.image || 'https://via.placeholder.com/180x250';
     htmlContent += `
-        <div class="story-card" style="min-width: 280px; display: flex; align-items: center; gap: 10px; cursor: pointer; background: #fff; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" onclick="window.location.href='book.html?id=${story.id}'">
-            <img src="${currentImg}" style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px;">
-            <div style="flex: 1;">
-                <h4 style="margin: 0; font-size: 0.95rem;">TOP ${index + 1}: ${story.title}</h4>
-                <p style="margin: 5px 0 0 0; color: #ff4d6d; font-size: 0.8rem;">👁️ ${story.views} lượt xem</p>
-            </div>
+    <div class="story-card" style="min-width: 280px; display: flex; align-items: center; gap: 10px; cursor: pointer; background: #fff; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" onclick="window.location.href='book.html?id=${story.id}'">
+        <img src="${currentImg}" style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
+        <div style="flex: 1; min-width: 0;"> 
+            <h4 title="${story.title}" style="margin: 0; font-size: 0.95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
+                TOP ${index + 1}: ${story.title}
+            </h4>
+            <p style="margin: 5px 0 0 0; color: #ff4d6d; font-size: 0.8rem; font-weight: 600;">
+                👁️ ${story.views} lượt xem
+            </p>
         </div>
-    `;
+    </div>
+`;
 });
 
         // Nhân đôi nội dung để hiệu ứng chạy ngang (marquee) không bị trống

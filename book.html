@@ -32,11 +32,12 @@
 
     <div class="book-container">
         <div class="book-header-card">
-            <img id="storyCover" src="" alt="Bìa truyện">
+            <img id="storyCover" src="placeholder.jpg" alt="Bìa truyện">
             <div class="story-info">
                 <h1 id="storyTitle">Đang tải...</h1>
                 <p><strong>✒️ Tác giả:</strong> <span id="storyAuthor"></span></p>
                 <p><strong>🚀 Editor:</strong> <span id="storyEditor"></span></p>
+                <p><strong>📝 Mô tả:</strong> <span id="storyDesc"></span></p>
             </div>
         </div>
 
@@ -45,7 +46,7 @@
                 <h3>DANH SÁCH CHƯƠNG</h3>
                 <button id="latestChapterBtn" class="btn-latest">Chương mới nhất 📖</button>
             </div>
-            <div id="chapterList">Đang tải danh sách chương...</div>
+            <div id="chapterList">Đang tải dữ liệu...</div>
         </div>
     </div>
 
@@ -55,20 +56,22 @@
 
         async function init() {
             const storyId = new URLSearchParams(window.location.search).get('id');
-            if (!storyId) {
-                alert("Truyện không tồn tại!");
-                return;
-            }
+            if (!storyId) return alert("Không tìm thấy truyện!");
 
             try {
-                // 1. Lấy thông tin truyện
+                // 1. Lấy thông tin truyện (Đồng bộ với studio.js)
                 const sSnap = await get(ref(db, `stories/${storyId}`));
                 if (sSnap.exists()) {
                     const s = sSnap.val();
                     document.getElementById('storyTitle').innerText = s.title || "Không tên";
                     document.getElementById('storyAuthor').innerText = s.author || "Đang cập nhật";
                     document.getElementById('storyEditor').innerText = s.editor || "Chưa có";
-                    document.getElementById('storyCover').src = s.cover || "placeholder.jpg";
+                    document.getElementById('storyDesc').innerText = s.description || "Chưa có mô tả";
+                    
+                    // Xử lý ảnh (Khớp với các trường trong studio.js)
+                    const coverEl = document.getElementById('storyCover');
+                    coverEl.src = s.cover || "placeholder.jpg";
+                    coverEl.onerror = () => coverEl.src = "https://via.placeholder.com/200x280?text=Khong+co+anh";
                 }
 
                 // 2. Lấy danh sách chương
@@ -78,7 +81,6 @@
 
                 if (cSnap.exists()) {
                     const chapters = cSnap.val();
-                    // Đảo ngược để chương mới nhất lên đầu
                     const entries = Object.entries(chapters).reverse();
                     
                     entries.forEach(([key, chapter]) => {
@@ -97,11 +99,11 @@
                     listDiv.innerHTML = "<p style='padding:15px; color:#888;'>Chưa có chương nào được đăng.</p>";
                 }
             } catch (error) {
-                console.error("Lỗi khi tải dữ liệu:", error);
+                console.error("Lỗi:", error);
             }
         }
 
-        init(); // Chạy hàm
+        init();
     </script>
 </body>
 </html>

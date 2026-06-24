@@ -17,6 +17,10 @@
         .btn-toggle { color: #ff4d6d; cursor: pointer; font-weight: bold; display: none; margin-top: 10px; }
         .chapter-section { background: #fff; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .btn-nav { padding: 5px 15px; border-radius: 10px; border: none; background: #ffe5ec; color: #ff4d6d; cursor: pointer; font-weight: 600; }
+    .profile-card { background: #fff; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    #storyCover { width: 180px; height: 240px; object-fit: cover; border-radius: 20px; margin-bottom: 15px; }
+    .chapter-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #eee; text-decoration: none; color: #333; }
+    .chapter-date { font-size: 0.8rem; color: #999; }
     </style>
 </head>
 <body>
@@ -101,6 +105,29 @@
             `<button class="btn-nav" style="margin:2px" onclick="changePage(${i+1})">${i+1}</button>`
         ).join('');
     }
+    
+    function renderChapters() {
+    let sorted = isAscending ? [...allChapters] : [...allChapters].reverse();
+    const start = (currentPage - 1) * 50;
+    const pageChapters = sorted.slice(start, start + 50);
+    
+    const list = document.getElementById('chapterList');
+    list.innerHTML = pageChapters.map(([id, data]) => {
+        // Nếu không có ngày, mặc định để là "..."
+        const dateStr = data.date || "..."; 
+        return `
+            <a href="read.html?truyen=${storyId}&id=${id}" class="chapter-item">
+                <span>${data.title}</span>
+                <span class="chapter-date">${dateStr}</span>
+            </a>
+        `;
+    }).join('');
+
+    const pages = Math.ceil(allChapters.length / 50);
+    document.getElementById('pagination').innerHTML = Array.from({length: pages}, (_, i) => 
+        `<button class="btn-nav" style="margin:2px" onclick="changePage(${i+1})">${i+1}</button>`
+    ).join('');
+}
 
     function toggleSort() { 
         isAscending = !isAscending; 
